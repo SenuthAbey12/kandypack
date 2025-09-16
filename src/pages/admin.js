@@ -2,9 +2,11 @@ import React from 'react'
 
 export default function admin() {
   return (
-    <>
-    <div>admin</div>
-    <p>a,jvdhasvd</p>
-    </>
+
+    <div>
+      <h1>Hi</h1>
+    </div>
+    
+
   )
 }
