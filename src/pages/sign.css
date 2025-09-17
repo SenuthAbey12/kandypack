@@ -1,0 +1,153 @@
+/* Container split screen */
+.sign-split-screen {
+  display: flex;
+  height: 100vh;
+  background: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Left and Right panels */
+.sign-left,
+.sign-right {
+  flex: 1;
+  padding: 4rem 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+/* Vertical divider line */
+.sign-left {
+  border-right: 1px solid #ddd;
+}
+
+/* Small business badge */
+.sign-left h3::before {
+  content: "BUSINESS";
+  position: absolute;
+  top: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #050a1a;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+}
+
+/* Headings with italics as in screenshot */
+.sign-left h2,
+.sign-right h2 {
+  font-weight: 700;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.sign-left h2 em,
+.sign-right h2 em {
+  font-style: italic;
+}
+
+/* Paragraph styling */
+.sign-left p,
+.sign-right p {
+  max-width: 380px;
+  font-weight: 400;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-bottom: 2.5rem;
+  color: #333;
+}
+
+/* Buttons */
+.sign-left button,
+.sign-right button {
+  width: 130px;
+  padding: 10px 0;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+/* Left button - black background, white text */
+.sign-left button {
+  background-color: black;
+  color: white;
+}
+
+.sign-left button:hover {
+  background-color: #333;
+}
+
+/* Right button - white background, black border */
+.sign-right button {
+  background-color: white;
+  color: black;
+  border: 1.5px solid #ddd;
+}
+
+.sign-right button:hover {
+  background-color: #f8f8f8;
+}
+
+/* Sign up link under buttons */
+.sign-left h6,
+.sign-right h6 {
+  margin-top: 3rem;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+/* Green links in signup text */
+.sign-left h6 a,
+.sign-right h6 a {
+  color: #2a9d8f;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.2rem;
+}
+
+.sign-left h6 a:hover,
+.sign-right h6 a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sign-split-screen {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sign-left {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding: 3rem 1.5rem;
+  }
+
+  .sign-right {
+    padding: 3rem 1.5rem;
+  }
+
+  .sign-left button,
+  .sign-right button {
+    width: 100%;
+  }
+
+  .sign-left h3::before {
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    margin-bottom: 1rem;
+  }
+}
