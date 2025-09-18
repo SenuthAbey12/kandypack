@@ -1,10 +1,12 @@
 import './App.css';
 import Home from'./pages/Home.js';
-import Login from './pages/login.js';
-import SignUp from './pages/signup.js';
-import Adminsignin from './pages/admin_signin.js';
-import Cussignin from './pages/cus_signin.js';
+import Login from './pages/SignIn/login.js';
+import SignUp from './pages/SignUp/signup.js';
+import Adminsignin from './pages/SignIn/admin_signin.js';
+import Cussignin from './pages/SignIn/cus_signin.js';
 import Dashboard from './pages/Dashboard/Dashboard.js'
+import Admin from './pages/Admin/Admin.js';
+import Product from './pages/Product.js';
 import { BrowserRouter,Routes, Route } from 'react-router-dom';
 
 
@@ -19,7 +21,9 @@ function App() {
         <Route path='/dashboard' element={<Dashboard/>}/>
         <Route path="/login/admin" element={<Adminsignin/>}/>
         <Route path="/login/customer" element={<Cussignin/>}/>
-
+        <Route path="/admin" element={<Admin/>}/>
+        <Route path="/products" element={<Product/>}/>
+        
       </Routes>
     </BrowserRouter>
     
