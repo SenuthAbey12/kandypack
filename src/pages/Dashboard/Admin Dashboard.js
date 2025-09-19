@@ -1,5 +1,5 @@
 import React from 'react';
-import './Admin.css';
+import './Admin Dashboard.css';
 
 export default function AdminOverview() {
 	return (
