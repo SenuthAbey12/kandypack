@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from "react";
 import {Link} from "react-router-dom";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import Cards from "../Components/Card.js";
+import Cards from "../Components/Card.js"; 
 
 // Demo data; swap with API later
 const PRODUCTS = [
