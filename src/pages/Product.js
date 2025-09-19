@@ -1,5 +1,6 @@
 // src/pages/ProductsPage.jsx
 import React, { useMemo, useState } from "react";
+import {Link} from "react-router-dom";
 import { Container, Row, Col, Form } from "react-bootstrap";
 import Cards from "../Components/Card.js"; 
 
@@ -79,6 +80,7 @@ export default function Product() {
   }
 
   return (
+    <div>
     <Container className="py-4">
       {/* Toolbar */}
       <div className="d-flex flex-column flex-md-row gap-2 justify-content-between align-items-md-center mb-3">
@@ -128,6 +130,9 @@ export default function Product() {
           </Col>
         )}
       </Row>
+      <Link to = '/'><button>Order</button></Link>
     </Container>
+    
+    </div>
   );
 }
