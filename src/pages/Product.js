@@ -1,7 +1,7 @@
 // src/pages/ProductsPage.jsx
 import React, { useMemo, useState } from "react";
 import { Container, Row, Col, Form } from "react-bootstrap";
-import Cards from "../components/Card"; 
+import Cards from "../Components/Card.js"; 
 
 // Demo data; swap with API later
 const PRODUCTS = [
