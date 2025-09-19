@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './signup.css';
+import '../SignUp/signup.css';
 
 export default function SignUp() {
-  const [role, setRole] = useState('admin');
   const [form, setForm] = useState({
     Name: '',
     Address: '',
@@ -50,25 +49,13 @@ export default function SignUp() {
       <img src="/download.jpg" alt="banner" className="su-logo-img" />
       <div className="su-box">
         <h1>Welcome!</h1>
-        <h2>{role === 'admin' ? 'Admin Registration' : 'Customer Registration'}</h2>
+        <h2>Customer Registration</h2>
         <hr />
 
-        <label htmlFor="role">Select Role:</label>
-        <select
-          id="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          className="su-role-select"
-        >
-          <option value="admin">Admin</option>
-          <option value="customer">Customer</option>
-        </select>
-
-        {role === 'customer' ? (
-          <>
+      
             <div className="su-form-group">
               <label htmlFor="cus_name">Name</label>
-              <input type="text" id="cus_name" placeholder="Enter your name" value={form.StudentName} onChange={handleChange} />
+              <input type="text" id="cus_name" placeholder="Enter your name" value={form.Name} onChange={handleChange} />
             </div>
             <div className="su-form-group">
               <label htmlFor="Address">Address</label>
@@ -98,31 +85,9 @@ export default function SignUp() {
               <label htmlFor="confirmPwd">Re-enter Password</label>
               <input type="password" id="confirmPwd" placeholder="Confirm Password" value={form.confirmPwd} onChange={handleChange} />
             </div>
-          </>
-        ) : (
-          <>
-            <div className="su-form-group">
-              <label htmlFor="name">Name</label>
-              <input type="text" id="name" placeholder="Enter your name" value={form.StudentName} onChange={handleChange} />
-            </div>
-            <div className="su-form-group">
-              <label htmlFor="email">Email</label>
-              <input type="email" id="email" placeholder="Email" value={form.email} onChange={handleChange} />
-            </div>
-            <div className="su-form-group">
-              <label htmlFor="username">Username</label>
-              <input type="email" id="username" placeholder="username" value={form.email} onChange={handleChange} />
-            </div>
-            <div className="su-form-group">
-              <label htmlFor="password">Create Password</label>
-              <input type="password" id="password" placeholder="Create Password" value={form.password} onChange={handleChange} />
-            </div>
-            <div className="su-form-group">
-              <label htmlFor="confirmPwd">Re-enter Password</label>
-              <input type="password" id="confirmPwd" placeholder="Confirm Password" value={form.confirmPwd} onChange={handleChange} />
-            </div>
-          </>
-        )}
+          
+            
+        
 
         <button className="su-submit-btn" onClick={handleSubmit}>Submit</button>
 

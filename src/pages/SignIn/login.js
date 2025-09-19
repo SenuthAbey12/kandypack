@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import './sign.css'
+import './login.css'
 
 
 export default function Login() {
@@ -16,9 +16,7 @@ export default function Login() {
             Access your personalized dashboard, track academic progress, submit assignments, and stay updated with the latest announcements. Empower your learning journey with a seamless and secure student experience.
           </p>
           <button onClick={() => navigate('/login/admin')}>Login</button>
-          <h6>
-            Don't have an account? <Link to="/signup">Sign Up</Link>
-          </h6>
+          
         </div>
         <div className='sign-right'>
           <h3>for users</h3>

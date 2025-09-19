@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+
 export default function Home() {
   return (
     <div>
@@ -7,6 +8,9 @@ export default function Home() {
         <Link to='/login'><button variant="light">Sign In</button></Link>
         <Link to='/signup'><button variant="light">Sign Up</button></Link>
         <Link to ='/dashboard'><button  variant="light">Dashboard</button></Link>
+        <Link to ='/products'><button  variant="light">Product</button></Link>
+        
+
     </div>
   )
 }
