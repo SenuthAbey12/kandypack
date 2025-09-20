@@ -50,6 +50,8 @@ import { ThemeProvider } from './context/ThemeContext';
 // Portal Components
 import EmployeeLogin from './pages/Auth/EmployeeLogin.js';
 import CustomerLogin from './pages/Auth/CustomerLogin.js';
+import ForgotPassword from './pages/Auth/ForgotPassword.js';
+import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
 import CustomerPortalRouter from './pages/Portal/CustomerPortalRouter.js';
 
@@ -68,6 +70,10 @@ function App() {
               <Route path="/login/customer" element={<CustomerLogin/>}/>
               <Route path="/login/admin" element={<EmployeeLogin/>}/>
               <Route path="/login/employee" element={<EmployeeLogin/>}/>
+              
+              {/* Auth Support Routes */}
+              <Route path="/forgot-password" element={<ForgotPassword/>}/>
+              <Route path="/need-help" element={<NeedHelp/>}/>
               
               <Route path="/signup" element={<SignUp/>}/>
               <Route path="/auth" element={<AuthPage/>}/>

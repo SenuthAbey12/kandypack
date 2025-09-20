@@ -82,6 +82,16 @@ export default function CustomerSignin() {
             />
           </div>
 
+          {/* Helper Links */}
+          <div style={styles.helperLinks}>
+            <Link to="/forgot-password" style={styles.helperLink}>
+              🔑 Forgot Password?
+            </Link>
+            <Link to="/need-help" style={styles.helperLink}>
+              ❓ Need Help?
+            </Link>
+          </div>
+
           {error && (
             <div style={styles.errorContainer}>
               <span style={styles.errorIcon}>⚠️</span>
@@ -202,6 +212,25 @@ const styles = {
   },
   errorText: {
     margin: 0,
+  },
+  helperLinks: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '20px',
+    paddingTop: '10px',
+  },
+  helperLink: {
+    color: '#48bb78',
+    textDecoration: 'none',
+    fontSize: '14px',
+    fontWeight: '500',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: '#f7fafc',
+      textDecoration: 'underline',
+    },
   },
   submitButton: {
     width: '100%',
