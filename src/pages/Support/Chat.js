@@ -27,7 +27,7 @@ export default function Chat(){
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <Link to="/dashboard" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
+        <Link to="/customer" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
         <h1 style={styles.title}>Live Chat</h1>
         <p style={styles.subtitle}>We respond in a few minutes.</p>
       </div>

@@ -45,7 +45,17 @@ const ProductsProfileMenu = ({ user, onLogout }) => {
   }, [isOpen]);
 
   const menuItems = [
-    { icon: '🏠', label: 'Dashboard', action: () => navigate('/dashboard') },
+    { icon: '🏠', label: 'Dashboard', action: () => {
+        // Navigate to appropriate dashboard based on user role
+        if (user?.role === 'customer') {
+          navigate('/customer');
+        } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
+          navigate('/employee');
+        } else {
+          navigate('/login'); // Fallback if no user or unknown role
+        }
+      }
+    },
     { icon: '👤', label: 'Profile', action: () => alert('Profile coming soon!') },
     { icon: '📋', label: 'My Orders', action: () => alert('Order history coming soon!') },
     { icon: '❤️', label: 'Wishlist', action: () => alert('Wishlist coming soon!') },

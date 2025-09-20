@@ -37,7 +37,7 @@ export default function Profile(){
   return (
     <div style={styles.page}>
       <div style={styles.header}> 
-        <Link to="/dashboard" style={styles.backLink}><ArrowLeft size={16}/> Back to Dashboard</Link>
+        <Link to="/customer" style={styles.backLink}><ArrowLeft size={16}/> Back to Dashboard</Link>
         <h1 style={styles.title}>Profile</h1>
         <p style={styles.subtitle}>Keep your account details up to date.</p>
       </div>

@@ -19,8 +19,16 @@ const AuthPage = () => {
     setIsLoading(true);
     try {
       // Call real auth via context -> backend /auth/login
-      await login(credentials.username, credentials.password, userType);
-      navigate('/dashboard');
+      const user = await login(credentials.username, credentials.password, userType);
+      
+      // Navigate to appropriate dashboard based on user role
+      if (user?.role === 'customer') {
+        navigate('/customer');
+      } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
+        navigate('/employee');
+      } else {
+        navigate('/login'); // Fallback if unknown role
+      }
     } catch (err) {
       alert(err.message || 'Login failed');
     } finally {

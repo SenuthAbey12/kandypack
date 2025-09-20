@@ -19,7 +19,7 @@ export default function Password(){
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <Link to="/dashboard" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
+        <Link to="/customer" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
         <h1 style={styles.title}>Security</h1>
         <p style={styles.subtitle}>Update your password regularly to keep your account safe.</p>
       </div>

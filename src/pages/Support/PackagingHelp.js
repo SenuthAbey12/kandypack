@@ -13,7 +13,7 @@ export default function PackagingHelp(){
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <Link to="/dashboard" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
+        <Link to="/customer" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
         <h1 style={styles.title}>Packaging Help</h1>
         <p style={styles.subtitle}>Follow these steps to pack and ship safely.</p>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 // Add CSS animations and responsive styles
 const slideUpAnimation = `
@@ -1031,6 +1032,7 @@ if (!document.querySelector('#top-nav-css')) {
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const { user, isAuthenticated } = useAuth();
 
   // Carousel images and content
   const carouselSlides = [
@@ -1352,7 +1354,11 @@ export default function Home() {
             <h4 style={styles.footerTitle}>Account</h4>
             <Link to="/login" style={styles.footerLink}>Sign In</Link>
             <Link to="/signup" style={styles.footerLink}>Sign Up</Link>
-            <Link to="/dashboard" style={styles.footerLink}>Dashboard</Link>
+            {isAuthenticated && (
+              <Link to={user?.role === 'customer' ? '/customer' : '/employee'} style={styles.footerLink}>
+                Dashboard
+              </Link>
+            )}
           </div>
         </div>
       </footer>

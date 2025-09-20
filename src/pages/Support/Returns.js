@@ -20,7 +20,7 @@ export default function Returns(){
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <Link to="/dashboard" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
+        <Link to="/customer" style={styles.back}><ArrowLeft size={16}/> Back to Dashboard</Link>
         <h1 style={styles.title}>Start a Return</h1>
         <p style={styles.subtitle}>Request a return or refund in a few steps.</p>
       </div>

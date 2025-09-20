@@ -85,7 +85,7 @@ function Sidebar() {
       <nav className="flex-1 overflow-y-auto">
         <SectionLabel>Core</SectionLabel>
         <div className="space-y-1">
-          <Item to="/dashboard" icon={Home} label="Dashboard" />
+          <Item to="/employee" icon={Home} label="Dashboard" />
           <Item to="/orders" icon={ClipboardList} label="Orders" />
           <Item to="/products" icon={Package} label="Products & Inventory" />
           <Item to="/customers" icon={UsersIcon} label="Customers" />
@@ -241,7 +241,7 @@ function Shell() {
         <main className="mx-auto max-w-7xl">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/employee" element={<Dashboard />} />
 
             {/* Core */}
             <Route path="/orders" element={<Orders />} />

@@ -77,7 +77,14 @@ const Checkout = () => {
       if (order) {
         setOrderSuccess(true);
         setTimeout(() => {
-          navigate('/dashboard');
+          // Navigate to appropriate dashboard based on user role
+          if (user?.role === 'customer') {
+            navigate('/customer');
+          } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
+            navigate('/employee');
+          } else {
+            navigate('/login'); // Fallback if no user or unknown role
+          }
         }, 2000);
       }
       setProcessing(false);

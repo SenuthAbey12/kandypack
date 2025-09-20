@@ -77,7 +77,7 @@ export default function SignUp() {
       
       setSuccess(`Account created successfully! Welcome ${newUser.name}!`);
       setTimeout(() => {
-        navigate('/dashboard'); // Redirect to dashboard after successful registration
+        navigate('/customer'); // Redirect to customer dashboard after successful registration
       }, 2000);
       
     } catch (err) {
