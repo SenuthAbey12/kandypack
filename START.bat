@@ -41,8 +41,10 @@ echo Frontend: http://localhost:3000
 echo Backend: http://localhost:5000
 echo.
 echo Test Credentials:
-echo - Admin: admin@test.com / admin123
-echo - Customer: john@test.com / password123
+echo - Admin: admin / admin123
+echo - Customer: john / john123
+echo - Driver: saman / saman123
+echo - Assistant: priya / priya123
 echo.
 echo Press any key to continue...
 pause >nul

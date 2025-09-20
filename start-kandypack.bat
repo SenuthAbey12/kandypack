@@ -49,10 +49,10 @@ echo Frontend: http://localhost:3000
 echo Backend API: http://localhost:5000
 echo.
 echo Login credentials:
-echo Admin: admin@test.com / admin123
-echo Customer: john@test.com / password123
-echo Driver: driver@test.com / driver123
-echo Assistant: assistant@test.com / assistant123
+echo Admin: admin / admin123
+echo Customer: john / john123
+echo Driver: saman / saman123
+echo Assistant: priya / priya123
 echo =========================================
 echo.
 pause

@@ -27,20 +27,39 @@ START.bat
 - **API**: http://localhost:5000
 
 ## Login Credentials
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@test.com | admin123 |
-| Customer | john@test.com | password123 |
-| Driver | driver@test.com | driver123 |
-| Assistant | assistant@test.com | assistant123 |
+| Role | Username | Password | Notes |
+|------|----------|----------|-------|
+| **Admin** | admin | admin123 | Employee Portal ✅ |
+| **Customer** | john | john123 | Customer Portal ✅ |
+| **Driver** | saman | saman123 | Employee Portal ✅ |
+| **Assistant** | priya | priya123 | Employee Portal ✅ |
+
+### Additional Test Accounts
+| Role | Username | Password | Name |
+|------|----------|----------|------|
+| Customer | jane | jane123 | Jane Smith |
+| Customer | bob | bob123 | Bob Wilson |
+| Customer | alice | alice123 | Alice Brown |
+| Driver | kamal | kamal123 | Kamal Silva |
+| Driver | nimal | nimal123 | Nimal Fernando |
+| Driver | sunil | sunil123 | Sunil Rathnayake |
+| Assistant | chamara | chamara123 | Chamara Wijesekara |
+| Assistant | sanduni | sanduni123 | Sanduni Mendis |
+| Assistant | thilaka | thilaka123 | Thilaka Kumari |
 
 ## Features Available
 - 🛍️ Product browsing and ordering
 - 👤 User authentication (multiple roles)
-- 📊 Admin dashboard
-- 👨‍💼 Customer portal
-- 🚚 Driver and assistant portals
+- 📊 Admin dashboard (admin/admin123)
+- 👨‍💼 Customer portal (john/john123)
+- 🚚 Driver portal (saman/saman123)
+- 👨‍🔧 Assistant portal (priya/priya123)
 - 💳 Order management
+
+## Portal Access
+- **Customer Portal**: `/customer` - Product browsing, orders, profile
+- **Employee Portal**: `/employee` - Admin, driver, and assistant functions
+- **Auto-Redirect**: Login automatically routes to correct portal based on role
 
 ## Troubleshooting
 If something doesn't work:
@@ -74,3 +93,11 @@ kandypack/
 
 ---
 **Just double-click `START.bat` and you're ready to go!** 🎉
+
+## 🔑 Quick Test Logins
+- **Customer**: `john` / `john123`
+- **Admin**: `admin` / `admin123`  
+- **Driver**: `saman` / `saman123`
+- **Assistant**: `priya` / `priya123`
+
+**Note**: Use usernames (not emails) for login. All credentials verified working!

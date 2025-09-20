@@ -65,10 +65,10 @@ Write-Host "Frontend: http://localhost:3000" -ForegroundColor Cyan
 Write-Host "Backend API: http://localhost:5000" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Login credentials:" -ForegroundColor Yellow
-Write-Host "Admin: admin@test.com / admin123" -ForegroundColor White
-Write-Host "Customer: john@test.com / password123" -ForegroundColor White
-Write-Host "Driver: driver@test.com / driver123" -ForegroundColor White
-Write-Host "Assistant: assistant@test.com / assistant123" -ForegroundColor White
+Write-Host "Admin: admin / admin123" -ForegroundColor White
+Write-Host "Customer: john / john123" -ForegroundColor White
+Write-Host "Driver: saman / saman123" -ForegroundColor White
+Write-Host "Assistant: priya / priya123" -ForegroundColor White
 Write-Host "=========================================" -ForegroundColor Magenta
 Write-Host ""
 
