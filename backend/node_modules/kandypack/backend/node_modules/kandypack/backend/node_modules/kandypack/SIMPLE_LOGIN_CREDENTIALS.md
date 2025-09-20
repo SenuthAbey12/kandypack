@@ -1,18 +1,18 @@
 # 🔐 KandyPack Comple### 🚛 DRIVER ACCOUNTS
-| Username | Password | Name | Role | Status |
-|----------|----------|------|------|--------|
-| **DRV001** | *See Admin* | Saman Perera | driver | Contact Admin |
-| **DRV002** | *See Admin* | Kamal Silva | driver | Contact Admin |
-| **DRV003** | *See Admin* | Nimal Fernando | driver | Contact Admin |
-| **DRV004** | *See Admin* | Sunil Rathnayake | driver | Contact Admin |
+| Username | Password | Name | ID | Portal |
+|----------|----------|------|-----|--------|
+| **saman** | **saman123** | Saman Perera | DRV001 | Employee Portal ✅ |
+| **kamal** | **kamal123** | Kamal Silva | DRV002 | Employee Portal |
+| **nimal** | **nimal123** | Nimal Fernando | DRV003 | Employee Portal |
+| **sunil** | **sunil123** | Sunil Rathnayake | DRV004 | Employee Portal |
 
 ### 👨‍🔧 ASSISTANT ACCOUNTS
-| Username | Password | Name | Role | Status |
-|----------|----------|------|------|--------|
-| **AST001** | *See Admin* | Priya Jayasinghe | assistant | Contact Admin |
-| **AST002** | *See Admin* | Chamara Wijesekara | assistant | Contact Admin |
-| **AST003** | *See Admin* | Sanduni Mendis | assistant | Contact Admin |
-| **AST004** | *See Admin* | Thilaka Kumari | assistant | Contact Admin |tials
+| Username | Password | Name | ID | Portal |
+|----------|----------|------|-----|--------|
+| **priya** | **priya123** | Priya Jayasinghe | AST001 | Employee Portal ✅ |
+| **chamara** | **chamara123** | Chamara Wijesekara | AST002 | Employee Portal |
+| **sanduni** | **sanduni123** | Sanduni Mendis | AST003 | Employee Portal |
+| **thilaka** | **thilaka123** | Thilaka Kumari | AST004 | Employee Portal |tials
 
 ## ✅ VERIFIED WORKING CREDENTIALS
 
@@ -54,8 +54,9 @@
 ### **Recommended Test Accounts (✅ Verified):**
 - **Customer Login**: `john` / `john123` → Customer Dashboard ✅
 - **Admin Login**: `admin` / `admin123` → Admin Dashboard ✅
+- **Driver Login**: `saman` / `saman123` → Driver Dashboard ✅  
+- **Assistant Login**: `priya` / `priya123` → Assistant Dashboard ✅
 - **Additional Customers**: `jane`/`jane123`, `bob`/`bob123`, `alice`/`alice123`
-- **Driver/Assistant**: Contact admin for employee portal access
 
 ## 🌐 Access URLs
 - **Website**: http://localhost:3000
@@ -87,3 +88,5 @@
 
 ---
 **💡 Tip**: Use `john`/`john123` for quick customer testing, `admin`/`admin123` for admin features!
+
+**🔧 Note**: Driver and Assistant usernames are the simple names (saman, priya, etc.), not the ID codes (DRV001, AST001).
