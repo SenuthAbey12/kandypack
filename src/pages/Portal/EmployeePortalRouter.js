@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
 import AdminDashboard from './AdminDashboard';
+import AdminSettings from './AdminSettings';
+import AdminSupport from './AdminSupport';
 import DriverDashboard from './DriverDashboard';
 import AssistantDashboard from './AssistantDashboard';
 import EmployeeProfile from './EmployeeProfile';
@@ -36,6 +38,11 @@ const EmployeePortalRouter = () => {
           <>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/overview" element={<AdminDashboard />} />
+            <Route path="/admin/drivers" element={<AdminDashboard />} />
+            <Route path="/admin/orders" element={<AdminDashboard />} />
+            <Route path="/admin/assistants" element={<AdminDashboard />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/support" element={<AdminSupport />} />
           </>
         )}
         

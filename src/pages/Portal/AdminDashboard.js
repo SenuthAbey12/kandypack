@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalDrivers: 0,
@@ -12,7 +15,15 @@ const AdminDashboard = () => {
     pendingOrders: 0,
     completedToday: 0
   });
-  const [activeTab, setActiveTab] = useState('overview');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const initialTab = (() => {
+    // support paths like /employee/admin/:tab
+    const path = location?.pathname || '';
+    const match = path.match(/\/employee\/admin\/(overview|drivers|orders|assistants)/);
+    return (match && match[1]) || 'overview';
+  })();
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [drivers, setDrivers] = useState([]);
   const [assistants, setAssistants] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -39,21 +50,11 @@ const AdminDashboard = () => {
   // logout provided by useAuth above
 
   const handleSettings = () => {
-    setNotifications(prev => [{
-      id: Date.now(),
-      type: 'info',
-      message: 'Settings panel opened',
-      timestamp: 'Just now'
-    }, ...prev]);
+    navigate('/employee/admin/settings');
   };
 
   const handleHelp = () => {
-    setNotifications(prev => [{
-      id: Date.now(),
-      type: 'info',
-      message: 'Help & Support resources available',
-      timestamp: 'Just now'
-    }, ...prev]);
+    navigate('/employee/admin/support');
   };
 
   const handleContactDriver = (driver) => {
@@ -275,6 +276,26 @@ const AdminDashboard = () => {
     fetchAssistants();
     fetchRecentOrders();
   }, []);
+
+  // keep activeTab in sync with the URL and update URL when tab changes
+  useEffect(() => {
+    const pathTab = (() => {
+      const path = location?.pathname || '';
+      const m = path.match(/\/employee\/admin\/(overview|drivers|orders|assistants)/);
+      return (m && m[1]) || 'overview';
+    })();
+    if (pathTab !== activeTab) {
+      setActiveTab(pathTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location?.pathname]);
+
+  const goTab = (tab) => {
+    setActiveTab(tab);
+    if (!location?.pathname.includes(`/employee/admin/${tab}`)) {
+      navigate(`/employee/admin/${tab}`);
+    }
+  };
 
   // Close profile dropdown on outside click or ESC
   useEffect(() => {
@@ -1068,10 +1089,10 @@ const AdminDashboard = () => {
             <button onClick={exportData} className="action-btn secondary">
               📥 Export Data
             </button>
-            <button onClick={() => setActiveTab('orders')} className="action-btn">
+            <button onClick={() => goTab('orders')} className="action-btn">
               📦 Manage Orders
             </button>
-            <button onClick={() => setActiveTab('drivers')} className="action-btn">
+            <button onClick={() => goTab('drivers')} className="action-btn">
               🚛 Driver Management
             </button>
           </div>
@@ -1776,6 +1797,15 @@ const AdminDashboard = () => {
             <p>Here's what's happening with KandyPack today</p>
           </div>
           <div className="header-actions">
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? '🌙' : '🌞'}
+            </button>
             <div className="notification-bell">
               <button className="notification-btn" onClick={() => setShowNotifications(!showNotifications)}>
                 <span className="bell-icon">🔔</span>
@@ -1822,25 +1852,25 @@ const AdminDashboard = () => {
       <div className="dashboard-nav">
         <button 
           className={`nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
+          onClick={() => goTab('overview')}
         >
           📊 Overview
         </button>
         <button 
           className={`nav-btn ${activeTab === 'drivers' ? 'active' : ''}`}
-          onClick={() => setActiveTab('drivers')}
+          onClick={() => goTab('drivers')}
         >
           🚛 Drivers ({drivers.length})
         </button>
         <button 
           className={`nav-btn ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => setActiveTab('orders')}
+          onClick={() => goTab('orders')}
         >
           📦 Orders ({orders.length})
         </button>
         <button 
           className={`nav-btn ${activeTab === 'assistants' ? 'active' : ''}`}
-          onClick={() => setActiveTab('assistants')}
+          onClick={() => goTab('assistants')}
         >
           🤝 Assistants ({assistants.length})
         </button>
