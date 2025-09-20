@@ -11,9 +11,9 @@ import CustomerSupport from './CustomerSupport';
 const CustomerPortalRouter = () => {
   const { isCustomer } = useAuth();
 
-  // Redirect non-customers away from customer portal
+  // Redirect non-customers to the customer login to avoid redirect loops
   if (!isCustomer) {
-    return <Navigate to="/employee" replace />;
+    return <Navigate to="/login/customer" replace />;
   }
 
   return (

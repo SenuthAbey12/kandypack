@@ -12,9 +12,9 @@ import EmployeeSettings from './EmployeeSettings';
 const EmployeePortalRouter = () => {
   const { isEmployee, isAdmin, isDriver, isAssistant } = useAuth();
 
-  // Redirect non-employees away from employee portal
+  // Redirect non-employees to the employee login to avoid redirect loops
   if (!isEmployee) {
-    return <Navigate to="/customer" replace />;
+    return <Navigate to="/login/employee" replace />;
   }
 
   const getDashboardComponent = () => {

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalDrivers: 0,
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
 
   const profileRef = useRef(null);
 
-  const { logout } = useAuth();
+  // logout provided by useAuth above
 
   const handleSettings = () => {
     setNotifications(prev => [{
@@ -803,109 +803,201 @@ const AdminDashboard = () => {
             
             {selectedItem.type === 'assistant' && (
               <div className="details-content">
-                <div className="detail-section">
-                  <h4>Basic Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-row">
-                      <label>Assistant ID:</label>
-                      <span>{selectedItem.id}</span>
+                {isEdit ? (
+                  <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
+                    <div className="detail-section">
+                      <h4>Edit Assistant Information</h4>
+                      <div className="detail-grid">
+                        <div className="form-group">
+                          <label>Name</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={currentData.name || ''}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Email</label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={currentData.email || ''}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Department</label>
+                          <select
+                            name="department"
+                            value={currentData.department || ''}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="Customer Support">Customer Support</option>
+                            <option value="Technical Support">Technical Support</option>
+                            <option value="Logistics Support">Logistics Support</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <label>Name:</label>
-                      <span>{selectedItem.name}</span>
+                    <div className="modal-actions">
+                      <button type="button" onClick={handleCloseModal} className="btn">Cancel</button>
+                      <button type="submit" className="btn-primary" disabled={isRefreshing}>{isRefreshing ? 'Saving...' : 'Save Changes'}</button>
                     </div>
-                    <div className="detail-row">
-                      <label>Email:</label>
-                      <span>{selectedItem.email}</span>
+                  </form>
+                ) : (
+                  <>
+                    <div className="detail-section">
+                      <h4>Basic Information</h4>
+                      <div className="detail-grid">
+                        <div className="detail-row">
+                          <label>Assistant ID:</label>
+                          <span>{selectedItem.id}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Name:</label>
+                          <span>{selectedItem.name}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Email:</label>
+                          <span>{selectedItem.email}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Department:</label>
+                          <span>{selectedItem.department}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <label>Department:</label>
-                      <span>{selectedItem.department}</span>
+                    
+                    <div className="detail-section">
+                      <h4>Performance Today</h4>
+                      <div className="performance-stats">
+                        <div className="stat-item">
+                          <span className="stat-number">{selectedItem.activeTickets}</span>
+                          <span className="stat-label">Active Tickets</span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-number">{selectedItem.resolvedToday}</span>
+                          <span className="stat-label">Resolved Today</span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-number">4.2</span>
+                          <span className="stat-label">Avg Response Time (min)</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="detail-section">
-                  <h4>Performance Today</h4>
-                  <div className="performance-stats">
-                    <div className="stat-item">
-                      <span className="stat-number">{selectedItem.activeTickets}</span>
-                      <span className="stat-label">Active Tickets</span>
+                    
+                    <div className="detail-actions">
+                      <button onClick={() => handleEdit(selectedItem, 'assistant')} className="btn-primary">📝 Edit Assistant</button>
+                      <button className="btn-secondary" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'info', message: `Viewing tickets for ${selectedItem.name}`, timestamp: 'Just now' }, ...prev]))}>🎫 View Tickets</button>
+                      <button className="btn-info" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'success', message: `Message sent to ${selectedItem.name}`, timestamp: 'Just now' }, ...prev]))}>💬 Send Message</button>
+                      <button className="btn-success" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'info', message: `Task assigned to ${selectedItem.name}`, timestamp: 'Just now' }, ...prev]))}>🎯 Assign Task</button>
                     </div>
-                    <div className="stat-item">
-                      <span className="stat-number">{selectedItem.resolvedToday}</span>
-                      <span className="stat-label">Resolved Today</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-number">4.2</span>
-                      <span className="stat-label">Avg Response Time (min)</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="detail-actions">
-                  <button className="btn-primary">📝 Edit Assistant</button>
-                  <button className="btn-secondary">🎫 View Tickets</button>
-                  <button className="btn-info">💬 Send Message</button>
-                  <button className="btn-success">🎯 Assign Task</button>
-                </div>
+                  </>
+                )}
               </div>
             )}
 
             {selectedItem.type === 'order' && (
               <div className="details-content">
-                <div className="detail-section">
-                  <h4>Order Information</h4>
-                  <div className="detail-grid">
-                    <div className="detail-row">
-                      <label>Order ID:</label>
-                      <span>{selectedItem.id}</span>
+                {isEdit ? (
+                  <form onSubmit={e => { e.preventDefault(); handleSave(); }}>
+                    <div className="detail-section">
+                      <h4>Edit Order</h4>
+                      <div className="detail-grid">
+                        <div className="form-group">
+                          <label>Customer</label>
+                          <input type="text" name="customer" value={currentData.customer || ''} onChange={handleInputChange} required />
+                        </div>
+                        <div className="form-group">
+                          <label>Status</label>
+                          <select name="status" value={currentData.status || ''} onChange={handleInputChange} required>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="in-transit">In Transit</option>
+                            <option value="completed">Completed</option>
+                            <option value="delivered">Delivered</option>
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label>Priority</label>
+                          <select name="priority" value={currentData.priority || ''} onChange={handleInputChange} required>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                          </select>
+                        </div>
+                        <div className="form-group">
+                          <label>Order Value (Rs.)</label>
+                          <input type="number" name="value" min="1" value={currentData.value || ''} onChange={handleInputChange} required />
+                        </div>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <label>Customer:</label>
-                      <span>{selectedItem.customer}</span>
+                    <div className="modal-actions">
+                      <button type="button" onClick={handleCloseModal} className="btn">Cancel</button>
+                      <button type="submit" className="btn-primary" disabled={isRefreshing}>{isRefreshing ? 'Saving...' : 'Save Changes'}</button>
                     </div>
-                    <div className="detail-row">
-                      <label>Mode:</label>
-                      <span className={`status ${selectedItem.mode === 'rail' ? 'processing' : 'active'}`}>{selectedItem.mode || 'road'}</span>
+                  </form>
+                ) : (
+                  <>
+                    <div className="detail-section">
+                      <h4>Order Information</h4>
+                      <div className="detail-grid">
+                        <div className="detail-row">
+                          <label>Order ID:</label>
+                          <span>{selectedItem.id}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Customer:</label>
+                          <span>{selectedItem.customer}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Mode:</label>
+                          <span className={`status ${selectedItem.mode === 'rail' ? 'processing' : 'active'}`}>{selectedItem.mode || 'road'}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Route:</label>
+                          <span>{selectedItem.origin} → {selectedItem.destination}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Hub/Yard:</label>
+                          <span>{selectedItem.hub || '—'}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Date:</label>
+                          <span>{selectedItem.date}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Status:</label>
+                          <span className={`status ${selectedItem.status}`}>{selectedItem.status}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Priority:</label>
+                          <span className={`priority ${selectedItem.priority}`}>{selectedItem.priority}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Value:</label>
+                          <span className="order-value">Rs. {selectedItem.value?.toLocaleString()}</span>
+                        </div>
+                        <div className="detail-row">
+                          <label>Assigned Driver:</label>
+                          <span>{selectedItem.driver || 'Unassigned'}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="detail-row">
-                      <label>Route:</label>
-                      <span>{selectedItem.origin} → {selectedItem.destination}</span>
+                    
+                    <div className="detail-actions">
+                      <button className="btn-primary" onClick={() => handleEdit(selectedItem, 'order')}>📝 Edit Order</button>
+                      <button className="btn-secondary" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'info', message: `Contacted ${selectedItem.customer}`, timestamp: 'Just now' }, ...prev]))}>👥 Contact Customer</button>
+                      <button className="btn-info" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'info', message: `Tracking initiated for ${selectedItem.id}`, timestamp: 'Just now' }, ...prev]))}>📍 Track Order</button>
+                      <button className="btn-success" onClick={() => { setSelectedItem({ ...selectedItem, type: 'order' }); setShowModal('assignDriver'); }}>🚛 Assign Driver</button>
                     </div>
-                    <div className="detail-row">
-                      <label>Hub/Yard:</label>
-                      <span>{selectedItem.hub || '—'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <label>Date:</label>
-                      <span>{selectedItem.date}</span>
-                    </div>
-                    <div className="detail-row">
-                      <label>Status:</label>
-                      <span className={`status ${selectedItem.status}`}>{selectedItem.status}</span>
-                    </div>
-                    <div className="detail-row">
-                      <label>Priority:</label>
-                      <span className={`priority ${selectedItem.priority}`}>{selectedItem.priority}</span>
-                    </div>
-                    <div className="detail-row">
-                      <label>Value:</label>
-                      <span className="order-value">Rs. {selectedItem.value?.toLocaleString()}</span>
-                    </div>
-                    <div className="detail-row">
-                      <label>Assigned Driver:</label>
-                      <span>{selectedItem.driver || 'Unassigned'}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="detail-actions">
-                  <button className="btn-primary">📝 Edit Order</button>
-                  <button className="btn-secondary">👥 Contact Customer</button>
-                  <button className="btn-info">📍 Track Order</button>
-                  <button className="btn-success">🚛 Assign Driver</button>
-                </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -1086,7 +1178,7 @@ const AdminDashboard = () => {
               try {
                 const res = await fetch('http://localhost:5000/api/portal/admin/orders', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
                   body: JSON.stringify({
                     id: newId,
                     customer: formData.customer || '',
