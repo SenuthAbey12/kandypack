@@ -1,15 +1,23 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const userType = localStorage.getItem('userType');
+  const { user, loading, isAuthenticated } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={styles.loading}>
+        <div>Loading...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requiredRole && userType !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole) {
     return (
       <div style={styles.accessDenied}>
         <div style={styles.errorCard}>
@@ -18,7 +26,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
           <p style={styles.errorMessage}>
             You don't have permission to access this page.<br />
             Required role: <strong>{requiredRole}</strong><br />
-            Your role: <strong>{userType}</strong>
+            Your role: <strong>{user?.role}</strong>
           </p>
           <button 
             style={styles.backBtn}
@@ -35,6 +43,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 const styles = {
+  loading: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+    fontSize: '18px',
+    color: '#64748b',
+  },
   accessDenied: {
     minHeight: '100vh',
     display: 'flex',

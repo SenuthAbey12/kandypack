@@ -11,17 +11,21 @@ const AuthPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!userType || !credentials.username || !credentials.password) {
+      alert('Please select user type and enter username and password');
+      return;
+    }
 
-    setTimeout(() => {
-      if (credentials.username && credentials.password && userType) {
-        login(userType, credentials.username);
-        navigate('/dashboard');
-      } else {
-        alert('Please select user type and enter credentials');
-      }
+    setIsLoading(true);
+    try {
+      // Call real auth via context -> backend /auth/login
+      await login(credentials.username, credentials.password, userType);
+      navigate('/dashboard');
+    } catch (err) {
+      alert(err.message || 'Login failed');
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (

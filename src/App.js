@@ -4,7 +4,7 @@ import Login from './pages/SignIn/login.js';
 import SignUp from './pages/SignUp/signup.js';
 import Adminsignin from './pages/SignIn/admin_signin.js';
 import Cussignin from './pages/SignIn/cus_signin.js';
-import Dashboard from './pages/Dashboard/Dashboard.js'
+import DashboardRouter from './pages/Dashboard/DashboardRouter.js'
 import Admin from './pages/Admin/Admin.js';
 import AdminOverview from './pages/Dashboard/Admin Dashboard.js';
 import Product from './pages/Product.js';
@@ -58,10 +58,10 @@ function App() {
               <Route path="/support/chat" element={<ProtectedRoute><Chat/></ProtectedRoute>} />
               <Route path="/support/packaging-help" element={<ProtectedRoute><PackagingHelp/></ProtectedRoute>} />
 
-            {/* Protected Dashboard Route - Access based on user role */}
+            {/* Protected Dashboard Route - routes to Admin/Customer automatically */}
             <Route path='/dashboard' element={
               <ProtectedRoute>
-                <Dashboard/>
+                <DashboardRouter/>
               </ProtectedRoute>
             }/>
             

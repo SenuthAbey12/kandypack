@@ -1,14 +1,23 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
+// Helper to safely read env vars with trimming and fallback
+const env = (val, fallback) => {
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    return trimmed.length ? trimmed : fallback;
+  }
+  return val ?? fallback;
+};
+
 class Database {
   constructor() {
     this.pool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'project',
-      port: process.env.DB_PORT || 3306,
+      host: env(process.env.DB_HOST, 'localhost'),
+      user: env(process.env.DB_USER, 'root'),
+      password: env(process.env.DB_PASSWORD, 'hm$$mnmPP2003ML'),
+      database: env(process.env.DB_NAME, 'kandypack'),
+      port: Number(env(process.env.DB_PORT, 3306)),
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0
