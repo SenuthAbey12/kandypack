@@ -9,7 +9,7 @@ import CustomerProfile from './CustomerProfile';
 import CustomerSupport from './CustomerSupport';
 
 const CustomerPortalRouter = () => {
-  const { user, isCustomer } = useAuth();
+  const { isCustomer } = useAuth();
 
   // Redirect non-customers away from customer portal
   if (!isCustomer) {

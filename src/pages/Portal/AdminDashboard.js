@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import ProfileDropdown from '../../Components/ProfileDropdown';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -28,35 +27,16 @@ const AdminDashboard = () => {
   const [showModal, setShowModal] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({});
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [selectedOrders, setSelectedOrders] = useState([]);
-  const [bulkActionType, setBulkActionType] = useState('');
+  const [profileForm, setProfileForm] = useState({ name: '', email: '' });
+  const [assignDriverId, setAssignDriverId] = useState('');
+
+  const profileRef = useRef(null);
 
   const { logout } = useAuth();
-
-  const handleAddOrder = () => {
-    const newOrder = {
-      id: `ORD${String(orders.length + 1).padStart(3, '0')}`,
-      customer: 'New Customer',
-      date: new Date().toLocaleDateString(),
-      status: 'pending',
-      priority: 'medium',
-      value: 1500,
-      driver: null
-    };
-    setOrders([...orders, newOrder]);
-    setShowModal(null);
-    setFormData({});
-    setNotifications(prev => [{
-      id: Date.now(),
-      type: 'success',
-      message: 'New order created successfully!',
-      timestamp: 'Just now'
-    }, ...prev]);
-  };
 
   const handleSettings = () => {
     setNotifications(prev => [{
@@ -135,25 +115,20 @@ const AdminDashboard = () => {
 
   const handleBulkAction = async (action) => {
     if (selectedOrders.length === 0) return;
-    
     setIsRefreshing(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (action === 'assign') {
         // Show driver selection modal for bulk assignment
         setShowModal('bulkAssign');
       } else if (action === 'status') {
-        // Update status for selected orders
-        const updatedOrders = orders.map(order => 
-          selectedOrders.includes(order.id) 
-            ? { ...order, status: 'processing' }
-            : order
-        );
-        setOrders(updatedOrders);
+        // Persist status update for selected orders
+        await Promise.all(selectedOrders.map(id => fetch('http://localhost:5000/api/portal/admin/orders/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          body: JSON.stringify({ id, status: 'processing' })
+        })));
+        await fetchRecentOrders();
         setSelectedOrders([]);
-        
         setNotifications(prev => [{
           id: Date.now(),
           type: 'success',
@@ -169,7 +144,6 @@ const AdminDashboard = () => {
   };
 
   const handleEdit = (item, type) => {
-    setEditMode(true);
     setSelectedItem({...item, type});
     setFormData(item);
     setShowModal('edit');
@@ -196,7 +170,6 @@ const AdminDashboard = () => {
       }
       
       setShowModal(null);
-      setEditMode(false);
       setFormData({});
       setSelectedItem(null);
       
@@ -231,19 +204,24 @@ const AdminDashboard = () => {
   const handleStatusChange = async (id, type, newStatus) => {
     setIsRefreshing(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
       if (type === 'driver') {
-        setDrivers(drivers.map(d => 
-          d.id === id ? {...d, status: newStatus} : d
-        ));
+        // Simulated for drivers (no backend endpoint yet)
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setDrivers(drivers.map(d => d.id === id ? { ...d, status: newStatus } : d));
       } else if (type === 'order') {
-        setOrders(orders.map(o => 
-          o.id === id ? {...o, status: newStatus} : o
-        ));
+        // Persist order status to backend
+        const res = await fetch('http://localhost:5000/api/portal/admin/orders/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          body: JSON.stringify({ id, status: newStatus })
+        });
+        if (res.ok) {
+          await fetchRecentOrders();
+        } else {
+          // Fallback to local update if backend not available
+          setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+        }
       }
-      
       setNotifications(prev => [{
         id: Date.now(),
         type: 'success',
@@ -298,10 +276,30 @@ const AdminDashboard = () => {
     fetchRecentOrders();
   }, []);
 
+  // Close profile dropdown on outside click or ESC
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showProfileMenu && profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showProfileMenu]);
+
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/portal/admin/stats', {
+  const response = await fetch('http://localhost:5000/api/portal/admin/stats', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -339,7 +337,7 @@ const AdminDashboard = () => {
 
   const fetchDrivers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/portal/admin/drivers', {
+  const response = await fetch('http://localhost:5000/api/portal/admin/drivers', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -370,7 +368,7 @@ const AdminDashboard = () => {
 
   const fetchAssistants = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/portal/admin/assistants', {
+  const response = await fetch('http://localhost:5000/api/portal/admin/assistants', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -399,7 +397,7 @@ const AdminDashboard = () => {
 
   const fetchRecentOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/portal/admin/orders', {
+  const response = await fetch('http://localhost:5000/api/portal/admin/orders', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -407,7 +405,11 @@ const AdminDashboard = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setOrders(data);
+        // Normalize backend fields to frontend shape
+        const mapped = Array.isArray(data)
+          ? data.map(o => ({ ...o, driver: o.driverName || o.driver || null }))
+          : [];
+        setOrders(mapped);
       } else {
         // Mock data
         setOrders([
@@ -441,14 +443,15 @@ const AdminDashboard = () => {
     setIsRefreshing(false);
   };
 
-  const handleViewDetails = (item, type) => {
-    setSelectedItem({...item, type});
-    setShowModal('details');
-  };
-
   const handleCloseModal = () => {
     setShowModal(null);
     setSelectedItem(null);
+  };
+
+  // Open details modal for a given item type
+  const handleViewDetails = (item, type) => {
+    setSelectedItem({ ...item, type });
+    setShowModal('details');
   };
 
   const filterItems = (items, type) => {
@@ -471,7 +474,7 @@ const AdminDashboard = () => {
 
   const assignDriver = async (orderId, driverId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/portal/admin/assign-driver`, {
+  const response = await fetch(`http://localhost:5000/api/portal/admin/assign-driver`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -521,16 +524,15 @@ const AdminDashboard = () => {
   const bulkAssignDrivers = async (selectedOrders, driverId) => {
     setIsRefreshing(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const updatedOrders = orders.map(order => 
-        selectedOrders.includes(order.id) 
-          ? { ...order, driver: drivers.find(d => d.id === driverId)?.name }
-          : order
-      );
-      
-      setOrders(updatedOrders);
+      await Promise.all(selectedOrders.map(id => fetch(`http://localhost:5000/api/portal/admin/assign-driver`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ orderId: id, driverId })
+      })));
+      await fetchRecentOrders();
       setNotifications(prev => [{
         id: Date.now(),
         type: 'success',
@@ -864,6 +866,18 @@ const AdminDashboard = () => {
                       <span>{selectedItem.customer}</span>
                     </div>
                     <div className="detail-row">
+                      <label>Mode:</label>
+                      <span className={`status ${selectedItem.mode === 'rail' ? 'processing' : 'active'}`}>{selectedItem.mode || 'road'}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Route:</label>
+                      <span>{selectedItem.origin} → {selectedItem.destination}</span>
+                    </div>
+                    <div className="detail-row">
+                      <label>Hub/Yard:</label>
+                      <span>{selectedItem.hub || '—'}</span>
+                    </div>
+                    <div className="detail-row">
                       <label>Date:</label>
                       <span>{selectedItem.date}</span>
                     </div>
@@ -1046,7 +1060,7 @@ const AdminDashboard = () => {
               </div>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(null)} className="btn">Cancel</button>
-                <button type="submit" className="btn primary">Add Driver</button>
+                <button type="submit" className="btn-primary">Add Driver</button>
               </div>
             </form>
           </div>
@@ -1066,26 +1080,55 @@ const AdminDashboard = () => {
             <button onClick={() => setShowModal(null)} className="modal-close">×</button>
           </div>
           <div className="modal-body">
-            <form onSubmit={e => {
+            <form onSubmit={async e => {
               e.preventDefault();
-              const newOrder = {
-                id: `ORD${String(orders.length + 1).padStart(3, '0')}`,
-                customer: formData.customer || '',
-                date: new Date().toLocaleDateString(),
-                status: 'pending',
-                priority: formData.priority || 'medium',
-                value: parseInt(formData.value) || 1500,
-                driver: null
-              };
-              setOrders([...orders, newOrder]);
-              setShowModal(null);
-              setFormData({});
-              setNotifications(prev => [{
-                id: Date.now(),
-                type: 'success',
-                message: 'New order created successfully!',
-                timestamp: 'Just now'
-              }, ...prev]);
+              const newId = `ORD${String(orders.length + 1).padStart(3, '0')}`;
+              try {
+                const res = await fetch('http://localhost:5000/api/portal/admin/orders', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                  body: JSON.stringify({
+                    id: newId,
+                    customer: formData.customer || '',
+                    value: parseInt(formData.value) || 1500,
+                    priority: formData.priority || 'medium',
+                    mode: formData.mode || 'road',
+                    origin: formData.origin || '',
+                    destination: formData.destination || ''
+                  })
+                });
+                if (res.ok) {
+                  await fetchRecentOrders();
+                  setShowModal(null);
+                  setFormData({});
+                  setNotifications(prev => [{
+                    id: Date.now(),
+                    type: 'success',
+                    message: 'New order created successfully!',
+                    timestamp: 'Just now'
+                  }, ...prev]);
+                } else {
+                  // Fallback to local add
+                  const newOrder = {
+                    id: newId,
+                    customer: formData.customer || '',
+                    date: new Date().toLocaleDateString(),
+                    status: 'pending',
+                    priority: formData.priority || 'medium',
+                    value: parseInt(formData.value) || 1500,
+                    driver: null,
+                    mode: formData.mode || 'road',
+                    origin: formData.origin || '',
+                    destination: formData.destination || '',
+                    hub: formData.hub || ''
+                  };
+                  setOrders([...orders, newOrder]);
+                  setShowModal(null);
+                  setFormData({});
+                }
+              } catch (err) {
+                console.error('Failed to create order', err);
+              }
             }}>
               <div className="form-group">
                 <label>Customer Name</label>
@@ -1097,6 +1140,26 @@ const AdminDashboard = () => {
                   required
                   placeholder="Enter customer name"
                 />
+              </div>
+              <div className="form-group">
+                <label>Mode</label>
+                <select name="mode" value={formData.mode || ''} onChange={handleInputChange} required>
+                  <option value="">Select mode</option>
+                  <option value="road">Road</option>
+                  <option value="rail">Rail</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Origin</label>
+                <input type="text" name="origin" value={formData.origin || ''} onChange={handleInputChange} placeholder="Colombo" />
+              </div>
+              <div className="form-group">
+                <label>Destination</label>
+                <input type="text" name="destination" value={formData.destination || ''} onChange={handleInputChange} placeholder="Kandy" />
+              </div>
+              <div className="form-group">
+                <label>Hub / Yard</label>
+                <input type="text" name="hub" value={formData.hub || ''} onChange={handleInputChange} placeholder="Peradeniya Hub" />
               </div>
               <div className="form-group">
                 <label>Order Value (Rs.)</label>
@@ -1126,9 +1189,213 @@ const AdminDashboard = () => {
               </div>
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(null)} className="btn">Cancel</button>
-                <button type="submit" className="btn primary">Create Order</button>
+                <button type="submit" className="btn-primary">Create Order</button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAddAssistantModal = () => {
+    if (showModal !== 'addAssistant') return null;
+
+    return (
+      <div className="modal-overlay" onClick={() => setShowModal(null)}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>🤝 Add New Assistant</h2>
+            <button onClick={() => setShowModal(null)} className="modal-close">×</button>
+          </div>
+          <div className="modal-body">
+            <form onSubmit={e => {
+              e.preventDefault();
+              const newAssistant = {
+                id: `AST${String(assistants.length + 1).padStart(3, '0')}`,
+                name: formData.name || '',
+                email: formData.email || '',
+                department: formData.department || 'Customer Support',
+                activeTickets: 0,
+                resolvedToday: 0
+              };
+              setAssistants([...assistants, newAssistant]);
+              setShowModal(null);
+              setFormData({});
+              setNotifications(prev => [{
+                id: Date.now(),
+                type: 'success',
+                message: 'New assistant added successfully!',
+                timestamp: 'Just now'
+              }, ...prev]);
+            }}>
+              <div className="form-group">
+                <label>Assistant Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ''}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter assistant's full name"
+                />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ''}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="assistant@kandypack.com"
+                />
+              </div>
+              <div className="form-group">
+                <label>Department</label>
+                <select
+                  name="department"
+                  value={formData.department || ''}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select department</option>
+                  <option value="Customer Support">Customer Support</option>
+                  <option value="Technical Support">Technical Support</option>
+                  <option value="Logistics Support">Logistics Support</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowModal(null)} className="btn">Cancel</button>
+                <button type="submit" className="btn-primary">Add Assistant</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProfileModal = () => {
+    if (showModal !== 'profile') return null;
+    return (
+      <div className="modal-overlay" onClick={() => setShowModal(null)}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>👤 Profile Settings</h2>
+            <button onClick={() => setShowModal(null)} className="modal-close">×</button>
+          </div>
+          <div className="modal-body">
+            <form onSubmit={e => {
+              e.preventDefault();
+              setNotifications(prev => [{
+                id: Date.now(),
+                type: 'success',
+                message: 'Profile updated successfully!',
+                timestamp: 'Just now'
+              }, ...prev]);
+              setShowModal(null);
+            }}>
+              <div className="form-group">
+                <label>Display Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={profileForm.name}
+                  onChange={(e) => setProfileForm(p => ({ ...p, name: e.target.value }))}
+                  placeholder="Admin User"
+                />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={profileForm.email}
+                  onChange={(e) => setProfileForm(p => ({ ...p, email: e.target.value }))}
+                  placeholder="admin@kandypack.com"
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowModal(null)} className="btn">Cancel</button>
+                <button type="submit" className="btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderAssignDriverModal = () => {
+    if (showModal !== 'assignDriver' || !selectedItem || selectedItem.type !== 'order') return null;
+    return (
+      <div className="modal-overlay" onClick={() => setShowModal(null)}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>🚛 Assign Driver</h2>
+            <button onClick={() => setShowModal(null)} className="modal-close">×</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label>Select Driver</label>
+              <select value={assignDriverId} onChange={e => setAssignDriverId(e.target.value)}>
+                <option value="">Choose a driver</option>
+                {drivers.map(d => (
+                  <option key={d.id} value={d.id}>{d.name} ({d.vehicle})</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button className="btn" onClick={() => setShowModal(null)}>Cancel</button>
+              <button
+                className="btn-primary"
+                disabled={!assignDriverId}
+                onClick={() => {
+                  assignDriver(selectedItem.id, assignDriverId);
+                  setAssignDriverId('');
+                  setShowModal(null);
+                }}
+              >Assign</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBulkAssignModal = () => {
+    if (showModal !== 'bulkAssign') return null;
+    return (
+      <div className="modal-overlay" onClick={() => setShowModal(null)}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <div className="modal-header">
+            <h2>👥 Bulk Assign Driver</h2>
+            <button onClick={() => setShowModal(null)} className="modal-close">×</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label>Select Driver</label>
+              <select value={assignDriverId} onChange={e => setAssignDriverId(e.target.value)}>
+                <option value="">Choose a driver</option>
+                {drivers.map(d => (
+                  <option key={d.id} value={d.id}>{d.name} ({d.vehicle})</option>
+                ))}
+              </select>
+            </div>
+            <div className="modal-actions">
+              <button className="btn" onClick={() => setShowModal(null)}>Cancel</button>
+              <button
+                className="btn-primary"
+                disabled={!assignDriverId || selectedOrders.length === 0}
+                onClick={() => {
+                  bulkAssignDrivers(selectedOrders, assignDriverId);
+                  setAssignDriverId('');
+                  setSelectedOrders([]);
+                  setShowModal(null);
+                }}
+              >Assign to {selectedOrders.length} orders</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1183,8 +1450,14 @@ const AdminDashboard = () => {
                 >
                   View Details
                 </button>
-                <button className="btn-secondary">Edit</button>
-                <button className="btn-info">Contact</button>
+                <button 
+                  className="btn-secondary"
+                  onClick={() => handleEdit(driver, 'driver')}
+                >Edit</button>
+                <button 
+                  className="btn-info"
+                  onClick={() => handleContactDriver(driver)}
+                >Contact</button>
               </div>
             </div>
           ))}
@@ -1312,6 +1585,11 @@ const AdminDashboard = () => {
                       >
                         ✅
                       </button>
+                      <button
+                        onClick={() => { setSelectedItem({ ...order, type: 'order' }); setShowModal('assignDriver'); }}
+                        className="btn-info"
+                        title="Assign Driver"
+                      >🚛</button>
                     </div>
                   </td>
                 </tr>
@@ -1338,7 +1616,7 @@ const AdminDashboard = () => {
       <div className="assistants-section">
         <div className="section-header">
           <h3>🤝 Assistant Management ({filteredAssistants.length})</h3>
-          <button className="btn-primary">+ Add Assistant</button>
+          <button className="btn-primary" onClick={() => { setShowModal('addAssistant'); setFormData({}); }}>+ Add Assistant</button>
         </div>
         
         {renderSearchAndFilter()}
@@ -1379,8 +1657,8 @@ const AdminDashboard = () => {
                 >
                   View Details
                 </button>
-                <button className="btn-secondary">View Tickets</button>
-                <button className="btn-info">Message</button>
+                <button className="btn-secondary" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'info', message: `Viewing tickets for ${assistant.name}`, timestamp: 'Just now' }, ...prev]))}>View Tickets</button>
+                <button className="btn-info" onClick={() => setNotifications(prev => ([{ id: Date.now(), type: 'success', message: `Message sent to ${assistant.name}`, timestamp: 'Just now' }, ...prev]))}>Message</button>
               </div>
             </div>
           ))}
@@ -1412,7 +1690,7 @@ const AdminDashboard = () => {
                 {notifications.length > 0 && <span className="notification-badge">{notifications.length}</span>}
               </button>
             </div>
-            <div className="admin-profile">
+            <div className="admin-profile" ref={profileRef} aria-haspopup="menu" aria-expanded={showProfileMenu}>
               <div className="profile-avatar">
                 <img src="https://ui-avatars.com/api/?name=Admin&background=3498db&color=fff&size=40" alt="Admin" />
               </div>
@@ -1424,19 +1702,19 @@ const AdminDashboard = () => {
                 <span className="dropdown-arrow">⌄</span>
               </button>
               {showProfileMenu && (
-                <div className="profile-dropdown-menu">
-                  <a href="#profile" className="dropdown-item">
+                <div className="profile-dropdown-menu" role="menu">
+                  <button className="dropdown-item" onClick={() => { setProfileForm({ name: user?.name || 'Admin User', email: user?.email || 'admin@kandypack.com' }); setShowModal('profile'); setShowProfileMenu(false); }}>
                     <span className="item-icon">👤</span>
                     <span>Profile Settings</span>
-                  </a>
-                  <a href="#settings" className="dropdown-item">
+                  </button>
+                  <button className="dropdown-item" onClick={() => { handleSettings(); setShowProfileMenu(false); }}>
                     <span className="item-icon">⚙️</span>
                     <span>System Settings</span>
-                  </a>
-                  <a href="#help" className="dropdown-item">
+                  </button>
+                  <button className="dropdown-item" onClick={() => { handleHelp(); setShowProfileMenu(false); }}>
                     <span className="item-icon">❓</span>
                     <span>Help & Support</span>
-                  </a>
+                  </button>
                   <div className="dropdown-divider"></div>
                   <button onClick={logout} className="dropdown-item logout-btn">
                     <span className="item-icon">🚪</span>
@@ -1495,6 +1773,10 @@ const AdminDashboard = () => {
       {renderDetailsModal()}
       {renderAddDriverModal()}
       {renderAddOrderModal()}
+      {renderAddAssistantModal()}
+      {renderProfileModal()}
+      {renderAssignDriverModal()}
+      {renderBulkAssignModal()}
     </div>
   );
 };

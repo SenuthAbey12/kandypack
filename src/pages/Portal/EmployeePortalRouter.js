@@ -10,7 +10,7 @@ import EmployeeProfile from './EmployeeProfile';
 import EmployeeSettings from './EmployeeSettings';
 
 const EmployeePortalRouter = () => {
-  const { user, isEmployee, isAdmin, isDriver, isAssistant } = useAuth();
+  const { isEmployee, isAdmin, isDriver, isAssistant } = useAuth();
 
   // Redirect non-employees away from employee portal
   if (!isEmployee) {

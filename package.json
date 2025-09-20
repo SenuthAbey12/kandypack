@@ -15,10 +15,17 @@
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.1",
     "react-scripts": "5.0.1",
+    "better-sqlite3": "^9.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
+    "server": "npm --prefix server run start",
+    "server:dev": "npm --prefix server run dev",
+    "install:server": "cd server && npm install",
+    "dev": "powershell -NoProfile -Command \"Start-Process powershell -ArgumentList '-NoProfile','-Command','npm run server' ; npm start\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
