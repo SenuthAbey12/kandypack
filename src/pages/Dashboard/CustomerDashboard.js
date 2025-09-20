@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { customersAPI, handleAPIError } from '../../services/api';
 
 // --- Profile Menu Component ---
 const ProfileMenu = ({ user, onLogout }) => {
@@ -171,9 +173,34 @@ const StatusWidget = ({ title, items }) => {
 // --- Customer Dashboard Component ---
 const CustomerDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { orders, notifications } = useStore();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  // Load dashboard statistics
+  useEffect(() => {
+    const loadDashboardStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await customersAPI.getDashboardStats();
+        setDashboardStats(response.data);
+      } catch (err) {
+        setError(handleAPIError(err));
+        console.error('Failed to load dashboard stats:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.role === 'customer') {
+      loadDashboardStats();
+    }
+  }, [user]);
 
   // Add responsive styles for Dashboard
   useEffect(() => {
@@ -257,11 +284,11 @@ const CustomerDashboard = () => {
     navigate('/');
   };
 
-  const myOrders = orders.slice(0,4).map(o => ({
-    text: `${o.id} - ${o.status}`,
-    value: new Date(o.placedAt).toLocaleString(),
-    color: '#3b82f6'
-  }));
+  const myOrders = dashboardStats?.recent_orders?.slice(0, 4).map(order => ({
+    text: `${order.order_id} - ${order.order_status}`,
+    value: new Date(order.order_date).toLocaleDateString(),
+    color: order.order_status === 'Delivered' ? '#10b981' : order.order_status === 'In Transit' ? '#06b6d4' : '#f59e0b'
+  })) || [];
 
   const shipmentTracking = [
     { text: "Package picked up", value: "✓ Complete", color: "#10b981" },
@@ -286,7 +313,9 @@ const CustomerDashboard = () => {
             {currentTime.toLocaleDateString()} • {currentTime.toLocaleTimeString()} • Rail & Road Distribution Hub
           </p>
         </div>
-        
+        <button onClick={toggleTheme} style={styles.themeBtn} title="Toggle theme">
+          {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+        </button>
         <div style={styles.headerCenter}>
           <QuickAction title="New Shipment" icon={<PackageIcon size={16} />} onClick={() => handleQuickAction('New Shipment')} variant="primary" />
           <QuickAction title="Track Logistics" icon={<MapPin size={16} />} onClick={() => handleQuickAction('Track Logistics')} />
@@ -297,14 +326,78 @@ const CustomerDashboard = () => {
       </header>
       
       <main style={styles.mainContent}>
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            background: 'var(--error-bg, #fef2f2)',
+            border: '1px solid var(--error-border, #fecaca)',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            color: 'var(--error-text, #dc2626)'
+          }}>
+            <strong>Error loading dashboard:</strong> {error}
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{
+                marginLeft: '1rem',
+                padding: '0.25rem 0.5rem',
+                background: 'transparent',
+                border: '1px solid var(--error-border, #fecaca)',
+                borderRadius: '4px',
+                color: 'var(--error-text, #dc2626)',
+                cursor: 'pointer'
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* --- Supply Chain KPIs --- */}
         <div style={styles.kpiGrid}>
-          <KpiCard title="Total Shipments" value="27" icon={<ClipboardList size={18} />} trend={12} color="#3b82f6" />
-          <KpiCard title="Rail Transports" value="12" icon={<Train size={18} />} trend={8} color="#10b981" />
-          <KpiCard title="Road Deliveries" value="15" icon={<Truck size={18} />} trend={5} color="#8b5cf6" />
-          <KpiCard title="Supply Chain Cost" value="$1,245" icon={<CreditCard size={18} />} trend={8} color="#f59e0b" />
-          <KpiCard title="In Transit" value="3" icon={<Box size={18} />} trend={-25} color="#06b6d4" />
-          <KpiCard title="Distribution Centers" value="8" icon={<Building2 size={18} />} trend={3} color="#ec4899" />
+          <KpiCard 
+            title="Total Orders" 
+            value={loading ? "..." : (dashboardStats?.stats?.total_orders || 0)} 
+            icon={<ClipboardList size={18} />} 
+            trend={12} 
+            color="#3b82f6" 
+          />
+          <KpiCard 
+            title="Pending Orders" 
+            value={loading ? "..." : (dashboardStats?.stats?.pending_orders || 0)} 
+            icon={<Train size={18} />} 
+            trend={8} 
+            color="#f59e0b" 
+          />
+          <KpiCard 
+            title="In Transit" 
+            value={loading ? "..." : (dashboardStats?.stats?.in_transit_orders || 0)} 
+            icon={<Truck size={18} />} 
+            trend={5} 
+            color="#06b6d4" 
+          />
+          <KpiCard 
+            title="Total Spent" 
+            value={loading ? "..." : `$${dashboardStats?.stats?.total_spent?.toFixed(2) || '0.00'}`} 
+            icon={<CreditCard size={18} />} 
+            trend={8} 
+            color="#10b981" 
+          />
+          <KpiCard 
+            title="Delivered" 
+            value={loading ? "..." : (dashboardStats?.stats?.delivered_orders || 0)} 
+            icon={<Box size={18} />} 
+            trend={-25} 
+            color="#8b5cf6" 
+          />
+          <KpiCard 
+            title="Active Routes" 
+            value={loading ? "..." : "3"} 
+            icon={<Building2 size={18} />} 
+            trend={3} 
+            color="#ec4899" 
+          />
         </div>
 
         {/* --- Customer Widgets --- */}
@@ -404,12 +497,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100vh',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: 'var(--bg)',
   },
   header: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'var(--header)',
     padding: '20px 30px',
-    borderBottom: '1px solid #334155',
+    borderBottom: '1px solid var(--border)',
     boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
     display: 'flex',
     justifyContent: 'space-between',
@@ -554,12 +647,12 @@ const styles = {
     margin: 0,
     fontSize: '28px',
     fontWeight: '700',
-    color: '#f8fafc',
+    color: 'var(--header-text)',
   },
   headerSubtitle: {
     margin: '4px 0 0 0',
     fontSize: '14px',
-    color: '#94a3b8',
+    color: 'var(--muted)',
   },
   quickActionBtn: {
     display: 'flex',
@@ -593,7 +686,7 @@ const styles = {
     marginBottom: '30px',
   },
   kpiCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--card)',
     borderRadius: '12px',
     padding: '24px',
     display: 'flex',
@@ -621,12 +714,12 @@ const styles = {
     margin: 0,
     fontSize: '36px',
     fontWeight: '700',
-    color: '#1e293b',
+    color: 'var(--text)',
     lineHeight: 1,
   },
   kpiTitle: {
     margin: '8px 0 4px 0',
-    color: '#64748b',
+    color: 'var(--muted)',
     fontSize: '14px',
     fontWeight: '500',
   },
@@ -642,13 +735,13 @@ const styles = {
     marginBottom: '30px',
   },
   statusWidget: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--card)',
     borderRadius: '12px',
     padding: '20px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
   },
   performanceWidget: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--card)',
     borderRadius: '12px',
     padding: '20px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -677,12 +770,12 @@ const styles = {
   statusText: {
     flex: 1,
     fontSize: '14px',
-    color: '#475569',
+    color: 'var(--muted)',
   },
   statusValue: {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#1e293b',
+    color: 'var(--text)',
   },
   performanceMetrics: {
     display: 'flex',
@@ -711,7 +804,7 @@ const styles = {
     gap: '20px',
   },
   controlPanel: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--card)',
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -724,15 +817,16 @@ const styles = {
   },
   controlBtn: {
     padding: '12px 16px',
-    backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0',
+    backgroundColor: 'var(--bg)',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
     fontSize: '14px',
-    color: '#374151',
+    color: 'var(--text)',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     fontWeight: '500',
   },
+  themeBtn: { background:'transparent', color:'var(--header-text)', border:'1px solid var(--border)', borderRadius:8, padding:'8px 10px', cursor:'pointer' },
 };
 
 // Add CSS for animations and hover effects

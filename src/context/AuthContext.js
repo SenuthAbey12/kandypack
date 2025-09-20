@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { authAPI, handleAPIError } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -7,51 +8,76 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    const userType = localStorage.getItem('userType');
-    const name = localStorage.getItem('userName') || '';
+    const initAuth = async () => {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const response = await authAPI.verify();
+          setUser(response.data.user);
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+        }
+      }
+      setLoading(false);
+    };
 
-    if (isAuthenticated && userType) {
-      setUser({ id: 'local', name, role: userType });
-    }
-    setLoading(false);
+    initAuth();
   }, []);
 
   const login = async (username, password, role) => {
-    // Demo credentials
-    const validCredentials = {
-      admin: {
-        username: 'admin',
-        password: 'admin123',
-        name: 'Admin User'
-      },
-      customer: {
-        username: 'customer',
-        password: 'customer123',
-        name: 'John Doe'
-      }
-    };
-
-    const creds = validCredentials[role];
-    
-    if (!creds || username !== creds.username || password !== creds.password) {
-      throw new Error('Invalid credentials');
+    try {
+      const response = await authAPI.login({ username, password, role });
+      const { user: userData, token } = response.data;
+      
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+      
+      return userData;
+    } catch (error) {
+      throw new Error(handleAPIError(error));
     }
-
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userType', role);
-    localStorage.setItem('userName', creds.name);
-    setUser({ id: 'local', name: creds.name, role });
   };
 
-  const logout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userType');
-    localStorage.removeItem('userName');
-    setUser(null);
+  const register = async (userData) => {
+    try {
+      const response = await authAPI.register(userData);
+      const { user: newUser, token } = response.data;
+      
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser({ ...newUser, role: 'customer' });
+      
+      return newUser;
+    } catch (error) {
+      throw new Error(handleAPIError(error));
+    }
   };
 
-  const value = useMemo(() => ({ user, loading, login, logout }), [user, loading]);
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      setUser(null);
+    }
+  };
+
+  const value = useMemo(() => ({ 
+    user, 
+    loading, 
+    login, 
+    register,
+    logout,
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin',
+    isCustomer: user?.role === 'customer'
+  }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

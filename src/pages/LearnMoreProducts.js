@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Package, ShieldCheck, Truck, Recycle, Layers, Star, ArrowRight } from 'lucide-react';
 
 export default function LearnMoreProducts() {

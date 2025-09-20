@@ -26,12 +26,14 @@ import Checkout from './pages/Checkout.js';
 import { BrowserRouter,Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { StoreProvider } from './context/StoreContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // --- Main App Component ---
 function App() {
   return (
     <AuthProvider>
       <StoreProvider>
+        <ThemeProvider>
         <BrowserRouter>
           <Routes>
             <Route exact path="/" element={<Home/>}/>
@@ -80,6 +82,7 @@ function App() {
             <Route path="/login/customer" element={<Cussignin/>}/>
           </Routes>
         </BrowserRouter>
+        </ThemeProvider>
       </StoreProvider>
     </AuthProvider>
   );
