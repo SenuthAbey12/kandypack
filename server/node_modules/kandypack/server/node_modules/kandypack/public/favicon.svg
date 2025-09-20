@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="faviconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="32" height="32" fill="url(#faviconGradient)" rx="6"/>
+  
+  <!-- Package shape -->
+  <rect x="6" y="10" width="20" height="14" fill="rgba(255,255,255,0.9)" rx="2"/>
+  
+  <!-- Package top -->
+  <polygon points="6,10 9,7 29,7 26,10" fill="rgba(255,255,255,0.7)"/>
+  
+  <!-- Package side -->
+  <polygon points="26,10 29,7 29,21 26,24" fill="rgba(0,0,0,0.2)"/>
+  
+  <!-- Tape -->
+  <rect x="14" y="8" width="4" height="18" fill="#FFD700" rx="1"/>
+  
+  <!-- K letter -->
+  <path d="M 16,13 L 18,13 L 20,16 L 18,19 L 16,19 M 18,16 L 20,13" 
+        stroke="white" stroke-width="1" fill="none" stroke-linecap="round"/>
+</svg>

@@ -36,7 +36,7 @@ const DriverDashboard = () => {
     try {
       setIsLoading(true);
       const response = await fetch('http://localhost:5000/api/portal/driver/assignments', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
       });
       if (response.ok) {
         const data = await response.json();
@@ -102,7 +102,7 @@ const DriverDashboard = () => {
   const fetchDriverStats = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/portal/driver/stats', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('authToken')}` },
       });
       if (response.ok) {
         const data = await response.json();
@@ -147,7 +147,7 @@ const DriverDashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify({ assignmentId, status: newStatus }),
       });

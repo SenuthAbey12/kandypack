@@ -124,7 +124,7 @@ const AdminDashboard = () => {
         // Persist status update for selected orders
         await Promise.all(selectedOrders.map(id => fetch('http://localhost:5000/api/portal/admin/orders/status', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
           body: JSON.stringify({ id, status: 'processing' })
         })));
         await fetchRecentOrders();
@@ -212,7 +212,7 @@ const AdminDashboard = () => {
         // Persist order status to backend
         const res = await fetch('http://localhost:5000/api/portal/admin/orders/status', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
           body: JSON.stringify({ id, status: newStatus })
         });
         if (res.ok) {
@@ -301,7 +301,7 @@ const AdminDashboard = () => {
       setLoading(true);
   const response = await fetch('http://localhost:5000/api/portal/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
@@ -339,7 +339,7 @@ const AdminDashboard = () => {
     try {
   const response = await fetch('http://localhost:5000/api/portal/admin/drivers', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
@@ -370,7 +370,7 @@ const AdminDashboard = () => {
     try {
   const response = await fetch('http://localhost:5000/api/portal/admin/assistants', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
@@ -399,7 +399,7 @@ const AdminDashboard = () => {
     try {
   const response = await fetch('http://localhost:5000/api/portal/admin/orders', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         }
       });
       
@@ -478,7 +478,7 @@ const AdminDashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         },
         body: JSON.stringify({ orderId, driverId })
       });
@@ -528,7 +528,7 @@ const AdminDashboard = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
         },
         body: JSON.stringify({ orderId: id, driverId })
       })));
