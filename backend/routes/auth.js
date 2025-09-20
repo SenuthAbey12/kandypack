@@ -10,13 +10,14 @@ const router = express.Router();
 const generateToken = (user) => {
   return jwt.sign(
     { 
-      id: user.customer_id || user.admin_id, 
-      username: user.user_name || user.admin_id,
-      role: user.role || (user.admin_id ? 'admin' : 'customer'),
-      name: user.name
+      id: user.customer_id || user.admin_id || user.driver_id || user.assistant_id, 
+      username: user.user_name || user.username,
+      role: user.role,
+      name: user.name,
+      portalType: user.role === 'customer' ? 'customer' : 'employee'
     },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
+    process.env.JWT_SECRET || 'fallback_secret_key_for_development',
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
   );
 };
 
@@ -44,11 +45,11 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Hash password
+    // Hash password for security
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate customer ID
-    const customer_id = `CUST_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const customer_id = `CUS${Date.now().toString().slice(-6)}`;
 
     // Insert new customer
     await database.query(
@@ -64,19 +65,16 @@ router.post('/register', async (req, res) => {
     );
 
     // Generate token
-    const token = generateToken({ ...newUser, role: 'customer' });
-
-    // Update LOGIN_CREDENTIALS.md file with new customer
-    try {
-      await updateCredentialsFile(newUser, password);
-    } catch (credentialsError) {
-      console.warn('Warning: Failed to update LOGIN_CREDENTIALS.md:', credentialsError);
-      // Don't fail registration if credentials file update fails
-    }
+    const token = generateToken({ 
+      customer_id: newUser.customer_id,
+      user_name: newUser.user_name,
+      name: newUser.name,
+      role: 'customer'
+    });
 
     res.status(201).json({
       message: 'Customer registered successfully',
-      user: newUser,
+      user: { ...newUser, role: 'customer', portalType: 'customer' },
       token
     });
 
@@ -86,10 +84,10 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// Customer/Admin Login
+// Universal Login for all user types (customer, admin, driver, assistant)
 router.post('/login', async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, password, role, portalType } = req.body;
 
     if (!username || !password || !role) {
       return res.status(400).json({ 
@@ -102,22 +100,36 @@ router.post('/login', async (req, res) => {
     let userIdField = '';
     let usernameField = '';
 
-    if (role === 'customer') {
-      table = 'customer';
-      userIdField = 'customer_id';
-      usernameField = 'user_name';
-    } else if (role === 'admin') {
-      table = 'admin';
-      userIdField = 'admin_id';
-      usernameField = 'admin_id'; // admin uses admin_id as username
-    } else {
-      return res.status(400).json({ error: 'Invalid role' });
+    // Determine table and fields based on role
+    switch (role) {
+      case 'customer':
+        table = 'customer';
+        userIdField = 'customer_id';
+        usernameField = 'user_name';
+        break;
+      case 'admin':
+        table = 'admin';
+        userIdField = 'admin_id';
+        usernameField = 'admin_id'; // admin uses admin_id as username
+        break;
+      case 'driver':
+        table = 'driver';
+        userIdField = 'driver_id';
+        usernameField = 'user_name';
+        break;
+      case 'assistant':
+        table = 'assistant';
+        userIdField = 'assistant_id';
+        usernameField = 'user_name';
+        break;
+      default:
+        return res.status(400).json({ error: 'Invalid role specified' });
     }
 
     try {
-      // Try database query first
+      // Query database for user
       const [userRecord] = await database.query(
-        `SELECT ${userIdField} as id, name, password, ${usernameField} as username FROM ${table} WHERE ${usernameField} = ?`,
+        `SELECT ${userIdField} as id, name, ${usernameField} as username, password FROM ${table} WHERE ${usernameField} = ?`,
         [username]
       );
 
@@ -125,7 +137,7 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      // Verify password
+      // Verify password using bcrypt
       const isValidPassword = await bcrypt.compare(password, userRecord.password);
       if (!isValidPassword) {
         return res.status(401).json({ error: 'Invalid credentials' });
@@ -133,32 +145,21 @@ router.post('/login', async (req, res) => {
 
       user = userRecord;
     } catch (dbError) {
-      // Fallback to mock authentication for development
-      console.log('Database unavailable, using mock authentication');
-      
-      if (role === 'admin' && username === 'admin' && password === 'password') {
-        user = {
-          id: 'ADM001',
-          username: 'admin',
-          name: 'System Administrator'
-        };
-      } else if (role === 'customer' && username === 'customer' && password === 'customer123') {
-        user = {
-          id: 'CUST_MOCK_001',
-          username: 'customer',
-          name: 'John Doe'
-        };
-      } else {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
+      console.error('Database error:', dbError);
+      return res.status(500).json({ error: 'Database connection failed' });
     }
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Determine portal type
+    const finalPortalType = portalType === 'auto' 
+      ? (role === 'customer' ? 'customer' : 'employee')
+      : (portalType || (role === 'customer' ? 'customer' : 'employee'));
+
     // Generate token
-    const token = generateToken({ 
+    const token = generateToken({
       [userIdField]: user.id,
       user_name: user.username,
       name: user.name,
@@ -170,7 +171,16 @@ router.post('/login', async (req, res) => {
     
     res.json({
       message: 'Login successful',
-      user: { ...userWithoutPassword, role },
+      user: { 
+        ...userWithoutPassword, 
+        role: role, 
+        portalType: finalPortalType,
+        isAdmin: role === 'admin',
+        isCustomer: role === 'customer',
+        isDriver: role === 'driver',
+        isAssistant: role === 'assistant',
+        isEmployee: finalPortalType === 'employee'
+      },
       token
     });
 
@@ -189,28 +199,66 @@ router.get('/verify', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_for_development');
     
-    // Get fresh user data
+    // Get fresh user data based on role
     let user = null;
-    if (decoded.role === 'customer') {
+    let table = '';
+    let userIdField = '';
+    let usernameField = '';
+
+    switch (decoded.role) {
+      case 'customer':
+        table = 'customer';
+        userIdField = 'customer_id';
+        usernameField = 'user_name';
+        break;
+      case 'admin':
+        table = 'admin';
+        userIdField = 'admin_id';
+        usernameField = 'admin_id';
+        break;
+      case 'driver':
+        table = 'driver';
+        userIdField = 'driver_id';
+        usernameField = 'user_name';
+        break;
+      case 'assistant':
+        table = 'assistant';
+        userIdField = 'assistant_id';
+        usernameField = 'user_name';
+        break;
+      default:
+        return res.status(401).json({ error: 'Invalid user role in token' });
+    }
+
+    try {
       [user] = await database.query(
-        'SELECT customer_id as id, name, phone_no, city, address, user_name as username FROM customer WHERE customer_id = ?',
+        `SELECT ${userIdField} as id, name, ${usernameField} as username FROM ${table} WHERE ${userIdField} = ?`,
         [decoded.id]
       );
-    } else if (decoded.role === 'admin') {
-      [user] = await database.query(
-        'SELECT admin_id as id, name, admin_id as username FROM admin WHERE admin_id = ?',
-        [decoded.id]
-      );
+    } catch (dbError) {
+      console.error('Database error during verification:', dbError);
+      return res.status(500).json({ error: 'Database connection failed' });
     }
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
 
+    const portalType = decoded.role === 'customer' ? 'customer' : 'employee';
+
     res.json({ 
-      user: { ...user, role: decoded.role },
+      user: { 
+        ...user, 
+        role: decoded.role,
+        portalType: portalType,
+        isAdmin: decoded.role === 'admin',
+        isCustomer: decoded.role === 'customer',
+        isDriver: decoded.role === 'driver',
+        isAssistant: decoded.role === 'assistant',
+        isEmployee: portalType === 'employee'
+      },
       valid: true 
     });
 

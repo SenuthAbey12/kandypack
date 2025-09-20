@@ -1,100 +1,46 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const ProtectedRoute = ({ children, requiredRole = null }) => {
+const ProtectedRoute = ({ children, requiredRole = null, requiredPortal = null }) => {
   const { user, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
-      <div style={styles.loading}>
-        <div>Loading...</div>
+      <div className="loading-screen">
+        <div className="loading-spinner">Loading...</div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth" replace />;
+    // Redirect to appropriate login based on path
+    const loginPath = location.pathname.startsWith('/employee') 
+      ? '/employee/login' 
+      : '/customer/login';
+    return <Navigate to={loginPath} state={{ from: location }} replace />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return (
-      <div style={styles.accessDenied}>
-        <div style={styles.errorCard}>
-          <div style={styles.errorIcon}>🚫</div>
-          <h2 style={styles.errorTitle}>Access Denied</h2>
-          <p style={styles.errorMessage}>
-            You don't have permission to access this page.<br />
-            Required role: <strong>{requiredRole}</strong><br />
-            Your role: <strong>{user?.role}</strong>
-          </p>
-          <button 
-            style={styles.backBtn}
-            onClick={() => window.history.back()}
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
+  // Check portal access
+  if (requiredPortal) {
+    if (user.portalType !== requiredPortal) {
+      // Redirect to correct portal
+      const redirectPath = requiredPortal === 'customer' ? '/customer' : '/employee';
+      return <Navigate to={redirectPath} replace />;
+    }
+  }
+
+  // Check role access
+  if (requiredRole) {
+    if (user.role !== requiredRole) {
+      // Redirect based on user's portal type
+      const redirectPath = user.portalType === 'customer' ? '/customer' : '/employee';
+      return <Navigate to={redirectPath} replace />;
+    }
   }
 
   return children;
-};
-
-const styles = {
-  loading: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
-    fontSize: '18px',
-    color: '#64748b',
-  },
-  accessDenied: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f1f5f9',
-    padding: '20px',
-  },
-  errorCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    padding: '40px',
-    textAlign: 'center',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-    maxWidth: '400px',
-  },
-  errorIcon: {
-    fontSize: '64px',
-    marginBottom: '20px',
-  },
-  errorTitle: {
-    margin: '0 0 16px 0',
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#dc2626',
-  },
-  errorMessage: {
-    margin: '0 0 24px 0',
-    fontSize: '16px',
-    color: '#64748b',
-    lineHeight: '1.5',
-  },
-  backBtn: {
-    padding: '12px 24px',
-    backgroundColor: '#3b82f6',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
 };
 
 export default ProtectedRoute;

@@ -1,12 +1,6 @@
 import './App.css';
 import Home from './pages/Home.js';
-import Login from './pages/SignIn/login.js';
 import SignUp from './pages/SignUp/signup.js';
-import Adminsignin from './pages/SignIn/admin_signin.js';
-import Cussignin from './pages/SignIn/cus_signin.js';
-import DashboardRouter from './pages/Dashboard/DashboardRouter.js'
-import Admin from './pages/Admin/Admin.js';
-import AdminOverview from './pages/Dashboard/Admin Dashboard.js';
 import Product from './pages/Product.js';
 import LearnMoreProducts from './pages/LearnMoreProducts.js';
 import AuthPage from './pages/AuthPage.js';
@@ -33,19 +27,23 @@ import EmployeeLogin from './pages/Auth/EmployeeLogin.js';
 import CustomerLogin from './pages/Auth/CustomerLogin.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
 import CustomerPortalRouter from './pages/Portal/CustomerPortalRouter.js';
-import { AuthProvider as AuthProviderNew } from './context/AuthContextNew.js';
 
 // --- Main App Component ---
 function App() {
   return (
     <AuthProvider>
-      <AuthProviderNew>
         <StoreProvider>
           <ThemeProvider>
           <BrowserRouter>
             <Routes>
               <Route exact path="/" element={<Home/>}/>
-              <Route path="/login" element={<Login/>}/>
+              
+              {/* Updated Login Routes - Customer login as main entry point */}
+              <Route path="/login" element={<CustomerLogin/>}/>
+              <Route path="/login/customer" element={<CustomerLogin/>}/>
+              <Route path="/login/admin" element={<EmployeeLogin/>}/>
+              <Route path="/login/employee" element={<EmployeeLogin/>}/>
+              
               <Route path="/signup" element={<SignUp/>}/>
               <Route path="/auth" element={<AuthPage/>}/>
               <Route path="/products" element={<Product/>}/>
@@ -72,33 +70,13 @@ function App() {
               <Route path="/support/chat" element={<ProtectedRoute><Chat/></ProtectedRoute>} />
               <Route path="/support/packaging-help" element={<ProtectedRoute><PackagingHelp/></ProtectedRoute>} />
 
-            {/* Protected Dashboard Route - routes to Admin/Customer automatically */}
-            <Route path='/dashboard' element={
-              <ProtectedRoute>
-                <DashboardRouter/>
-              </ProtectedRoute>
-            }/>
-            
-            {/* Admin Only Routes */}
-            <Route path="/admin" element={
-              <ProtectedRoute requiredRole="admin">
-                <Admin/>
-              </ProtectedRoute>
-            }/>
-            <Route path="/admin/overview" element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminOverview/>
-              </ProtectedRoute>
-            }/>
-            
-            {/* Legacy login routes */}
-            <Route path="/login/admin" element={<Adminsignin/>}/>
-            <Route path="/login/customer" element={<Cussignin/>}/>
+            {/* Legacy admin routes - keep for backward compatibility */}
+            <Route path="/admin/signin" element={<EmployeeLogin/>}/>
+            <Route path="/customer/signin" element={<CustomerLogin/>}/>
           </Routes>
         </BrowserRouter>
         </ThemeProvider>
       </StoreProvider>
-      </AuthProviderNew>
     </AuthProvider>
   );
 }

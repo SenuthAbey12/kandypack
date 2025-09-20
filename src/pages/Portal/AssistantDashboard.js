@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContextNew';
+import { useAuth } from '../../context/AuthContext';
 import './AssistantDashboard.css';
 
 const AssistantDashboard = () => {

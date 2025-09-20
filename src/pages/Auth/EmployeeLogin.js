@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContextNew';
+import { useAuth } from '../../context/AuthContext';
 import './EmployeeLogin.css';
 
 const EmployeeLogin = () => {
@@ -151,7 +151,7 @@ const EmployeeLogin = () => {
           <span> | </span>
           <a href="/help">Need Help?</a>
           <div className="portal-switch">
-            <a href="/customer/login">Customer Portal →</a>
+            <a href="/login">← Customer Portal</a>
           </div>
         </div>
       </div>

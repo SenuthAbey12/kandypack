@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContextNew';
+import { useAuth } from '../../context/AuthContext';
+import ProfileDropdown from '../../Components/ProfileDropdown';
 import './CustomerDashboard.css';
 
 const CustomerDashboard = () => {
   const { user } = useAuth();
   const [recentOrders, setRecentOrders] = useState([]);
   const [orderStats, setOrderStats] = useState({});
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchRecentOrders();
@@ -13,6 +19,7 @@ const CustomerDashboard = () => {
   }, []);
 
   const fetchRecentOrders = async () => {
+    setLoading(true);
     try {
       const sampleOrders = [
         {
@@ -21,7 +28,10 @@ const CustomerDashboard = () => {
           status: 'delivered',
           total: 'Rs. 25,000',
           items: 3,
-          trackingNumber: 'KP123456789'
+          trackingNumber: 'KP123456789',
+          estimatedDelivery: '2025-01-17',
+          driver: 'Saman Perera',
+          address: '123 Main St, Colombo'
         },
         {
           id: 'ORD002',
@@ -29,7 +39,10 @@ const CustomerDashboard = () => {
           status: 'in-transit',
           total: 'Rs. 15,000',
           items: 2,
-          trackingNumber: 'KP987654321'
+          trackingNumber: 'KP987654321',
+          estimatedDelivery: '2025-01-21',
+          driver: 'Kamal Silva',
+          address: '456 Oak Ave, Kandy'
         },
         {
           id: 'ORD003',
@@ -37,12 +50,17 @@ const CustomerDashboard = () => {
           status: 'processing',
           total: 'Rs. 8,500',
           items: 1,
-          trackingNumber: 'KP456789123'
+          trackingNumber: 'KP456789123',
+          estimatedDelivery: '2025-01-23',
+          driver: 'Not assigned',
+          address: '789 Pine Rd, Galle'
         }
       ];
       setRecentOrders(sampleOrders);
     } catch (error) {
       console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,7 +70,9 @@ const CustomerDashboard = () => {
         totalOrders: 24,
         deliveredOrders: 20,
         totalSpent: 'Rs. 485,000',
-        savedAmount: 'Rs. 25,000'
+        savedAmount: 'Rs. 25,000',
+        pendingOrders: 3,
+        activePackages: 2
       };
       setOrderStats(stats);
     } catch (error) {
@@ -70,179 +90,264 @@ const CustomerDashboard = () => {
     }
   };
 
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'delivered': return '✅';
+      case 'in-transit': return '🚛';
+      case 'processing': return '⏳';
+      case 'cancelled': return '❌';
+      default: return '📦';
+    }
+  };
+
+  const handleTrackOrder = (order) => {
+    setSelectedOrder(order);
+    setShowTrackingModal(true);
+  };
+
+  const filteredOrders = recentOrders.filter(order => {
+    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
+    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         order.trackingNumber.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div className="customer-dashboard">
       <div className="dashboard-header">
-        <h1>My Dashboard</h1>
-        <div className="customer-info">
-          <span>Welcome back, {user?.name}!</span>
+        <div className="header-content">
+          <div className="welcome-section">
+            <h1>My Dashboard</h1>
+            <p>Welcome back, {user?.name}! Here's what's happening with your orders.</p>
+          </div>
+          <ProfileDropdown />
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="quick-actions">
+        <button className="action-btn primary">
+          <i>🛒</i>
+          <span>New Order</span>
+        </button>
+        <button className="action-btn">
+          <i>📦</i>
+          <span>Track Package</span>
+        </button>
+        <button className="action-btn">
+          <i>📞</i>
+          <span>Contact Support</span>
+        </button>
+        <button className="action-btn">
+          <i>⭐</i>
+          <span>Rate Delivery</span>
+        </button>
+      </div>
+
       <div className="dashboard-grid">
-        {/* Order Statistics */}
+        {/* Enhanced Order Statistics */}
         <div className="dashboard-card stats-card">
-          <h2>Order Statistics</h2>
+          <div className="card-header">
+            <h2>Order Statistics</h2>
+            <div className="refresh-btn" onClick={fetchOrderStats}>🔄</div>
+          </div>
           <div className="stats-grid">
             <div className="stat-item">
               <span className="stat-number">{orderStats.totalOrders}</span>
               <span className="stat-label">Total Orders</span>
+              <span className="stat-icon">📊</span>
             </div>
             <div className="stat-item">
               <span className="stat-number">{orderStats.deliveredOrders}</span>
               <span className="stat-label">Delivered</span>
+              <span className="stat-icon">✅</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">{orderStats.totalSpent}</span>
-              <span className="stat-label">Total Spent</span>
+              <span className="stat-number">{orderStats.pendingOrders}</span>
+              <span className="stat-label">Pending</span>
+              <span className="stat-icon">⏳</span>
             </div>
             <div className="stat-item">
-              <span className="stat-number">{orderStats.savedAmount}</span>
-              <span className="stat-label">Saved with KandyPack</span>
+              <span className="stat-number">{orderStats.activePackages}</span>
+              <span className="stat-label">Active Packages</span>
+              <span className="stat-icon">🚛</span>
+            </div>
+          </div>
+          <div className="stats-summary">
+            <div className="summary-item">
+              <span className="summary-label">Total Spent:</span>
+              <span className="summary-value">{orderStats.totalSpent}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Saved Amount:</span>
+              <span className="summary-value green">{orderStats.savedAmount}</span>
             </div>
           </div>
         </div>
 
-        {/* Recent Orders */}
+        {/* Enhanced Recent Orders */}
         <div className="dashboard-card orders-card">
-          <h2>Recent Orders</h2>
-          <div className="orders-list">
-            {recentOrders.map(order => (
-              <div key={order.id} className="order-item">
-                <div className="order-header">
-                  <span className="order-id">{order.id}</span>
-                  <span 
-                    className="order-status"
-                    style={{ backgroundColor: getStatusColor(order.status) }}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-                <div className="order-details">
-                  <div className="order-info">
-                    <span>Date: {order.date}</span>
-                    <span>Items: {order.items}</span>
-                    <span>Total: {order.total}</span>
+          <div className="card-header">
+            <h2>Recent Orders</h2>
+            <div className="orders-controls">
+              <div className="search-box">
+                <input
+                  type="text"
+                  placeholder="Search orders..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <i className="search-icon">🔍</i>
+              </div>
+              <select 
+                value={filterStatus} 
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="status-filter"
+              >
+                <option value="all">All Status</option>
+                <option value="delivered">Delivered</option>
+                <option value="in-transit">In Transit</option>
+                <option value="processing">Processing</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          
+          {loading ? (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Loading orders...</p>
+            </div>
+          ) : (
+            <div className="orders-list">
+              {filteredOrders.map(order => (
+                <div key={order.id} className="order-item">
+                  <div className="order-header">
+                    <div className="order-info">
+                      <span className="order-id">{order.id}</span>
+                      <span className="order-date">{order.date}</span>
+                    </div>
+                    <div className="order-status" style={{ color: getStatusColor(order.status) }}>
+                      <span className="status-icon">{getStatusIcon(order.status)}</span>
+                      <span className="status-text">{order.status}</span>
+                    </div>
                   </div>
+                  
+                  <div className="order-details">
+                    <div className="detail-row">
+                      <span className="detail-label">Total:</span>
+                      <span className="detail-value">{order.total}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Items:</span>
+                      <span className="detail-value">{order.items}</span>
+                    </div>
+                    <div className="detail-row">
+                      <span className="detail-label">Tracking:</span>
+                      <span className="detail-value tracking-number">{order.trackingNumber}</span>
+                    </div>
+                  </div>
+                  
                   <div className="order-actions">
-                    <button className="btn-track">Track Order</button>
+                    <button 
+                      className="action-btn-small primary"
+                      onClick={() => handleTrackOrder(order)}
+                    >
+                      Track Order
+                    </button>
+                    <button className="action-btn-small">View Details</button>
                     {order.status === 'delivered' && (
-                      <button className="btn-reorder">Reorder</button>
+                      <button className="action-btn-small">Rate & Review</button>
                     )}
                   </div>
                 </div>
-                <div className="tracking-number">
-                  Tracking: {order.trackingNumber}
+              ))}
+              
+              {filteredOrders.length === 0 && (
+                <div className="no-orders">
+                  <i className="no-orders-icon">📦</i>
+                  <h3>No orders found</h3>
+                  <p>Try adjusting your search or filter criteria.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Tracking Modal */}
+      {showTrackingModal && selectedOrder && (
+        <TrackingModal 
+          order={selectedOrder}
+          onClose={() => setShowTrackingModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Tracking Modal Component
+const TrackingModal = ({ order, onClose }) => {
+  const trackingSteps = [
+    { step: 'Order Placed', completed: true, date: order.date },
+    { step: 'Payment Confirmed', completed: true, date: order.date },
+    { step: 'Processing', completed: order.status !== 'cancelled', date: order.date },
+    { step: 'In Transit', completed: ['in-transit', 'delivered'].includes(order.status), date: order.status === 'in-transit' || order.status === 'delivered' ? '2025-01-19' : null },
+    { step: 'Delivered', completed: order.status === 'delivered', date: order.status === 'delivered' ? order.estimatedDelivery : null }
+  ];
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content tracking-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Track Order {order.id}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div className="tracking-content">
+          <div className="order-summary">
+            <div className="summary-row">
+              <span>Tracking Number:</span>
+              <span className="tracking-number">{order.trackingNumber}</span>
+            </div>
+            <div className="summary-row">
+              <span>Driver:</span>
+              <span>{order.driver}</span>
+            </div>
+            <div className="summary-row">
+              <span>Delivery Address:</span>
+              <span>{order.address}</span>
+            </div>
+            <div className="summary-row">
+              <span>Expected Delivery:</span>
+              <span>{order.estimatedDelivery}</span>
+            </div>
+          </div>
+
+          <div className="tracking-timeline">
+            {trackingSteps.map((step, index) => (
+              <div key={index} className={`timeline-step ${step.completed ? 'completed' : ''}`}>
+                <div className="step-marker">
+                  {step.completed ? '✓' : index + 1}
+                </div>
+                <div className="step-content">
+                  <div className="step-title">{step.step}</div>
+                  {step.date && <div className="step-date">{step.date}</div>}
                 </div>
               </div>
             ))}
           </div>
-          <button className="btn-view-all">View All Orders</button>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="dashboard-card actions-card">
-          <h2>Quick Actions</h2>
-          <div className="actions-grid">
-            <button className="action-btn place-order">
-              <i className="icon-plus"></i>
-              <span>Place New Order</span>
-            </button>
-            <button className="action-btn track-order">
-              <i className="icon-track"></i>
-              <span>Track Orders</span>
-            </button>
-            <button className="action-btn support">
-              <i className="icon-support"></i>
-              <span>Customer Support</span>
-            </button>
-            <button className="action-btn returns">
-              <i className="icon-return"></i>
-              <span>Returns & Refunds</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Account Information */}
-        <div className="dashboard-card account-card">
-          <h2>Account Information</h2>
-          <div className="account-details">
-            <div className="detail-item">
-              <label>Name:</label>
-              <span>{user?.name}</span>
-            </div>
-            <div className="detail-item">
-              <label>Email:</label>
-              <span>{user?.email}</span>
-            </div>
-            <div className="detail-item">
-              <label>Phone:</label>
-              <span>{user?.phone || 'Not provided'}</span>
-            </div>
-            <div className="detail-item">
-              <label>Member Since:</label>
-              <span>January 2024</span>
-            </div>
-          </div>
-          <button className="btn-edit-profile">Edit Profile</button>
-        </div>
-
-        {/* Notifications */}
-        <div className="dashboard-card notifications-card">
-          <h2>Notifications</h2>
-          <div className="notifications-list">
-            <div className="notification-item">
-              <div className="notification-icon delivered"></div>
-              <div className="notification-content">
-                <span className="notification-text">
-                  Your order ORD001 has been delivered
-                </span>
-                <span className="notification-time">2 hours ago</span>
+          {order.status === 'in-transit' && (
+            <div className="live-tracking">
+              <h3>Live Tracking</h3>
+              <div className="tracking-map">
+                <div className="map-placeholder">
+                  🗺️ Interactive Map Coming Soon
+                </div>
               </div>
             </div>
-            <div className="notification-item">
-              <div className="notification-icon transit"></div>
-              <div className="notification-content">
-                <span className="notification-text">
-                  Order ORD002 is out for delivery
-                </span>
-                <span className="notification-time">5 hours ago</span>
-              </div>
-            </div>
-            <div className="notification-item">
-              <div className="notification-icon promotion"></div>
-              <div className="notification-content">
-                <span className="notification-text">
-                  New promotion: 15% off on bulk orders
-                </span>
-                <span className="notification-time">1 day ago</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping Addresses */}
-        <div className="dashboard-card addresses-card">
-          <h2>Saved Addresses</h2>
-          <div className="addresses-list">
-            <div className="address-item primary">
-              <div className="address-label">Primary Address</div>
-              <div className="address-content">
-                123 Main Street<br/>
-                Colombo 05<br/>
-                Sri Lanka
-              </div>
-            </div>
-            <div className="address-item">
-              <div className="address-label">Work Address</div>
-              <div className="address-content">
-                456 Business Avenue<br/>
-                Colombo 03<br/>
-                Sri Lanka
-              </div>
-            </div>
-          </div>
-          <button className="btn-manage-addresses">Manage Addresses</button>
+          )}
         </div>
       </div>
     </div>

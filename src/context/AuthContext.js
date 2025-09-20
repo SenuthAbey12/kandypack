@@ -4,7 +4,7 @@ import { authAPI, handleAPIError } from '../services/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // { id, name, role: 'customer'|'admin' }
+  const [user, setUser] = useState(null); // { id, name, role: 'customer'|'admin'|'driver'|'assistant', portalType: 'customer'|'employee' }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,31 +26,40 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (username, password, role) => {
+  const login = async (username, password, role, portalType = 'auto') => {
     try {
-      const response = await authAPI.login({ username, password, role });
+      const response = await authAPI.login({ username, password, role, portalType });
       const { user: userData, token } = response.data;
       
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      // Determine portal type based on role if not specified
+      const finalPortalType = portalType === 'auto' 
+        ? (userData.role === 'customer' ? 'customer' : 'employee')
+        : portalType;
       
-      return userData;
+      const userWithPortal = { ...userData, portalType: finalPortalType };
+      
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(userWithPortal));
+      setUser(userWithPortal);
+      
+      return userWithPortal;
     } catch (error) {
       throw new Error(handleAPIError(error));
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData, portalType = 'customer') => {
     try {
       const response = await authAPI.register(userData);
       const { user: newUser, token } = response.data;
       
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser({ ...newUser, role: 'customer' });
+      const userWithPortal = { ...newUser, role: 'customer', portalType: 'customer' };
       
-      return newUser;
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(userWithPortal));
+      setUser(userWithPortal);
+      
+      return userWithPortal;
     } catch (error) {
       throw new Error(handleAPIError(error));
     }
@@ -76,7 +85,11 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
-    isCustomer: user?.role === 'customer'
+    isCustomer: user?.role === 'customer',
+    isDriver: user?.role === 'driver',
+    isAssistant: user?.role === 'assistant',
+    isEmployee: user?.portalType === 'employee',
+    portalType: user?.portalType || null
   }), [user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

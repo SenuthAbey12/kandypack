@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContextNew';
+import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
 import AdminDashboard from './AdminDashboard';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContextNew';
+import { useAuth } from '../../context/AuthContext';
 import './PortalLogin.css';
 
 const CustomerLogin = () => {
@@ -81,7 +81,7 @@ const CustomerLogin = () => {
           <span> | </span>
           <a href="/signup">Create Account</a>
           <div className="portal-switch">
-            <a href="/employee/login">Employee Portal →</a>
+            <a href="/login/employee">Employee Portal →</a>
           </div>
         </div>
       </div>
