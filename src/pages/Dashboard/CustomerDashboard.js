@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  User,
+  ClipboardList,
+  Settings as SettingsIcon,
+  Sliders,
+  ShieldCheck,
+  Phone,
+  LogOut,
+  Package as PackageIcon,
+  Train,
+  Truck,
+  CreditCard,
+  Building2,
+  MapPin,
+  MessageCircle,
+  Box,
+} from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
 
 // --- Profile Menu Component ---
 const ProfileMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -20,13 +38,13 @@ const ProfileMenu = ({ user, onLogout }) => {
   }, [isOpen]);
 
   const menuItems = [
-    { icon: '👤', label: 'Profile Details', action: () => alert('Profile details coming soon!') },
-    { icon: '📊', label: 'Order History', action: () => alert('Order history coming soon!') },
-    { icon: '⚙️', label: 'Settings', action: () => alert('Settings coming soon!') },
-    { icon: '🎯', label: 'Preferences', action: () => alert('Preferences coming soon!') },
-    { icon: '🛡️', label: 'Security', action: () => alert('Security settings coming soon!') },
-    { icon: '📞', label: 'Support', action: () => alert('Support coming soon!') },
-    { icon: '🚪', label: 'Logout', action: onLogout, isLogout: true }
+    { icon: <User size={16} />, label: 'Profile Details', action: () => navigate('/account/profile') },
+    { icon: <ClipboardList size={16} />, label: 'Order History', action: () => navigate('/account/orders') },
+    { icon: <SettingsIcon size={16} />, label: 'Settings', action: () => navigate('/account/settings') },
+    { icon: <Sliders size={16} />, label: 'Preferences', action: () => navigate('/account/settings') },
+    { icon: <ShieldCheck size={16} />, label: 'Security', action: () => navigate('/account/password') },
+    { icon: <Phone size={16} />, label: 'Support', action: () => navigate('/support/chat') },
+    { icon: <LogOut size={16} />, label: 'Logout', action: onLogout, isLogout: true }
   ];
 
   const handleItemClick = (item) => {
@@ -213,10 +231,18 @@ const CustomerDashboard = () => {
   }, []);
 
   const handleQuickAction = (action) => {
-    if (action === 'New Order') {
-      navigate('/products');
-    } else {
-      alert(`${action} feature will be implemented soon!`);
+    switch(action) {
+      case 'New Shipment':
+        navigate('/products');
+        break;
+      case 'Track Logistics':
+        navigate('/support/track-order');
+        break;
+      case 'Distribution Support':
+        navigate('/support/chat');
+        break;
+      default:
+        navigate('/');
     }
   };
 
@@ -262,9 +288,9 @@ const CustomerDashboard = () => {
         </div>
         
         <div style={styles.headerCenter}>
-          <QuickAction title="New Shipment" icon="�" onClick={() => handleQuickAction('New Shipment')} variant="primary" />
-          <QuickAction title="Track Logistics" icon="�" onClick={() => handleQuickAction('Track Logistics')} />
-          <QuickAction title="Distribution Support" icon="💬" onClick={() => handleQuickAction('Distribution Support')} variant="secondary" />
+          <QuickAction title="New Shipment" icon={<PackageIcon size={16} />} onClick={() => handleQuickAction('New Shipment')} variant="primary" />
+          <QuickAction title="Track Logistics" icon={<MapPin size={16} />} onClick={() => handleQuickAction('Track Logistics')} />
+          <QuickAction title="Distribution Support" icon={<MessageCircle size={16} />} onClick={() => handleQuickAction('Distribution Support')} variant="secondary" />
         </div>
 
         <ProfileMenu user={user} onLogout={handleLogout} />
@@ -273,12 +299,12 @@ const CustomerDashboard = () => {
       <main style={styles.mainContent}>
         {/* --- Supply Chain KPIs --- */}
         <div style={styles.kpiGrid}>
-          <KpiCard title="Total Shipments" value="27" icon="📋" trend={12} color="#3b82f6" />
-          <KpiCard title="Rail Transports" value="12" icon="�" trend={8} color="#10b981" />
-          <KpiCard title="Road Deliveries" value="15" icon="�" trend={5} color="#8b5cf6" />
-          <KpiCard title="Supply Chain Cost" value="$1,245" icon="💳" trend={8} color="#f59e0b" />
-          <KpiCard title="In Transit" value="3" icon="📦" trend={-25} color="#06b6d4" />
-          <KpiCard title="Distribution Centers" value="8" icon="🏭" trend={3} color="#ec4899" />
+          <KpiCard title="Total Shipments" value="27" icon={<ClipboardList size={18} />} trend={12} color="#3b82f6" />
+          <KpiCard title="Rail Transports" value="12" icon={<Train size={18} />} trend={8} color="#10b981" />
+          <KpiCard title="Road Deliveries" value="15" icon={<Truck size={18} />} trend={5} color="#8b5cf6" />
+          <KpiCard title="Supply Chain Cost" value="$1,245" icon={<CreditCard size={18} />} trend={8} color="#f59e0b" />
+          <KpiCard title="In Transit" value="3" icon={<Box size={18} />} trend={-25} color="#06b6d4" />
+          <KpiCard title="Distribution Centers" value="8" icon={<Building2 size={18} />} trend={3} color="#ec4899" />
         </div>
 
         {/* --- Customer Widgets --- */}
@@ -322,14 +348,14 @@ const CustomerDashboard = () => {
                 style={styles.controlBtn}
                 onClick={() => handleCategoryQuickOrder('Shipping Boxes')}
               >
-                � Shipping Boxes
+                📦 Shipping Boxes
               </button>
               <button 
                 className="control-btn"
                 style={styles.controlBtn}
                 onClick={() => handleCategoryQuickOrder('Protective Wrapping')}
               >
-                �️ Protective Wrapping
+                🧻 Protective Wrapping
               </button>
               <button 
                 className="control-btn"
@@ -351,20 +377,20 @@ const CustomerDashboard = () => {
           <div style={styles.controlPanel}>
             <h3>Account Management</h3>
             <div style={styles.controlActions}>
-              <button style={styles.controlBtn}>Update Profile</button>
-              <button style={styles.controlBtn}>Change Password</button>
-              <button style={styles.controlBtn}>Shipping Addresses</button>
-              <button style={styles.controlBtn}>Payment Methods</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/account/profile')}>Update Profile</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/account/password')}>Change Password</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/account/addresses')}>Shipping Addresses</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/account/payments')}>Payment Methods</button>
             </div>
           </div>
           
           <div style={styles.controlPanel}>
             <h3>Customer Support</h3>
             <div style={styles.controlActions}>
-              <button style={styles.controlBtn}>Track Order</button>
-              <button style={styles.controlBtn}>Return Request</button>
-              <button style={styles.controlBtn}>Live Chat Support</button>
-              <button style={styles.controlBtn}>Packaging Help</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/support/track-order')}>Track Order</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/support/returns')}>Return Request</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/support/chat')}>Live Chat Support</button>
+              <button style={styles.controlBtn} onClick={() => navigate('/support/packaging-help')}>Packaging Help</button>
             </div>
           </div>
         </div>

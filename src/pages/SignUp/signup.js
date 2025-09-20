@@ -251,122 +251,158 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '20px',
+    padding: 'clamp(1rem, 5vw, 1.25rem)',
+    width: '100vw',
+    overflow: 'hidden',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   },
   formContainer: {
     backgroundColor: 'white',
-    borderRadius: '20px',
-    padding: '40px',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+    borderRadius: 'clamp(0.75rem, 3vw, 1.25rem)',
+    padding: 'clamp(1.5rem, 8vw, 2.5rem)',
+    boxShadow: '0 clamp(0.75rem, 2vw, 1.25rem) clamp(1.5rem, 4vw, 2.5rem) rgba(0,0,0,0.1)',
     width: '100%',
-    maxWidth: '600px',
+    maxWidth: 'clamp(20rem, 90vw, 37.5rem)',
+    minWidth: '18rem',
     textAlign: 'center',
+    margin: 'auto',
   },
   header: {
-    marginBottom: '30px',
+    marginBottom: 'clamp(1.25rem, 5vh, 1.875rem)',
   },
   iconContainer: {
-    marginBottom: '16px',
+    marginBottom: 'clamp(0.75rem, 3vh, 1rem)',
   },
   icon: {
-    fontSize: '3rem',
+    fontSize: 'clamp(2rem, 8vw, 3rem)',
     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
   },
   title: {
-    fontSize: '1.8rem',
+    fontSize: 'clamp(1.25rem, 5vw, 1.8rem)',
     fontWeight: 'bold',
     color: '#2d3748',
-    margin: '0 0 8px 0',
+    margin: '0 0 clamp(0.375rem, 2vh, 0.5rem) 0',
+    lineHeight: '1.3',
   },
   subtitle: {
     color: '#718096',
     margin: 0,
+    fontSize: 'clamp(0.875rem, 3vw, 1rem)',
+    lineHeight: '1.5',
   },
   form: {
     textAlign: 'left',
   },
   row: {
     display: 'flex',
-    marginBottom: '20px',
+    marginBottom: 'clamp(1rem, 4vh, 1.25rem)',
+    gap: 'clamp(0.5rem, 2vw, 0.75rem)',
+    flexWrap: 'wrap',
+    '@media (max-width: 600px)': {
+      flexDirection: 'column',
+      gap: '0',
+    },
   },
   inputGroup: {
     flex: 1,
+    minWidth: 'clamp(8rem, 40vw, 12rem)',
   },
   label: {
     display: 'block',
-    marginBottom: '6px',
+    marginBottom: 'clamp(0.25rem, 1vh, 0.375rem)',
     color: '#4a5568',
     fontWeight: '500',
-    fontSize: '14px',
+    fontSize: 'clamp(0.8rem, 3vw, 0.875rem)',
   },
   input: {
     width: '100%',
-    padding: '12px 16px',
+    padding: 'clamp(0.5rem, 3vw, 0.75rem) clamp(0.75rem, 4vw, 1rem)',
     border: '2px solid #e2e8f0',
-    borderRadius: '8px',
-    fontSize: '16px',
+    borderRadius: 'clamp(0.375rem, 2vw, 0.5rem)',
+    fontSize: 'clamp(0.875rem, 3.5vw, 1rem)',
     transition: 'border-color 0.2s ease',
     outline: 'none',
     boxSizing: 'border-box',
+    minHeight: 'clamp(2.5rem, 8vw, 3rem)',
+    ':focus': {
+      borderColor: '#f5576c',
+      boxShadow: '0 0 0 3px rgba(245, 87, 108, 0.1)',
+    },
   },
   errorContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: 'clamp(0.375rem, 2vw, 0.5rem)',
     backgroundColor: '#fed7d7',
     color: '#c53030',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    fontSize: '14px',
+    padding: 'clamp(0.5rem, 3vw, 0.75rem) clamp(0.75rem, 4vw, 1rem)',
+    borderRadius: 'clamp(0.375rem, 2vw, 0.5rem)',
+    marginBottom: 'clamp(1rem, 4vh, 1.25rem)',
+    fontSize: 'clamp(0.8rem, 3vw, 0.875rem)',
+    flexWrap: 'wrap',
   },
   successContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: 'clamp(0.375rem, 2vw, 0.5rem)',
     backgroundColor: '#c6f6d5',
     color: '#276749',
-    padding: '12px 16px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    fontSize: '14px',
+    padding: 'clamp(0.5rem, 3vw, 0.75rem) clamp(0.75rem, 4vw, 1rem)',
+    borderRadius: 'clamp(0.375rem, 2vw, 0.5rem)',
+    marginBottom: 'clamp(1rem, 4vh, 1.25rem)',
+    fontSize: 'clamp(0.8rem, 3vw, 0.875rem)',
+    flexWrap: 'wrap',
   },
   errorIcon: {
-    fontSize: '16px',
+    fontSize: 'clamp(0.875rem, 3vw, 1rem)',
   },
   successIcon: {
-    fontSize: '16px',
+    fontSize: 'clamp(0.875rem, 3vw, 1rem)',
   },
   errorText: {
     margin: 0,
+    lineHeight: '1.4',
   },
   successText: {
     margin: 0,
+    lineHeight: '1.4',
   },
   submitButton: {
     width: '100%',
-    padding: '14px 24px',
+    padding: 'clamp(0.75rem, 4vw, 0.875rem) clamp(1rem, 5vw, 1.5rem)',
     background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
+    borderRadius: 'clamp(0.375rem, 2vw, 0.5rem)',
+    fontSize: 'clamp(0.875rem, 3.5vw, 1rem)',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
-    marginBottom: '24px',
+    gap: 'clamp(0.375rem, 2vw, 0.5rem)',
+    marginBottom: 'clamp(1rem, 5vh, 1.5rem)',
+    minHeight: 'clamp(2.75rem, 8vw, 3.25rem)',
+    ':hover': {
+      transform: 'translateY(-1px)',
+      boxShadow: '0 4px 12px rgba(245, 87, 108, 0.3)',
+    },
+    ':active': {
+      transform: 'translateY(0)',
+    },
   },
   submitButtonDisabled: {
     opacity: 0.7,
     cursor: 'not-allowed',
+    ':hover': {
+      transform: 'none',
+      boxShadow: 'none',
+    },
   },
   spinner: {
-    width: '16px',
-    height: '16px',
+    width: 'clamp(0.875rem, 3vw, 1rem)',
+    height: 'clamp(0.875rem, 3vw, 1rem)',
     border: '2px solid transparent',
     borderTop: '2px solid white',
     borderRadius: '50%',
@@ -377,19 +413,191 @@ const styles = {
   },
   footerText: {
     color: '#718096',
-    fontSize: '14px',
-    margin: '0 0 8px 0',
+    fontSize: 'clamp(0.8rem, 3vw, 0.875rem)',
+    margin: '0 0 clamp(0.375rem, 2vh, 0.5rem) 0',
+    lineHeight: '1.5',
   },
   link: {
     color: '#f5576c',
     textDecoration: 'none',
     fontWeight: '500',
+    ':hover': {
+      textDecoration: 'underline',
+    },
   },
   backLink: {
     color: '#f5576c',
     textDecoration: 'none',
-    fontSize: '14px',
-    marginTop: '16px',
+    fontSize: 'clamp(0.8rem, 3vw, 0.875rem)',
+    marginTop: 'clamp(0.75rem, 3vh, 1rem)',
     display: 'inline-block',
+    ':hover': {
+      textDecoration: 'underline',
+    },
   },
 };
+
+// Enhanced responsive CSS styles for comprehensive screen size support
+const signupPageStyles = `
+  /* CSS animations */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Mobile First: Base styles for 320px+ */
+  @media screen and (min-width: 320px) {
+    .signup-container {
+      padding: 1rem;
+    }
+    .signup-form-container {
+      padding: 1.5rem;
+      margin: 0 auto;
+    }
+    .signup-row {
+      flex-direction: column;
+      gap: 0;
+    }
+    .signup-input-group {
+      margin-bottom: 1rem;
+    }
+    .signup-input {
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+  }
+
+  /* Small Mobile: 375px+ */
+  @media screen and (min-width: 375px) {
+    .signup-form-container {
+      padding: 1.75rem;
+    }
+    .signup-row {
+      gap: 0.5rem;
+    }
+  }
+
+  /* Large Mobile: 425px+ */
+  @media screen and (min-width: 425px) {
+    .signup-form-container {
+      padding: 2rem;
+    }
+    .signup-row {
+      gap: 0.75rem;
+    }
+  }
+
+  /* Small Tablet: 600px+ */
+  @media screen and (min-width: 600px) {
+    .signup-row {
+      flex-direction: row;
+      gap: 0.75rem;
+    }
+    .signup-input-group {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Medium Tablet: 768px+ */
+  @media screen and (min-width: 768px) {
+    .signup-container {
+      padding: 1.25rem;
+    }
+    .signup-form-container {
+      padding: 2.25rem;
+      max-width: 35rem;
+    }
+    .signup-row {
+      gap: 1rem;
+    }
+  }
+
+  /* Large Tablet: 1024px+ */
+  @media screen and (min-width: 1024px) {
+    .signup-form-container {
+      padding: 2.5rem;
+      max-width: 37.5rem;
+    }
+    .signup-row {
+      gap: 1.25rem;
+    }
+  }
+
+  /* Small Desktop: 1440px+ */
+  @media screen and (min-width: 1440px) {
+    .signup-container {
+      padding: 1.5rem;
+    }
+    .signup-form-container {
+      padding: 2.75rem;
+    }
+  }
+
+  /* Large Desktop: 1920px+ */
+  @media screen and (min-width: 1920px) {
+    .signup-container {
+      padding: 2rem;
+    }
+    .signup-form-container {
+      padding: 3rem;
+    }
+  }
+
+  /* Touch devices optimization */
+  @media (hover: none) and (pointer: coarse) {
+    .signup-input {
+      min-height: 3rem;
+      font-size: 16px;
+      padding: 0.75rem 1rem;
+    }
+    .signup-submit-button {
+      min-height: 3rem;
+      font-size: 1rem;
+      padding: 0.875rem 1.5rem;
+    }
+    .signup-submit-button:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .signup-submit-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+    }
+  }
+
+  /* Landscape orientation for mobile */
+  @media screen and (max-height: 500px) and (orientation: landscape) {
+    .signup-container {
+      padding: 0.5rem;
+    }
+    .signup-form-container {
+      padding: 1rem;
+      margin: 0.5rem auto;
+    }
+    .signup-header {
+      margin-bottom: 1rem;
+    }
+  }
+
+  /* Reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .signup-submit-button {
+      transition: none;
+    }
+    .signup-submit-button:hover {
+      transform: none;
+    }
+    .signup-spinner {
+      animation: none;
+    }
+  }
+`;
+
+// Apply responsive styles to document head
+if (typeof document !== 'undefined') {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = signupPageStyles;
+  if (!document.head.querySelector('style[data-signup-responsive]')) {
+    styleElement.setAttribute('data-signup-responsive', 'true');
+    document.head.appendChild(styleElement);
+  }
+}

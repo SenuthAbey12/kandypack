@@ -13,6 +13,7 @@ export default function Cards({
   initialQty = 1,
   price,
   stock,
+  embedded = false,     // when true, render minimal controls only (for embedding in parent cards)
 }) {
   const [qty, setQty] = useState(
     Math.min(Math.max(initialQty, min), max)
@@ -33,8 +34,8 @@ export default function Cards({
   };
 
   return (
-    <Card style={cardStyles.container}>
-      {image && (
+    <Card style={embedded ? cardStyles.containerEmbedded : cardStyles.container}>
+      {!embedded && image && (
         <div style={cardStyles.imageContainer}>
           <Card.Img 
             variant="top" 
@@ -47,20 +48,24 @@ export default function Cards({
           />
         </div>
       )}
-      <Card.Body style={cardStyles.body}>
-        <Card.Title style={cardStyles.title}>{title}</Card.Title>
-        {price && (
-          <div style={cardStyles.priceContainer}>
-            <span style={cardStyles.price}>${price.toFixed(2)}</span>
-            {stock && (
-              <span style={cardStyles.stock}>
-                {stock > 0 ? `${stock} in stock` : 'Out of stock'}
-              </span>
+      <Card.Body style={embedded ? cardStyles.bodyEmbedded : cardStyles.body}>
+        {!embedded && (
+          <>
+            <Card.Title style={cardStyles.title}>{title}</Card.Title>
+            {price && (
+              <div style={cardStyles.priceContainer}>
+                <span style={cardStyles.price}>${price.toFixed(2)}</span>
+                {stock !== undefined && (
+                  <span style={cardStyles.stock}>
+                    {stock > 0 ? `${stock} in stock` : 'Out of stock'}
+                  </span>
+                )}
+              </div>
             )}
-          </div>
-        )}
-        {description && (
-          <Card.Text style={cardStyles.description}>{description}</Card.Text>
+            {description && (
+              <Card.Text style={cardStyles.description}>{description}</Card.Text>
+            )}
+          </>
         )}
 
         {/* Quantity selector */}
@@ -125,6 +130,14 @@ const cardStyles = {
     overflow: 'hidden',
     position: 'relative',
   },
+  containerEmbedded: {
+    width: '100%',
+    margin: 0,
+    borderRadius: 0,
+    border: 'none',
+    boxShadow: 'none',
+    background: 'transparent',
+  },
   imageContainer: {
     background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
     padding: '20px',
@@ -141,6 +154,10 @@ const cardStyles = {
   body: {
     padding: '1.5rem',
     background: 'white',
+  },
+  bodyEmbedded: {
+    padding: 0,
+    background: 'transparent',
   },
   title: {
     fontSize: '1.1rem',
@@ -173,14 +190,12 @@ const cardStyles = {
     color: '#64748b',
     lineHeight: '1.5',
     marginBottom: '1rem',
-    display: '-webkit-box',
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
+    wordBreak: 'break-word',
+    whiteSpace: 'normal',
   },
   quantityGroup: {
-    maxWidth: '180px',
-    margin: '0 auto 1rem auto',
+    maxWidth: '220px',
+    margin: '0 0 1rem 0',
   },
   quantityButton: {
     border: '2px solid #e2e8f0',

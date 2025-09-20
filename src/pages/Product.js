@@ -1,9 +1,31 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Container, Row, Col, Form, Badge } from "react-bootstrap";
+import { Container, Row, Col, Form, Badge, Modal } from "react-bootstrap";
 import Cards from "../Components/Card.js"; 
 import { useStore } from "../context/StoreContext";
 import { useAuth } from "../context/AuthContext";
+import {
+  Search as SearchIcon,
+  X as XIcon,
+  Filter as FilterIcon,
+  Grid as GridIcon,
+  List as ListIcon,
+  Heart as HeartIcon,
+  ShoppingCart,
+  Star as StarIcon,
+  LogIn as LogInIcon,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Package as PackageIcon,
+  Tag as TagIcon,
+  DollarSign,
+  Truck,
+  Sparkles,
+  Eye,
+  Share2,
+  GitCompare,
+} from 'lucide-react';
 
 // --- Profile Menu Component for Products Page ---
 const ProductsProfileMenu = ({ user, onLogout }) => {
@@ -112,6 +134,11 @@ export default function Product() {
   const [showFilters, setShowFilters] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
+  const [compareItems, setCompareItems] = useState(new Set());
+  const [quickView, setQuickView] = useState(null); // product or null
+  const [ratingFilter, setRatingFilter] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -218,7 +245,9 @@ export default function Product() {
       const matchesCat = category === "All" || p.category === category;
       const matchesQ = !q || p.title.toLowerCase().includes(q);
       const matchesPrice = p.price >= priceRange[0] && p.price <= priceRange[1];
-      return matchesCat && matchesQ && matchesPrice;
+      const pr = p.rating ?? 4;
+      const matchesRating = pr >= ratingFilter;
+      return matchesCat && matchesQ && matchesPrice && matchesRating;
     });
 
     // Sort products
@@ -231,7 +260,18 @@ export default function Product() {
     });
 
     return result;
-  }, [query, category, sortBy, priceRange, products]);
+  }, [query, category, sortBy, priceRange, ratingFilter, products]);
+
+  // Reset to first page on filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, category, sortBy, priceRange, ratingFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
@@ -275,10 +315,73 @@ export default function Product() {
     navigate('/');
   }
 
+  function handleToggleCompare(productId) {
+    setCompareItems(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId); else next.add(productId);
+      return next;
+    });
+  }
+
+  function handleShareProduct(p) {
+    const shareText = `${p.title} - $${p.price.toFixed(2)} | ${window.location.origin}/products`;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert('Product link copied to clipboard');
+      }).catch(() => alert('Copied details to clipboard'));
+    } else {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = shareText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Product link copied to clipboard');
+      } catch {
+        alert('Copy not supported in this browser');
+      }
+    }
+  }
+
+  function openQuickView(p) { setQuickView(p); }
+  function closeQuickView() { setQuickView(null); }
+
+  // Colorful accents by category
+  const accentPalette = useMemo(() => [
+    { gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', ring: 'rgba(79, 172, 254, 0.3)' },
+    { gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', ring: 'rgba(240, 147, 251, 0.3)' },
+    { gradient: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)', ring: 'rgba(132, 250, 176, 0.3)' },
+    { gradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', ring: 'rgba(161, 140, 209, 0.3)' },
+    { gradient: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', ring: 'rgba(253, 160, 133, 0.3)' },
+  ], []);
+
+  const getAccentForCategory = (cat) => {
+    if (!cat) return accentPalette[0];
+    let hash = 0;
+    for (let i = 0; i < cat.length; i++) hash = (hash * 31 + cat.charCodeAt(i)) >>> 0;
+    return accentPalette[hash % accentPalette.length];
+  };
+
+  const renderStars = (rating = 4.8) => {
+    const full = Math.floor(rating);
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <StarIcon key={i} size={16} color="#fbbf24" fill={i < full ? '#fbbf24' : 'none'} />
+      );
+    }
+    return <span style={{ display: 'inline-flex', gap: 2 }}>{stars}</span>;
+  };
+
   return (
     <div style={styles.container}>
       {/* Modern Hero Section */}
       <div style={styles.heroSection}>
+        {/* Decorative floating blobs */}
+        <div style={styles.blobOne} aria-hidden="true"></div>
+        <div style={styles.blobTwo} aria-hidden="true"></div>
+        <div style={styles.blobThree} aria-hidden="true"></div>
         {/* Profile Menu in upper right corner */}
         <div style={styles.heroProfileMenu}>
           {user ? (
@@ -290,7 +393,7 @@ export default function Product() {
                 style={styles.loginButton}
                 onClick={() => navigate('/login')}
               >
-                🔑 Sign In
+                <LogInIcon size={18} style={{ marginRight: 8 }} /> Sign In
               </button>
             </div>
           )}
@@ -298,32 +401,51 @@ export default function Product() {
         
         <div style={styles.heroContent}>
           <div style={styles.heroText}>
-            <h1 style={styles.heroTitle}>Rail & Road Distribution Solutions</h1>
+            <h1 style={styles.heroTitle}>
+              <span style={styles.heroTitleGradient}>Rail & Road</span> Distribution Solutions
+            </h1>
             <p style={styles.heroSubtitle}>
               Specialized packaging for multi-modal supply chain transportation networks
             </p>
             <div style={styles.heroStats}>
               <div style={styles.statItem}>
-                <span style={styles.statNumber}>{products.length}+</span>
+                <span style={styles.statNumber}><PackageIcon size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />{products.length}+</span>
                 <span style={styles.statLabel}>Products</span>
               </div>
               <div style={styles.statItem}>
-                <span style={styles.statNumber}>{categories.length}</span>
+                <span style={styles.statNumber}><TagIcon size={18} style={{ verticalAlign: 'middle', marginRight: 6 }} />{categories.length}</span>
                 <span style={styles.statLabel}>Categories</span>
               </div>
               <div style={styles.statItem}>
-                <span style={styles.statNumber}>4.8⭐</span>
+                <span style={styles.statNumber}><StarIcon size={18} color="#fbbf24" fill="#fbbf24" style={{ verticalAlign: 'middle', marginRight: 6 }} />4.8</span>
                 <span style={styles.statLabel}>Rating</span>
               </div>
+            </div>
+            <div style={styles.heroCtas}>
+              <button style={styles.primaryCta} onClick={() => {
+                const el = document.querySelector('#product-results');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}>
+                Browse Products <ArrowRight size={16} style={{marginLeft: 8}}/>
+              </button>
+              <button style={styles.secondaryCta} onClick={() => navigate('/products/learn-more')}>
+                Learn More
+              </button>
             </div>
           </div>
           <div style={styles.heroImage}>
               <div style={styles.heroCard}>
-              <div style={styles.heroCardIcon}>�</div>
+              <div style={styles.heroCardIcon}><PackageIcon size={56} /></div>
               <h3>Professional Quality</h3>
               <p>Premium packaging materials for your business needs</p>
             </div>
           </div>
+        </div>
+        {/* Decorative wave divider */}
+        <div style={styles.waveDivider} aria-hidden="true">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style={{display:'block', width:'100%', height:'100%'}}>
+            <path fill="#f8fafc" d="M0,64L60,85.3C120,107,240,149,360,144C480,139,600,85,720,90.7C840,96,960,160,1080,170.7C1200,181,1320,139,1380,117.3L1440,96L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"></path>
+          </svg>
         </div>
       </div>
 
@@ -333,7 +455,7 @@ export default function Product() {
           {/* Search Bar */}
           <div style={styles.searchContainer}>
             <div style={styles.searchWrapper}>
-              <span style={styles.searchIcon}>🔍</span>
+              <span style={styles.searchIcon}><SearchIcon size={18} color="#64748b" /></span>
               <Form.Control
                 className="search-input"
                 type="search"
@@ -347,7 +469,7 @@ export default function Product() {
                   style={styles.clearSearchBtn}
                   onClick={() => setQuery("")}
                 >
-                  ✕
+                  <XIcon size={16} />
                 </button>
               )}
             </div>
@@ -362,9 +484,23 @@ export default function Product() {
               }}
               onClick={() => setShowFilters(!showFilters)}
             >
-              🔧 Filters
+              <FilterIcon size={16} style={{ marginRight: 8 }} /> Filters
             </button>
             
+            <button 
+              style={styles.actionBtn}
+              onClick={() => alert('Wishlist shows your favorited items. Use the heart on products to add/remove.')}
+            >
+              <HeartIcon size={16} style={{ marginRight: 8 }} /> Wishlist ({favorites.size})
+            </button>
+
+            <button 
+              style={styles.actionBtn}
+              onClick={() => alert('Compare up to 3 items. Use the compare icon on a product to add/remove.')}
+            >
+              <GitCompare size={16} style={{ marginRight: 8 }} /> Compare ({compareItems.size})
+            </button>
+
             <div style={styles.viewToggle}>
               <button 
                 style={{
@@ -373,7 +509,7 @@ export default function Product() {
                 }}
                 onClick={() => setViewMode("grid")}
               >
-                ⚏
+                <GridIcon size={16} />
               </button>
               <button 
                 style={{
@@ -382,7 +518,7 @@ export default function Product() {
                 }}
                 onClick={() => setViewMode("list")}
               >
-                ☰
+                <ListIcon size={16} />
               </button>
             </div>
           </div>
@@ -406,7 +542,7 @@ export default function Product() {
                       }}
                       onClick={() => setCategory(cat)}
                     >
-                      {cat === "All" ? "🏷️ All" : `📦 ${cat}`}
+                      <TagIcon size={14} style={{ marginRight: 6 }} /> {cat === "All" ? "All" : cat}
                     </button>
                   ))}
                 </div>
@@ -426,7 +562,34 @@ export default function Product() {
                       }}
                       onClick={() => setPriceRange([range.min, range.max])}
                     >
-                      {range.label}
+                      <DollarSign size={14} style={{ marginRight: 6 }} /> {range.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating Filter */}
+              <div style={styles.filterGroup}>
+                <label style={styles.filterLabel}>Minimum Rating</label>
+                <div style={styles.priceRangeGrid}>
+                  {[5,4,3,2,1,0].map((r) => (
+                    <button
+                      key={r}
+                      className="price-chip"
+                      style={{
+                        ...styles.priceChip,
+                        ...(ratingFilter === r ? styles.priceChipActive : {})
+                      }}
+                      onClick={() => setRatingFilter(r)}
+                    >
+                      {r === 0 ? 'All' : (
+                        <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
+                          {Array.from({length:5}).map((_,i) => (
+                            <StarIcon key={i} size={12} color="#fbbf24" fill={i < r ? '#fbbf24' : 'none'} />
+                          ))}
+                          &nbsp;{r}+
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -461,8 +624,8 @@ export default function Product() {
           </div>
         )}
 
-        {/* Results Summary */}
-        <div style={styles.resultsHeader}>
+  {/* Results Summary */}
+  <div id="product-results" style={styles.resultsHeader}>
           <div style={styles.resultsInfo}>
             <span style={styles.resultsCount}>
               {isLoading ? "Loading..." : `${filtered.length} products found`}
@@ -500,8 +663,9 @@ export default function Product() {
 
         {/* Product Grid/List */}
         {!isLoading && (
+          <>
           <Row style={viewMode === "grid" ? styles.productGrid : styles.productList}>
-            {filtered.map((p) => (
+            {pageItems.map((p) => (
               <Col 
                 key={p.id} 
                 xs={12} 
@@ -515,9 +679,11 @@ export default function Product() {
                   style={{
                     ...styles.modernProductCard,
                     ...(viewMode === "list" ? styles.listViewCard : {}),
-                    ...(addedItems.has(p.id) ? styles.productCardAdded : {})
+                    ...(addedItems.has(p.id) ? styles.productCardAdded : {}),
+                    boxShadow: `${styles.modernProductCard.boxShadow}, 0 0 0 3px ${getAccentForCategory(p.category).ring}`,
                   }}
                 >
+                  <div style={{ height: 4, width: '100%', background: getAccentForCategory(p.category).gradient }} />
                   {/* Product Image */}
                   <div style={{
                     ...styles.productImageContainer,
@@ -540,13 +706,31 @@ export default function Product() {
                         }}
                         onClick={() => handleToggleFavorite(p.id)}
                       >
-                        {favorites.has(p.id) ? "❤️" : "🤍"}
+                        {favorites.has(p.id) ? (
+                          <HeartIcon size={18} color="#ef4444" fill="#ef4444" />
+                        ) : (
+                          <HeartIcon size={18} color="#64748b" />
+                        )}
                       </button>
                       <Badge bg="success" style={styles.stockBadge}>
                         {p.stock > 10 ? "In Stock" : `Only ${p.stock} left`}
                       </Badge>
                     </div>
-                    <div style={styles.categoryTag}>{p.category}</div>
+                    <div style={styles.imageActionsLeft}>
+                      <button style={styles.actionIconBtn} title="Quick View" onClick={() => openQuickView(p)}>
+                        <Eye size={16} />
+                      </button>
+                      <button style={styles.actionIconBtn} title="Share" onClick={() => handleShareProduct(p)}>
+                        <Share2 size={16} />
+                      </button>
+                      <button style={{
+                        ...styles.actionIconBtn,
+                        ...(compareItems.has(p.id) ? styles.actionIconActive : {})
+                      }} title="Compare" onClick={() => handleToggleCompare(p.id)}>
+                        <GitCompare size={16} />
+                      </button>
+                    </div>
+                    <div style={{ ...styles.categoryTag, background: getAccentForCategory(p.category).gradient }}>{p.category}</div>
                   </div>
                   
                   {/* Product Info */}
@@ -557,7 +741,7 @@ export default function Product() {
                     <div style={styles.productHeader}>
                       <h3 style={styles.productTitle}>{p.title}</h3>
                       <div style={styles.ratingDisplay}>
-                        <span style={styles.stars}>⭐⭐⭐⭐⭐</span>
+                        {renderStars(4.8)}
                         <span style={styles.ratingText}>(4.{Math.floor(Math.random() * 9)})</span>
                       </div>
                     </div>
@@ -569,21 +753,20 @@ export default function Product() {
                     </div>
                     
                     <div style={styles.productFeatures}>
-                      <span style={styles.feature}>🚚 Free Shipping</span>
-                      <span style={styles.feature}>✨ Premium Quality</span>
+                      <span style={styles.feature}><Truck size={14} style={{ marginRight: 6 }} /> Free Shipping</span>
+                      <span style={styles.feature}><Sparkles size={14} style={{ marginRight: 6 }} /> Premium Quality</span>
                     </div>
-                    
-                    <Cards
-                      title={p.title}
-                      description={p.description}
-                      image={p.image}
-                      price={p.price}
-                      stock={p.stock}
-                      max={Math.min(99, p.stock)}
-                      initialQty={1}
-                      onAdd={(qty) => handleAdd(p, qty)}
-                      buttonText={addedItems.has(p.id) ? "✓ Added to Cart!" : "🛒 Add to Cart"}
-                    />
+                    <div style={styles.modernAddButton}>
+                      <Cards
+                        embedded
+                        price={p.price}
+                        stock={p.stock}
+                        max={Math.min(99, p.stock)}
+                        initialQty={1}
+                        onAdd={(qty) => handleAdd(p, qty)}
+                        buttonText={addedItems.has(p.id) ? "✓ Added to Cart!" : "🛒 Add to Cart"}
+                      />
+                    </div>
                   </div>
                 </div>
               </Col>
@@ -593,7 +776,7 @@ export default function Product() {
             {filtered.length === 0 && !isLoading && (
               <Col>
                 <div style={styles.emptyState}>
-                  <div style={styles.emptyIcon}>�</div>
+                  <div style={styles.emptyIcon}><PackageIcon size={64} /></div>
                   <h3 style={styles.emptyTitle}>No products found</h3>
                   <p style={styles.emptyText}>
                     We couldn't find any products matching your criteria.
@@ -609,6 +792,27 @@ export default function Product() {
               </Col>
             )}
           </Row>
+          {/* Pagination */}
+          {filtered.length > pageSize && (
+            <div style={styles.pagination}>
+              <button
+                style={{...styles.pageBtn, ...(currentPage === 1 ? styles.pageBtnDisabled : {})}}
+                onClick={() => setCurrentPage(p => Math.max(1, p-1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={16} /> Prev
+              </button>
+              <span style={styles.pageInfo}>Page {currentPage} of {totalPages}</span>
+              <button
+                style={{...styles.pageBtn, ...(currentPage === totalPages ? styles.pageBtnDisabled : {})}}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p+1))}
+                disabled={currentPage === totalPages}
+              >
+                Next <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+          </>
         )}
 
         {/* Enhanced Checkout CTA */}
@@ -618,7 +822,7 @@ export default function Product() {
               <div style={styles.ctaInfo}>
                 <div style={styles.ctaTitle}>Ready to checkout?</div>
                 <div style={styles.ctaSubtitle}>
-                  🛒 {cartCount} items • ${cart.reduce((total, item) => {
+                    <ShoppingCart size={16} style={{ marginRight: 6 }} /> {cartCount} items • ${cart.reduce((total, item) => {
                     const product = products.find(p => p.id === item.id);
                     return total + (product ? product.price * item.qty : 0);
                   }, 0).toFixed(2)} total
@@ -630,12 +834,71 @@ export default function Product() {
                 onClick={handleGoToCheckout}
               >
                 <span>Proceed to Checkout</span>
-                <span className="checkout-arrow" style={styles.checkoutArrow}>→</span>
+                  <span className="checkout-arrow" style={styles.checkoutArrow}><ArrowRight size={18} /></span>
               </button>
             </div>
           </div>
         )}
       </Container>
+      {/* Quick View Modal */}
+      <Modal show={!!quickView} onHide={closeQuickView} centered>
+        {quickView && (
+          <div style={{padding: '8px'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 16px'}}>
+              <h5 style={{margin:0}}>{quickView.title}</h5>
+              <button onClick={closeQuickView} style={{background:'none',border:'none',cursor:'pointer'}}>✕</button>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,padding:'0 16px 16px'}}>
+              <div style={{display:'grid',placeItems:'center',background:'#f8fafc',borderRadius:12,padding:12}}>
+                <img alt={quickView.title} src={quickView.image || `https://via.placeholder.com/400x300/4facfe/ffffff?text=${encodeURIComponent(quickView.title.split(' ')[0])}`} style={{maxWidth:'100%',maxHeight:240,objectFit:'contain'}} />
+              </div>
+              <div>
+                <div style={{fontSize:'1.4rem',fontWeight:800,marginBottom:8}}>${quickView.price.toFixed(2)}</div>
+                <div style={{color:'#64748b',marginBottom:12}}>{quickView.description || 'High-performance packaging solution optimized for rail & road logistics.'}</div>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}>
+                  {Array.from({length:5}).map((_,i)=>(<StarIcon key={i} size={16} color="#fbbf24" fill={i < (quickView.rating ?? 4) ? '#fbbf24' : 'none'} />))}
+                  <span style={{color:'#64748b'}}>(Rated {quickView.rating ?? 4}.0)</span>
+                </div>
+                <div>
+                  <button
+                    style={{padding:'10px 14px',borderRadius:12,background:'#667eea',color:'#fff',border:'none',fontWeight:700,cursor:'pointer'}}
+                    onClick={() => { handleAdd(quickView, 1); closeQuickView(); }}
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Compare Tray */}
+      {compareItems.size > 0 && (
+        <div style={styles.compareTray}>
+          <div style={styles.compareList}>
+            {[...compareItems].slice(0,3).map(id => {
+              const p = products.find(x => x.id === id);
+              if (!p) return null;
+              return (
+                <div key={id} style={styles.compareItem}>
+                  <div style={styles.compareThumb}>
+                    <img alt={p.title} src={p.image || `https://via.placeholder.com/64x64/4facfe/ffffff?text=${encodeURIComponent(p.title.split(' ')[0])}`} style={{width:'100%',height:'100%',objectFit:'cover',borderRadius:8}} />
+                  </div>
+                  <div style={styles.compareMeta}>
+                    <div style={styles.compareTitle}>{p.title}</div>
+                    <div style={styles.comparePrice}>${p.price.toFixed(2)}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{display:'flex',gap:8}}>
+            <button style={styles.compareClearBtn} onClick={() => setCompareItems(new Set())}>Clear</button>
+            <button style={styles.compareActionBtn} onClick={() => alert('Comparison view coming soon!')}>Compare</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -644,60 +907,116 @@ const styles = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#f8fafc',
-    paddingBottom: '100px',
+    paddingBottom: 'clamp(60px, 10vh, 120px)',
+    width: '100vw',
+    maxWidth: '100%',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
   },
   
   // Hero Section
   heroSection: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '80px 20px',
+    padding: 'clamp(40px, 8vh, 80px) clamp(1rem, 3vw, 2rem)',
     color: 'white',
     position: 'relative',
     overflow: 'hidden',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  blobOne: {
+    position: 'absolute',
+    top: '-80px',
+    left: '-80px',
+    width: '220px',
+    height: '220px',
+    background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0))',
+    borderRadius: '50%',
+    filter: 'blur(4px)',
+    animation: 'floatUp 10s ease-in-out infinite',
+  },
+  blobTwo: {
+    position: 'absolute',
+    bottom: '-60px',
+    right: '10%',
+    width: '260px',
+    height: '260px',
+    background: 'radial-gradient(circle at 60% 40%, rgba(255,255,255,0.22), rgba(255,255,255,0))',
+    borderRadius: '50%',
+    filter: 'blur(6px)',
+    animation: 'floatUp 12s ease-in-out infinite',
+    animationDelay: '0.5s',
+  },
+  blobThree: {
+    position: 'absolute',
+    top: '20%',
+    right: '-80px',
+    width: '180px',
+    height: '180px',
+    background: 'radial-gradient(circle at 40% 70%, rgba(255,255,255,0.18), rgba(255,255,255,0))',
+    borderRadius: '50%',
+    filter: 'blur(4px)',
+    animation: 'floatUp 14s ease-in-out infinite',
+    animationDelay: '1s',
   },
   heroProfileMenu: {
     position: 'absolute',
-    top: '20px',
-    right: '20px',
+    top: 'clamp(15px, 3vh, 25px)',
+    right: 'clamp(15px, 3vw, 25px)',
     zIndex: 10,
   },
   loginPrompt: {
     display: 'flex',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 'clamp(0.5rem, 2vw, 1rem)',
   },
   loginButton: {
     background: 'rgba(255,255,255,0.1)',
     border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '12px',
+    borderRadius: 'clamp(8px, 2vw, 15px)',
     color: 'white',
-    padding: '10px 16px',
+    padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px)',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
     fontWeight: '600',
     transition: 'all 0.2s ease',
     backdropFilter: 'blur(10px)',
+    whiteSpace: 'nowrap',
   },
   heroContent: {
     maxWidth: '1200px',
     margin: '0 auto',
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '60px',
+    gridTemplateColumns: '1fr',
+    gap: 'clamp(30px, 6vh, 60px)',
     alignItems: 'center',
+    width: '100%',
+    boxSizing: 'border-box',
   },
   heroText: {
     zIndex: 2,
+    textAlign: 'center',
+    width: '100%',
   },
   heroTitle: {
-    fontSize: '3.5rem',
+    fontSize: 'clamp(2rem, 6vw, 4rem)',
     fontWeight: '800',
-    margin: '0 0 20px 0',
+    margin: '0 0 clamp(15px, 3vh, 25px) 0',
     lineHeight: '1.1',
+    wordWrap: 'break-word',
+    hyphens: 'auto',
+  },
+  heroTitleGradient: {
+    background: 'linear-gradient(90deg, #f9fafb, #e0e7ff, #dbeafe)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    display: 'inline-block',
   },
   heroSubtitle: {
-    fontSize: '1.25rem',
+    fontSize: 'clamp(1rem, 3vw, 1.4rem)',
     opacity: 0.9,
-    margin: '0 0 40px 0',
+    margin: '0 0 clamp(25px, 5vh, 45px) 0',
     lineHeight: '1.6',
   },
   heroStats: {
@@ -729,10 +1048,55 @@ const styles = {
     borderRadius: '20px',
     textAlign: 'center',
     border: '1px solid rgba(255,255,255,0.2)',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.15)',
+    animation: 'floatUp 8s ease-in-out infinite',
   },
   heroCardIcon: {
     fontSize: '4rem',
     marginBottom: '20px',
+  },
+  heroCtas: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '24px',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  primaryCta: {
+    padding: '12px 18px',
+    borderRadius: '12px',
+    background: 'linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%)',
+    color: 'white',
+    border: 'none',
+    fontWeight: 700,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    boxShadow: '0 8px 20px rgba(96,165,250,0.35)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  },
+  secondaryCta: {
+    padding: '12px 16px',
+    borderRadius: '12px',
+    background: 'rgba(255,255,255,0.15)',
+    color: 'white',
+    border: '1px solid rgba(255,255,255,0.3)',
+    fontWeight: 700,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    backdropFilter: 'blur(8px)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+  },
+  waveDivider: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    height: '80px',
+    pointerEvents: 'none',
   },
 
   // Modern Toolbar
@@ -983,6 +1347,7 @@ const styles = {
   },
   productCol: {
     marginBottom: '30px',
+    display: 'flex',
   },
   
   // Modern Product Cards
@@ -996,6 +1361,8 @@ const styles = {
     border: '1px solid rgba(148, 163, 184, 0.1)',
     cursor: 'pointer',
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
   },
   listViewCard: {
     display: 'flex',
@@ -1039,6 +1406,34 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+  },
+  imageActionsLeft: {
+    position: 'absolute',
+    top: '12px',
+    left: '12px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  actionIconBtn: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+    border: '2px solid rgba(148, 163, 184, 0.2)',
+    fontSize: '16px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backdropFilter: 'blur(10px)',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    color: '#334155',
+  },
+  actionIconActive: {
+    borderColor: '#667eea',
+    boxShadow: '0 6px 16px rgba(102,126,234,0.35)',
   },
   favoriteBtn: {
     width: '44px',
@@ -1089,6 +1484,9 @@ const styles = {
   // Product Info
   productInfo: {
     padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    flexGrow: 1,
   },
   listProductInfo: {
     flex: 1,
@@ -1163,6 +1561,58 @@ const styles = {
     width: '100%',
     marginTop: 'auto',
   },
+
+  // Pagination
+  pagination: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '10px',
+    marginBottom: '30px',
+  },
+  pageBtn: {
+    padding: '8px 12px',
+    borderRadius: '10px',
+    border: '2px solid #e2e8f0',
+    background: '#fff',
+    color: '#334155',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontWeight: 600,
+  },
+  pageBtnDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  pageInfo: { color: '#64748b', fontWeight: 600 },
+
+  // Compare Tray
+  compareTray: {
+    position: 'fixed',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    bottom: '100px',
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '14px',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
+    padding: '12px 14px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    zIndex: 1001,
+  },
+  compareList: { display: 'flex', gap: '10px' },
+  compareItem: { display: 'flex', gap: '8px', alignItems: 'center' },
+  compareThumb: { width: 40, height: 40, borderRadius: 8, overflow: 'hidden', background: '#f1f5f9' },
+  compareMeta: { display: 'flex', flexDirection: 'column' },
+  compareTitle: { fontSize: 12, color: '#334155', maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  comparePrice: { fontSize: 12, fontWeight: 700, color: '#111827' },
+  compareClearBtn: { padding: '8px 10px', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#334155', cursor: 'pointer', fontWeight: 600 },
+  compareActionBtn: { padding: '8px 10px', borderRadius: 10, border: 'none', background: '#667eea', color: '#fff', cursor: 'pointer', fontWeight: 700 },
 
   // Empty State
   emptyState: {
@@ -1383,11 +1833,16 @@ const productsStyles = {
   },
 };
 
-// Add CSS animations
+// Add CSS animations and comprehensive responsive design
 const productPageStyles = `
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
   }
   
   @keyframes fadeInDown {
@@ -1398,6 +1853,132 @@ const productPageStyles = `
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  /* Comprehensive Responsive Design for Product Page */
+  
+  /* Large Desktop (1200px+) */
+  @media (min-width: 1200px) {
+    .hero-content {
+      grid-template-columns: 1fr 1fr !important;
+      text-align: left !important;
+    }
+    
+    .modern-toolbar {
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+    }
+    
+    .search-container {
+      min-width: 350px !important;
+    }
+  }
+
+  /* Tablet (768px - 1199px) */
+  @media (min-width: 768px) and (max-width: 1199px) {
+    .hero-content {
+      grid-template-columns: 1fr !important;
+      text-align: center !important;
+      gap: clamp(25px, 4vh, 40px) !important;
+    }
+    
+    .modern-toolbar {
+      flex-direction: column !important;
+      gap: clamp(15px, 3vh, 25px) !important;
+    }
+    
+    .search-container {
+      width: 100% !important;
+      min-width: unset !important;
+    }
+    
+    .toolbar-actions {
+      width: 100% !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+    }
+  }
+
+  /* Mobile (max-width: 767px) */
+  @media (max-width: 767px) {
+    .hero-section {
+      padding: clamp(20px, 5vh, 40px) clamp(1rem, 3vw, 1.5rem) !important;
+    }
+    
+    .hero-title {
+      font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+    }
+    
+    .hero-subtitle {
+      font-size: clamp(1rem, 3vw, 1.3rem) !important;
+    }
+    
+    .modern-toolbar {
+      flex-direction: column !important;
+      gap: clamp(10px, 2.5vh, 20px) !important;
+      padding: 0 clamp(0.5rem, 2vw, 1rem) !important;
+    }
+    
+    .modern-search-input {
+      height: clamp(40px, 8vw, 52px) !important;
+      font-size: clamp(0.9rem, 2.5vw, 1rem) !important;
+    }
+    
+    .action-btn {
+      padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 18px) !important;
+      font-size: clamp(0.8rem, 2vw, 0.9rem) !important;
+    }
+    
+    .view-toggle {
+      width: 100% !important;
+    }
+    
+    .view-btn {
+      flex: 1 !important;
+      padding: clamp(10px, 2vw, 14px) !important;
+    }
+    
+    .filters-panel {
+      padding: clamp(15px, 3vw, 25px) !important;
+    }
+  }
+
+  /* Small Mobile (max-width: 480px) */
+  @media (max-width: 480px) {
+    .hero-title {
+      font-size: clamp(1.2rem, 4.5vw, 2rem) !important;
+      margin-bottom: clamp(10px, 2vh, 16px) !important;
+    }
+    
+    .hero-subtitle {
+      font-size: clamp(0.9rem, 2.8vw, 1.1rem) !important;
+      margin-bottom: clamp(18px, 3.5vh, 30px) !important;
+    }
+    
+    .login-button {
+      padding: clamp(6px, 1.5vw, 10px) clamp(10px, 2.5vw, 16px) !important;
+      font-size: clamp(0.75rem, 2vw, 0.9rem) !important;
+    }
+    
+    .modern-search-input {
+      padding-left: clamp(35px, 8vw, 45px) !important;
+    }
+    
+    .search-icon {
+      left: clamp(10px, 2.5vw, 14px) !important;
+      font-size: clamp(14px, 3vw, 18px) !important;
+    }
+  }
+
+  /* Landscape Orientation */
+  @media (max-height: 600px) and (orientation: landscape) {
+    .hero-section {
+      padding: clamp(15px, 3vh, 30px) clamp(1rem, 3vw, 2rem) !important;
+    }
+    
+    .hero-content {
+      gap: clamp(20px, 3vh, 35px) !important;
     }
   }
   
@@ -1457,6 +2038,29 @@ const productPageStyles = `
     background-color: rgba(255,255,255,0.2) !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+  }
+  .primary-cta:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(96,165,250,0.45); }
+  .secondary-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(255,255,255,0.25); }
+  
+  /* Touch Device Optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .action-btn:hover {
+      background-color: initial !important;
+      transform: none !important;
+    }
+    
+    .action-btn:active {
+      background-color: #f1f5f9 !important;
+      transform: scale(0.98) !important;
+    }
+    
+    .modern-product-card:hover {
+      transform: none !important;
+    }
+    
+    .modern-product-card:active {
+      transform: scale(0.98) !important;
+    }
   }
 `;
 
