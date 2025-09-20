@@ -4,6 +4,31 @@ import SignUp from './pages/SignUp/signup.js';
 import Product from './pages/Product.js';
 import LearnMoreProducts from './pages/LearnMoreProducts.js';
 import AuthPage from './pages/AuthPage.js';
+
+// Products Pages
+import SupplyChainTracking from './pages/Products/SupplyChainTracking.js';
+import FleetManagement from './pages/Products/FleetManagement.js';
+import RouteAnalytics from './pages/Products/RouteAnalytics.js';
+import EquipmentMonitoring from './pages/Products/EquipmentMonitoring.js';
+
+// Solutions Pages
+import Logistics from './pages/Solutions/Logistics.js';
+import Transportation from './pages/Solutions/Transportation.js';
+import Distribution from './pages/Solutions/Distribution.js';
+import Enterprise from './pages/Solutions/Enterprise.js';
+
+// Resources Pages
+import Blog from './pages/Resources/Blog.js';
+import Guides from './pages/Resources/Guides.js';
+import Support from './pages/Resources/Support.js';
+import Documentation from './pages/Resources/Documentation.js';
+
+// Company Pages
+import About from './pages/Company/About.js';
+import Careers from './pages/Company/Careers.js';
+import Contact from './pages/Company/Contact.js';
+import News from './pages/Company/News.js';
+
 // Account & Support pages
 import Profile from './pages/Account/Profile.js';
 import Orders from './pages/Account/Orders.js';
@@ -48,6 +73,31 @@ function App() {
               <Route path="/auth" element={<AuthPage/>}/>
               <Route path="/products" element={<Product/>}/>
               <Route path="/products/learn-more" element={<LearnMoreProducts/>}/>
+              
+              {/* Products Routes */}
+              <Route path="/products/tracking" element={<SupplyChainTracking/>}/>
+              <Route path="/products/management" element={<FleetManagement/>}/>
+              <Route path="/products/analytics" element={<RouteAnalytics/>}/>
+              <Route path="/products/monitoring" element={<EquipmentMonitoring/>}/>
+              
+              {/* Solutions Routes */}
+              <Route path="/solutions/logistics" element={<Logistics/>}/>
+              <Route path="/solutions/transportation" element={<Transportation/>}/>
+              <Route path="/solutions/distribution" element={<Distribution/>}/>
+              <Route path="/solutions/enterprise" element={<Enterprise/>}/>
+              
+              {/* Resources Routes */}
+              <Route path="/resources/blog" element={<Blog/>}/>
+              <Route path="/resources/guides" element={<Guides/>}/>
+              <Route path="/resources/support" element={<Support/>}/>
+              <Route path="/resources/docs" element={<Documentation/>}/>
+              
+              {/* Company Routes */}
+              <Route path="/company/about" element={<About/>}/>
+              <Route path="/company/careers" element={<Careers/>}/>
+              <Route path="/company/contact" element={<Contact/>}/>
+              <Route path="/company/news" element={<News/>}/>
+              
               <Route path="/checkout" element={<Checkout/>}/>
 
               {/* New Portal System */}

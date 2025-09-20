@@ -967,12 +967,65 @@ const slideUpAnimation = `
 }
 `;
 
+// Top Navigation CSS
+const topNavCSS = `
+/* Top Navigation Dropdown Styles */
+.nav-dropdown:hover .dropdown-content {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+
+.nav-dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg) !important;
+}
+
+.nav-dropdown .nav-dropdown-btn:hover {
+  color: #1e40af !important;
+}
+
+.dropdown-link:hover {
+  background-color: #f8fafc !important;
+  color: #1e40af !important;
+  transform: translateX(4px) !important;
+}
+
+.top-nav-login:hover {
+  background-color: #f1f5f9 !important;
+  color: #1e40af !important;
+}
+
+.top-nav-cta:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4) !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .top-nav-menu {
+    display: none !important;
+  }
+  
+  .top-nav-container {
+    padding: 0 1rem !important;
+  }
+}
+`;
+
 // Inject CSS
 if (!document.querySelector('#slide-up-animation')) {
   const style = document.createElement('style');
   style.id = 'slide-up-animation';
   style.textContent = slideUpAnimation;
   document.head.appendChild(style);
+}
+
+// Inject Top Nav CSS
+if (!document.querySelector('#top-nav-css')) {
+  const topNavStyle = document.createElement('style');
+  topNavStyle.id = 'top-nav-css';
+  topNavStyle.textContent = topNavCSS;
+  document.head.appendChild(topNavStyle);
 }
 
 export default function Home() {
@@ -1077,17 +1130,71 @@ export default function Home() {
         <div className="geometric-pattern"></div>
       </div>
 
-      {/* Header */}
-      <header style={styles.header}>
-        <div className="home-header-content fade-in-up" style={styles.headerContent}>
-          <div className="hover-pulse" style={styles.logo}>
+      {/* Top Navigation Bar */}
+      <header style={styles.topNavBar}>
+        <div style={styles.topNavContainer}>
+          {/* Logo */}
+          <div style={styles.logo}>
             <img src="/images/kandypack-logo.svg" alt="KandyPack" style={styles.logoIcon} />
             <span style={styles.logoText}>KandyPack</span>
           </div>
-          <nav className="home-nav fade-in-right" style={styles.nav}>
-            <Link to="/products" className="hover-lift" style={styles.navLink}>Browse Products</Link>
-            <Link to="/login" className="hover-lift" style={styles.navLink}>Sign In</Link>
+          
+          {/* Navigation Menu */}
+          <nav style={styles.topNavMenu}>
+            <div className="nav-dropdown" style={styles.navDropdown}>
+              <button className="nav-dropdown-btn" style={styles.navDropdownBtn}>
+                Products <span className="dropdown-arrow" style={styles.dropdownArrow}>▼</span>
+              </button>
+              <div className="dropdown-content" style={styles.dropdownContent}>
+                <Link to="/products/tracking" className="dropdown-link" style={styles.dropdownLink}>Supply Chain Tracking</Link>
+                <Link to="/products/management" className="dropdown-link" style={styles.dropdownLink}>Fleet Management</Link>
+                <Link to="/products/analytics" className="dropdown-link" style={styles.dropdownLink}>Route Analytics</Link>
+                <Link to="/products/monitoring" className="dropdown-link" style={styles.dropdownLink}>Equipment Monitoring</Link>
+              </div>
+            </div>
+            
+            <div className="nav-dropdown" style={styles.navDropdown}>
+              <button className="nav-dropdown-btn" style={styles.navDropdownBtn}>
+                Solutions <span className="dropdown-arrow" style={styles.dropdownArrow}>▼</span>
+              </button>
+              <div className="dropdown-content" style={styles.dropdownContent}>
+                <Link to="/solutions/logistics" className="dropdown-link" style={styles.dropdownLink}>Logistics</Link>
+                <Link to="/solutions/transportation" className="dropdown-link" style={styles.dropdownLink}>Transportation</Link>
+                <Link to="/solutions/distribution" className="dropdown-link" style={styles.dropdownLink}>Distribution</Link>
+                <Link to="/solutions/enterprise" className="dropdown-link" style={styles.dropdownLink}>Enterprise</Link>
+              </div>
+            </div>
+            
+            <div className="nav-dropdown" style={styles.navDropdown}>
+              <button className="nav-dropdown-btn" style={styles.navDropdownBtn}>
+                Resources <span className="dropdown-arrow" style={styles.dropdownArrow}>▼</span>
+              </button>
+              <div className="dropdown-content" style={styles.dropdownContent}>
+                <Link to="/resources/blog" className="dropdown-link" style={styles.dropdownLink}>Blog</Link>
+                <Link to="/resources/guides" className="dropdown-link" style={styles.dropdownLink}>Guides</Link>
+                <Link to="/resources/support" className="dropdown-link" style={styles.dropdownLink}>Support</Link>
+                <Link to="/resources/docs" className="dropdown-link" style={styles.dropdownLink}>Documentation</Link>
+              </div>
+            </div>
+            
+            <div className="nav-dropdown" style={styles.navDropdown}>
+              <button className="nav-dropdown-btn" style={styles.navDropdownBtn}>
+                Company <span className="dropdown-arrow" style={styles.dropdownArrow}>▼</span>
+              </button>
+              <div className="dropdown-content" style={styles.dropdownContent}>
+                <Link to="/company/about" className="dropdown-link" style={styles.dropdownLink}>About Us</Link>
+                <Link to="/company/careers" className="dropdown-link" style={styles.dropdownLink}>Careers</Link>
+                <Link to="/company/contact" className="dropdown-link" style={styles.dropdownLink}>Contact</Link>
+                <Link to="/company/news" className="dropdown-link" style={styles.dropdownLink}>News</Link>
+              </div>
+            </div>
           </nav>
+          
+          {/* Action Buttons */}
+          <div style={styles.topNavActions}>
+            <Link to="/login" className="top-nav-login" style={styles.topNavLogin}>Login</Link>
+            <Link to="/signup" className="top-nav-cta" style={styles.topNavCta}>Get Started</Link>
+          </div>
         </div>
       </header>
 
@@ -1267,39 +1374,105 @@ const styles = {
     position: 'relative',
     boxSizing: 'border-box',
   },
-  header: {
+  // Top Navigation Styles
+  topNavBar: {
     background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
     borderBottom: '1px solid #e2e8f0',
-    padding: 'clamp(0.8rem, 2vh, 1.2rem) 0',
-    position: 'relative',
+    position: 'sticky',
     top: 0,
     zIndex: 1000,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
     backdropFilter: 'blur(10px)',
-    width: '100%',
-    boxSizing: 'border-box',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   },
-  headerContent: {
-    maxWidth: '100%',
-    width: '100%',
+  topNavContainer: {
+    maxWidth: '1200px',
     margin: '0 auto',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '0 clamp(1rem, 3vw, 2rem)',
-    flexWrap: 'wrap',
-    gap: 'clamp(0.8rem, 2vw, 1.5rem)',
-    boxSizing: 'border-box',
-    minHeight: 'clamp(3rem, 6vh, 4rem)',
+    padding: '0 2rem',
+    minHeight: '70px',
   },
+  topNavMenu: {
+    display: 'flex',
+    gap: '2rem',
+  },
+  navDropdown: {
+    position: 'relative',
+  },
+  navDropdownBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#64748b',
+    fontWeight: '500',
+    padding: '1rem 0',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.95rem',
+    transition: 'color 0.2s ease',
+    fontFamily: 'inherit',
+  },
+  dropdownArrow: {
+    fontSize: '0.8rem',
+    transition: 'transform 0.2s ease',
+  },
+  dropdownContent: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    background: 'white',
+    minWidth: '200px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+    borderRadius: '8px',
+    padding: '0.5rem 0',
+    opacity: 0,
+    visibility: 'hidden',
+    transform: 'translateY(-10px)',
+    transition: 'all 0.3s ease',
+    border: '1px solid #e2e8f0',
+  },
+  dropdownLink: {
+    display: 'block',
+    padding: '0.75rem 1rem',
+    color: '#64748b',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    transition: 'all 0.2s ease',
+  },
+  topNavActions: {
+    display: 'flex',
+    gap: '1rem',
+    alignItems: 'center',
+  },
+  topNavLogin: {
+    color: '#64748b',
+    textDecoration: 'none',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+  },
+  topNavCta: {
+    background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+    color: 'white',
+    textDecoration: 'none',
+    fontWeight: '600',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '8px',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+  },
+  // Logo Styles
   logo: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
   },
   logoIcon: {
-    width: '32px',
-    height: '32px',
+    width: '40px',
+    height: '40px',
   },
   logoText: {
     fontSize: '1.5rem',
@@ -1309,16 +1482,6 @@ const styles = {
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     textShadow: '2px 2px 4px rgba(0,0,0,0.1)',
-  },
-  nav: {
-    display: 'flex',
-    gap: '2rem',
-  },
-  navLink: {
-    color: '#64748b',
-    textDecoration: 'none',
-    fontWeight: '500',
-    transition: 'color 0.2s',
   },
   main: {
     flex: 1,
