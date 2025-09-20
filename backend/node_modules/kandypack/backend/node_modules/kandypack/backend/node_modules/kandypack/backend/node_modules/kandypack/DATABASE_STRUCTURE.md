@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 9/21/2025, 3:45:58 AM*
+*Last Updated: 9/21/2025, 4:27:54 AM*
 
 ## 🗄️ Database Overview
 
@@ -12,7 +12,7 @@
 
 - **admin**: 1 records
 - **assistant**: 4 records
-- **customer**: 8 records
+- **customer**: 9 records
 - **driver**: 4 records
 - **order_item**: 0 records
 - **orders**: 0 records
@@ -69,7 +69,7 @@
 
 ### 🏷️ customer
 
-**Records:** 8
+**Records:** 9
 
 #### 📐 Table Structure
 
@@ -87,9 +87,9 @@
 
 | customer_id | name | phone_no | city | address | user_name | password |
 |---|---|---|---|---|---|---|
+| CUS069492 | chalani | 0715311839 | Ranna | No,71 | chalani | $2a$10$jyxDd471l.a/bssFZ4YE... |
 | CUS185077 | tharuu | 0715311839 | Ranna | No,71 | tharuu | $2a$10$/chsztdmYcMYGH/LTdDf... |
 | CUS444163 | Test User | 0771234567 | Test City | Test Address | testuser | $2a$10$z.tKSWVlBE12Uc.Njfyr... |
-| CUS553775 | Demo User | 0771234567 | Colombo | 123 Demo Street | demo | $2a$10$puux3Yunxm6e/d9pBhE5... |
 
 ---
 
