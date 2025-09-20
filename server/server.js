@@ -3,6 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import sqlite3 from 'sqlite3';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,6 +73,17 @@ async function init() {
     destination TEXT
   )`);
 
+  // Customers table for auth/registration
+  await run(`CREATE TABLE IF NOT EXISTS customers (
+    customer_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    user_name TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    phone_no TEXT,
+    city TEXT,
+    address TEXT
+  )`);
+
   const driverCount = await get('SELECT COUNT(*) as cnt FROM drivers');
   if (driverCount.cnt === 0) {
     await run(`INSERT INTO drivers (id, name, status, deliveries, rating, phone, vehicle) VALUES
@@ -102,6 +115,112 @@ async function init() {
     `);
   }
 }
+
+// ---- Auth helpers (JWT) ----
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key_for_development';
+
+const signToken = (payload) =>
+  jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+
+// ---- Auth routes (customer-only for this SQLite server) ----
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, user_name, password, phone_no, city, address } = req.body || {};
+
+    if (!name || !user_name || !password) {
+      return res.status(400).json({ error: 'Name, username, and password are required' });
+    }
+
+    const existing = await get('SELECT user_name FROM customers WHERE user_name = ?', [user_name]);
+    if (existing) {
+      return res.status(409).json({ error: 'Username already exists' });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const customer_id = `CUS${Date.now().toString().slice(-6)}`;
+
+    await run(
+      `INSERT INTO customers (customer_id, name, user_name, password, phone_no, city, address)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [customer_id, name, user_name, hashed, phone_no || null, city || null, address || null]
+    );
+
+    const user = { customer_id, name, user_name, phone_no, city, address, role: 'customer', portalType: 'customer' };
+    const token = signToken({ id: customer_id, username: user_name, role: 'customer', name, portalType: 'customer' });
+
+    res.status(201).json({ message: 'Customer registered successfully', user, token });
+  } catch (e) {
+    console.error('Registration error (sqlite):', e);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password, role } = req.body || {};
+    if (!username || !password || !role) {
+      return res.status(400).json({ error: 'Username, password, and role are required' });
+    }
+    if (role !== 'customer') {
+      return res.status(400).json({ error: 'Only customer login is supported by this server' });
+    }
+
+    const user = await get('SELECT customer_id as id, name, user_name as username, password, phone_no, city, address FROM customers WHERE user_name = ?', [username]);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const { password: _pw, ...userWithoutPassword } = user;
+    const token = signToken({ id: user.id, username: user.username, role: 'customer', name: user.name, portalType: 'customer' });
+
+    res.json({
+      message: 'Login successful',
+      user: { ...userWithoutPassword, role: 'customer', portalType: 'customer', isCustomer: true, isEmployee: false },
+      token
+    });
+  } catch (e) {
+    console.error('Login error (sqlite):', e);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+app.get('/api/auth/verify', async (req, res) => {
+  try {
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ error: 'No token provided' });
+      // Dev utility: list customers (no passwords)
+      app.get('/api/dev/customers', async (req, res) => {
+        try {
+          const rows = await all('SELECT customer_id, name, user_name, phone_no, city, address FROM customers ORDER BY customer_id DESC');
+          res.json(rows);
+        } catch (e) {
+          res.status(500).json({ error: e.message });
+        }
+      });
+
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.role !== 'customer') {
+      return res.status(401).json({ error: 'Invalid role in token' });
+    }
+
+    const user = await get('SELECT customer_id as id, name, user_name as username, phone_no, city, address FROM customers WHERE customer_id = ?', [decoded.id]);
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    res.json({
+      user: { ...user, role: 'customer', portalType: 'customer', isCustomer: true, isEmployee: false },
+      valid: true
+    });
+  } catch (e) {
+    console.error('Verify error (sqlite):', e);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
 
 app.get('/api/portal/admin/stats', async (req, res) => {
   try {
