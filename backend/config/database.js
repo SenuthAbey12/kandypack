@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const DatabaseTracker = require('../utils/databaseTracker');
 require('dotenv').config();
 
 // Helper to safely read env vars with trimming and fallback
@@ -38,6 +39,23 @@ class Database {
     try {
       connection = await this.getConnection();
       const [rows] = await connection.execute(sql, params);
+      
+      // Track database operations for automatic documentation updates
+      const sqlUpper = sql.trim().toUpperCase();
+      const isModifyingOperation = 
+        sqlUpper.startsWith('INSERT') ||
+        sqlUpper.startsWith('UPDATE') ||
+        sqlUpper.startsWith('DELETE') ||
+        sqlUpper.startsWith('ALTER') ||
+        sqlUpper.startsWith('CREATE') ||
+        sqlUpper.startsWith('DROP');
+      
+      if (isModifyingOperation) {
+        const operation = sqlUpper.split(' ')[0].toLowerCase();
+        const tableName = this.extractTableName(sql);
+        DatabaseTracker.triggerUpdate(operation, tableName, 'auto-detected');
+      }
+      
       return rows;
     } catch (error) {
       console.error('Database query error:', error);
@@ -45,6 +63,45 @@ class Database {
     } finally {
       if (connection) connection.release();
     }
+  }
+
+  /**
+   * Extracts table name from SQL query
+   */
+  extractTableName(sql) {
+    const sqlUpper = sql.trim().toUpperCase();
+    
+    if (sqlUpper.startsWith('INSERT INTO')) {
+      const match = sql.match(/INSERT\s+INTO\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    if (sqlUpper.startsWith('UPDATE')) {
+      const match = sql.match(/UPDATE\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    if (sqlUpper.startsWith('DELETE FROM')) {
+      const match = sql.match(/DELETE\s+FROM\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    if (sqlUpper.startsWith('ALTER TABLE')) {
+      const match = sql.match(/ALTER\s+TABLE\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    if (sqlUpper.startsWith('CREATE TABLE')) {
+      const match = sql.match(/CREATE\s+TABLE\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    if (sqlUpper.startsWith('DROP TABLE')) {
+      const match = sql.match(/DROP\s+TABLE\s+`?(\w+)`?/i);
+      return match ? match[1] : 'unknown';
+    }
+    
+    return 'unknown';
   }
 
   async testConnection() {

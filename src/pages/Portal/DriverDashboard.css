@@ -1,0 +1,267 @@
+.driver-dashboard {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dashboard-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.driver-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.status-indicator .status {
+  padding: 5px 15px;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8em;
+}
+
+.status.waiting { background-color: #f39c12; }
+.status.in-progress { background-color: #3498db; }
+.status.completed { background-color: #27ae60; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dashboard-card h2 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+/* Current Route Styles */
+.current-route .route-details h3 {
+  color: #2980b9;
+  margin-bottom: 5px;
+}
+
+.route-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-primary, .btn-secondary, .btn-start {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #229954;
+}
+
+.btn-secondary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #2980b9;
+}
+
+.btn-start {
+  background-color: #e74c3c;
+  color: white;
+  width: 100%;
+}
+
+.btn-start:hover {
+  background-color: #c0392b;
+}
+
+/* Assignments Styles */
+.assignments-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.assignment-item {
+  border: 1px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s;
+}
+
+.assignment-item:hover {
+  border-color: #3498db;
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.assignment-id {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.priority {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.priority.high {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.priority.medium {
+  background-color: #f39c12;
+  color: white;
+}
+
+.priority.low {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.assignment-item h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+}
+
+.assignment-details {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: #7f8c8d;
+}
+
+.assignment-actions {
+  margin-top: 10px;
+}
+
+.status-badge {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-badge.in-progress {
+  background-color: #3498db;
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #27ae60;
+  color: white;
+}
+
+/* Stats Styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 15px;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+}
+
+.stat-number {
+  display: block;
+  font-size: 2em;
+  font-weight: bold;
+  color: #2980b9;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #7f8c8d;
+}
+
+/* Quick Actions Styles */
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.action-btn {
+  padding: 15px;
+  border: 2px solid #3498db;
+  background: white;
+  color: #3498db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.action-btn:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .assignment-details {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .route-actions {
+    flex-direction: column;
+  }
+}

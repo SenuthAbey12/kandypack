@@ -28,26 +28,40 @@ import { AuthProvider } from './context/AuthContext';
 import { StoreProvider } from './context/StoreContext';
 import { ThemeProvider } from './context/ThemeContext';
 
+// Portal Components
+import EmployeeLogin from './pages/Auth/EmployeeLogin.js';
+import CustomerLogin from './pages/Auth/CustomerLogin.js';
+import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
+import CustomerPortalRouter from './pages/Portal/CustomerPortalRouter.js';
+import { AuthProvider as AuthProviderNew } from './context/AuthContextNew.js';
+
 // --- Main App Component ---
 function App() {
   return (
     <AuthProvider>
-      <StoreProvider>
-        <ThemeProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route exact path="/" element={<Home/>}/>
-            <Route path="/login" element={<Login/>}/>
-            <Route path="/signup" element={<SignUp/>}/>
-            <Route path="/auth" element={<AuthPage/>}/>
-            <Route path="/products" element={<Product/>}/>
-            <Route path="/products/learn-more" element={<LearnMoreProducts/>}/>
-            <Route path="/checkout" element={<Checkout/>}/>
+      <AuthProviderNew>
+        <StoreProvider>
+          <ThemeProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route exact path="/" element={<Home/>}/>
+              <Route path="/login" element={<Login/>}/>
+              <Route path="/signup" element={<SignUp/>}/>
+              <Route path="/auth" element={<AuthPage/>}/>
+              <Route path="/products" element={<Product/>}/>
+              <Route path="/products/learn-more" element={<LearnMoreProducts/>}/>
+              <Route path="/checkout" element={<Checkout/>}/>
 
-              {/* Account Routes */}
-              <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
-              <Route path="/account/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>} />
-              <Route path="/account/settings" element={<ProtectedRoute><Settings/></ProtectedRoute>} />
+              {/* New Portal System */}
+              <Route path="/employee/login" element={<EmployeeLogin/>}/>
+              <Route path="/customer/login" element={<CustomerLogin/>}/>
+              <Route path="/employee/*" element={<EmployeePortalRouter/>}/>
+              <Route path="/customer/*" element={<CustomerPortalRouter/>}/>
+
+                {/* Account Routes */}
+                <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
+                <Route path="/account/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>} />
+                <Route path="/account/settings" element={<ProtectedRoute><Settings/></ProtectedRoute>} />
               <Route path="/account/password" element={<ProtectedRoute><Password/></ProtectedRoute>} />
               <Route path="/account/addresses" element={<ProtectedRoute><Addresses/></ProtectedRoute>} />
               <Route path="/account/payments" element={<ProtectedRoute><Payments/></ProtectedRoute>} />
@@ -84,6 +98,7 @@ function App() {
         </BrowserRouter>
         </ThemeProvider>
       </StoreProvider>
+      </AuthProviderNew>
     </AuthProvider>
   );
 }

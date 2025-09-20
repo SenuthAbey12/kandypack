@@ -16,6 +16,22 @@ Use these credentials to test the application:
 - **Name:** John Doe
 - **Access:** Customer dashboard with order tracking, profile management
 
+
+## 📋 Registered Customers
+
+### Direct Test User
+- **Username:** `testdirect`
+- **Password:** `testpass123`
+- **Customer ID:** `TEST123`
+- **Registration Date:** 9/20/2025
+
+
+### Final Test User
+- **Username:** `finaltest`
+- **Password:** `finalpass123`
+- **Customer ID:** `CUST_FINAL_TEST`
+- **Registration Date:** 9/20/2025
+
 ## 🚀 How to Login
 
 1. Go to the Home page

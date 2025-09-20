@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -31,7 +33,7 @@ export default function SignUp() {
     setLoading(true);
 
     // Validation
-    if (!formData.name || !formData.email || !formData.username || !formData.password) {
+    if (!formData.name || !formData.username || !formData.password) {
       setError('Please fill in all required fields');
       setLoading(false);
       return;
@@ -49,22 +51,37 @@ export default function SignUp() {
       return;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
-      setLoading(false);
-      return;
+    // Email validation (only if email is provided)
+    if (formData.email && formData.email.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address');
+        setLoading(false);
+        return;
+      }
     }
 
     try {
-      // Simulate successful signup
-      setSuccess('Account created successfully! Redirecting...');
+      // Prepare data for backend API (matching backend field names)
+      const registrationData = {
+        name: formData.name,
+        user_name: formData.username,
+        password: formData.password,
+        phone_no: formData.mobileNo,
+        city: formData.city,
+        address: formData.address
+      };
+
+      // Call the registration API
+      const newUser = await register(registrationData);
+      
+      setSuccess(`Account created successfully! Welcome ${newUser.name}!`);
       setTimeout(() => {
-        navigate('/login');
+        navigate('/dashboard'); // Redirect to dashboard after successful registration
       }, 2000);
+      
     } catch (err) {
-      setError('Failed to create account. Please try again.');
+      setError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -101,13 +118,13 @@ export default function SignUp() {
 
           <div style={styles.row}>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Email *</label>
+              <label style={styles.label}>Email (Optional)</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter your email"
+                placeholder="Enter your email (optional)"
                 style={styles.input}
                 disabled={loading}
               />

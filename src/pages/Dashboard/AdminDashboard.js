@@ -1,5 +1,119 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  User,
+  Users,
+  Package,
+  BarChart3,
+  Settings as SettingsIcon,
+  Shield,
+  HeadphonesIcon,
+  LogOut,
+  Database,
+} from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
+import { useAuth } from '../../context/AuthContext';
+
+// --- Profile Menu Component ---
+const ProfileMenu = ({ user, onLogout }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('.profile-menu')) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const menuItems = [
+    { icon: <User size={16} />, label: 'Admin Profile', action: () => navigate('/admin/profile') },
+    { icon: <Users size={16} />, label: 'User Management', action: () => navigate('/admin/users') },
+    { icon: <Package size={16} />, label: 'Product Management', action: () => navigate('/admin/products') },
+    { icon: <BarChart3 size={16} />, label: 'Analytics & Reports', action: () => navigate('/admin/reports') },
+    { icon: <Database size={16} />, label: 'System Management', action: () => navigate('/admin/system') },
+    { icon: <SettingsIcon size={16} />, label: 'Settings', action: () => navigate('/admin/settings') },
+    { icon: <Shield size={16} />, label: 'Security', action: () => navigate('/admin/security') },
+    { icon: <HeadphonesIcon size={16} />, label: 'Support Center', action: () => navigate('/admin/support') },
+    { icon: <LogOut size={16} />, label: 'Logout', action: onLogout, isLogout: true }
+  ];
+
+  const handleItemClick = (item) => {
+    setIsOpen(false);
+    item.action();
+  };
+
+  return (
+    <div className="profile-menu" style={styles.profileMenu}>
+      <button 
+        style={{
+          ...styles.profileTrigger,
+          borderRadius: '12px',
+          transition: 'background-color 0.2s'
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = '#334155';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = 'transparent';
+        }}
+      >
+        <div style={styles.avatarContainer}>
+          <div style={styles.avatar}>
+            {user?.username?.charAt(0).toUpperCase() || 'A'}
+          </div>
+          <div style={styles.userInfo}>
+            <span style={styles.userName}>{user?.username || 'Admin'}</span>
+            <span style={styles.userRole}>Administrator</span>
+          </div>
+          <span style={styles.dropdownArrow}>{isOpen ? '▲' : '▼'}</span>
+        </div>
+      </button>
+
+      {isOpen && (
+        <div style={styles.profileDropdown}>
+          <div style={styles.dropdownHeader}>
+            <div style={styles.avatarLarge}>
+              {user?.username?.charAt(0).toUpperCase() || 'A'}
+            </div>
+            <div>
+              <div style={styles.dropdownUserName}>{user?.username || 'Admin'}</div>
+              <div style={styles.dropdownUserEmail}>admin@kandypack.com</div>
+            </div>
+          </div>
+          
+          <div style={styles.dropdownDivider}></div>
+          
+          {menuItems.map((item, index) => (
+            <button
+              key={index}
+              style={{
+                ...styles.dropdownItem,
+                ...(item.isLogout ? styles.logoutItem : {})
+              }}
+              onClick={() => handleItemClick(item)}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = item.isLogout ? '#fef2f2' : '#f1f5f9';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+              }}
+            >
+              <span style={styles.itemIcon}>{item.icon}</span>
+              <span style={styles.itemLabel}>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- Reusable Component for Key Metric Cards ---
 const KpiCard = ({ title, value, icon, trend, color = "#2563eb" }) => {
@@ -54,6 +168,8 @@ const StatusWidget = ({ title, items }) => {
 const AdminDashboard = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { products, orders, notifications, updateProduct, deleteProduct, addProduct } = useStore();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -62,6 +178,15 @@ const AdminDashboard = () => {
 
   const handleQuickAction = (action) => {
     alert(`${action} feature will be implemented soon!`);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   const systemHealth = [
@@ -98,6 +223,8 @@ const AdminDashboard = () => {
           <QuickAction title="Customer Management" icon="👥" onClick={() => handleQuickAction('Customer Management')} />
           <QuickAction title="Sales Reports" icon="📊" onClick={() => handleQuickAction('Sales Reports')} variant="secondary" />
         </div>
+
+        <ProfileMenu user={user} onLogout={handleLogout} />
       </header>
       
       <main style={styles.mainContent}>
@@ -452,6 +579,133 @@ const styles = {
       borderColor: 'var(--border)',
       transform: 'translateY(-1px)',
     },
+  },
+
+  // Profile Menu Styles
+  profileMenu: {
+    position: 'relative',
+  },
+  profileTrigger: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 0,
+  },
+  avatarContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '8px 12px',
+    borderRadius: '12px',
+    transition: 'background-color 0.2s',
+  },
+  avatar: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: '#dc2626',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '16px',
+    fontWeight: '600',
+  },
+  userInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  userName: {
+    color: '#f8fafc',
+    fontSize: '14px',
+    fontWeight: '500',
+    lineHeight: '1.2',
+  },
+  userRole: {
+    color: '#94a3b8',
+    fontSize: '12px',
+    lineHeight: '1.2',
+  },
+  dropdownArrow: {
+    color: '#94a3b8',
+    fontSize: '12px',
+    marginLeft: '4px',
+  },
+  profileDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: '0',
+    marginTop: '8px',
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+    border: '1px solid #e2e8f0',
+    minWidth: '240px',
+    zIndex: 1000,
+    overflow: 'hidden',
+  },
+  dropdownHeader: {
+    padding: '16px',
+    borderBottom: '1px solid #e2e8f0',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    backgroundColor: '#f8fafc',
+  },
+  avatarLarge: {
+    width: '48px',
+    height: '48px',
+    borderRadius: '50%',
+    backgroundColor: '#dc2626',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    fontWeight: '600',
+  },
+  dropdownUserName: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#1e293b',
+    lineHeight: '1.2',
+  },
+  dropdownUserEmail: {
+    fontSize: '14px',
+    color: '#64748b',
+    lineHeight: '1.2',
+  },
+  dropdownDivider: {
+    height: '1px',
+    backgroundColor: '#e2e8f0',
+  },
+  dropdownItem: {
+    width: '100%',
+    padding: '12px 16px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    color: '#374151',
+    transition: 'background-color 0.2s',
+    textAlign: 'left',
+  },
+  logoutItem: {
+    color: '#dc2626',
+    borderTop: '1px solid #e2e8f0',
+  },
+  itemIcon: {
+    fontSize: '16px',
+    width: '20px',
+    textAlign: 'center',
+  },
+  itemLabel: {
+    flex: 1,
+    textAlign: 'left',
   },
 };
 

@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const database = require('../config/database');
+const { updateCredentialsFile } = require('../utils/credentialsManager');
 
 const router = express.Router();
 
@@ -64,6 +65,14 @@ router.post('/register', async (req, res) => {
 
     // Generate token
     const token = generateToken({ ...newUser, role: 'customer' });
+
+    // Update LOGIN_CREDENTIALS.md file with new customer
+    try {
+      await updateCredentialsFile(newUser, password);
+    } catch (credentialsError) {
+      console.warn('Warning: Failed to update LOGIN_CREDENTIALS.md:', credentialsError);
+      // Don't fail registration if credentials file update fails
+    }
 
     res.status(201).json({
       message: 'Customer registered successfully',

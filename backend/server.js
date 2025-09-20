@@ -13,6 +13,12 @@ const customerRoutes = require('./routes/customers');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
+const databaseRoutes = require('./routes/database');
+
+// Import new portal routes
+const portalAuthRoutes = require('./routes/portalAuth');
+const driverAPIRoutes = require('./routes/driverAPI');
+const assistantAPIRoutes = require('./routes/assistantAPI');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +52,12 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/database', databaseRoutes);
+
+// Portal-specific routes
+app.use('/api/portal/auth', portalAuthRoutes);
+app.use('/api/portal/driver', driverAPIRoutes);
+app.use('/api/portal/assistant', assistantAPIRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
