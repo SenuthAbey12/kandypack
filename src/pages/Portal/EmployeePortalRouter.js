@@ -3,7 +3,16 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
-import AdminDashboard from './AdminDashboard';
+import AdminDashboardOverview from './AdminDashboardOverview';
+import AdminAnalytics from './AdminAnalytics';
+import AdminRoutes from './AdminRoutes';
+import AdminTracking from './AdminTracking';
+import AdminWarehouses from './AdminWarehouses';
+import AdminInventory from './AdminInventory';
+import AdminShipments from './AdminShipments';
+import RailwayOperations from './RailwayOperations';
+import AdminFleet from './AdminFleet';
+import AdminStaff from './AdminStaff';
 import AdminSettings from './AdminSettings';
 import AdminSupport from './AdminSupport';
 import DriverDashboard from './DriverDashboard';
@@ -20,7 +29,7 @@ const EmployeePortalRouter = () => {
   }
 
   const getDashboardComponent = () => {
-    if (isAdmin) return <AdminDashboard />;
+    if (isAdmin) return <AdminDashboardOverview />;
     if (isDriver) return <DriverDashboard />;
     if (isAssistant) return <AssistantDashboard />;
     return <Navigate to="/login" replace />;
@@ -36,11 +45,17 @@ const EmployeePortalRouter = () => {
         {/* Admin-specific routes */}
         {isAdmin && (
           <>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/overview" element={<AdminDashboard />} />
-            <Route path="/admin/drivers" element={<AdminDashboard />} />
-            <Route path="/admin/orders" element={<AdminDashboard />} />
-            <Route path="/admin/assistants" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminDashboardOverview />} />
+            <Route path="/admin/overview" element={<AdminDashboardOverview />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/drivers" element={<AdminFleet />} />
+            <Route path="/admin/railway" element={<RailwayOperations />} />
+            <Route path="/admin/routes" element={<AdminRoutes />} />
+            <Route path="/admin/tracking" element={<AdminTracking />} />
+            <Route path="/admin/orders" element={<AdminShipments />} />
+            <Route path="/admin/warehouses" element={<AdminWarehouses />} />
+            <Route path="/admin/inventory" element={<AdminInventory />} />
+            <Route path="/admin/assistants" element={<AdminStaff />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/support" element={<AdminSupport />} />
           </>

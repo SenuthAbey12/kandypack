@@ -6,8 +6,8 @@ const router = express.Router();
 // Get all products with pagination
 router.get('/', async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
     const offset = (page - 1) * limit;
     const category = req.query.category;
     const search = req.query.search;
@@ -36,9 +36,11 @@ router.get('/', async (req, res) => {
       countQuery += whereClause;
     }
 
-    // Add pagination
+    // Add pagination - ensure limit and offset are valid numbers
     query += ' LIMIT ? OFFSET ?';
     params.push(limit, offset);
+
+    console.log('Query params:', { page, limit, offset, params: params.slice(-2) });
 
     try {
       // Try database query first

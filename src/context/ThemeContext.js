@@ -17,7 +17,7 @@ const lightVars = `
 `;
 
 const darkVars = `
-.theme-dark {
+[data-theme="dark"] {
   --bg: #0b1220;
   --card: #0f172a;
   --text: #e2e8f0;
@@ -52,11 +52,10 @@ export const ThemeProvider = ({ children }) => {
     setTheme(prefersDark ? 'dark' : 'light');
   }, []);
 
-  // Apply class on documentElement for dark
+  // Apply data-theme attribute for theme switching
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'dark') root.classList.add('theme-dark');
-    else root.classList.remove('theme-dark');
+    root.setAttribute('data-theme', theme);
     localStorage.setItem('kandypack_theme', theme);
   }, [theme]);
 

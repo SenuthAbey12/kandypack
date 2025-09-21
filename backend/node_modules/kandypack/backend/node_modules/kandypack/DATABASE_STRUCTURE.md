@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 9/21/2025, 2:01:55 PM*
+*Last Updated: 9/21/2025, 8:30:00 PM*
 
 ## 🗄️ Database Overview
 
@@ -177,14 +177,15 @@
 | volume_per_item | decimal(8,2) | NO |  | NULL |  |
 | category | varchar(50) | YES |  | NULL |  |
 | available_quantity | int | YES |  | 0 |  |
+| image_url | varchar(255) | YES |  | NULL |  |
 
 #### 📄 Sample Data
 
-| product_id | product_name | description | price | weight_per_item | volume_per_item | category | available_quantity |
-|---|---|---|---|---|---|---|---|
-| PROD_001 | Electronics Item | High-quality electronics | 299.99 | 2.50 | 0.02 | Electronics | 50 |
-| PROD_002 | Fashion Item | Trendy fashion accessories | 79.99 | 0.50 | 0.01 | Fashion | 100 |
-| PROD_003 | Home & Garden Item | Essential home goods | 149.99 | 5.00 | 0.10 | Home & Garden | 25 |
+| product_id | product_name | description | price | weight_per_item | volume_per_item | category | available_quantity | image_url |
+|---|---|---|---|---|---|---|---|---|
+| PROD_001 | Electronics Item | High-quality electronics | 299.99 | 2.50 | 0.02 | Electronics | 50 | https://picsum.photos/seed/... |
+| PROD_002 | Fashion Item | Trendy fashion accessories | 79.99 | 0.50 | 0.01 | Fashion | 100 | https://picsum.photos/seed/... |
+| PROD_003 | Home & Garden Item | Essential home goods | 149.99 | 5.00 | 0.10 | Home & Garden | 25 | https://picsum.photos/seed/... |
 
 ---
 
