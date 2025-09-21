@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 9/21/2025, 4:27:54 AM*
+*Last Updated: 9/21/2025, 2:01:55 PM*
 
 ## 🗄️ Database Overview
 
@@ -12,7 +12,7 @@
 
 - **admin**: 1 records
 - **assistant**: 4 records
-- **customer**: 9 records
+- **customer**: 10 records
 - **driver**: 4 records
 - **order_item**: 0 records
 - **orders**: 0 records
@@ -69,7 +69,7 @@
 
 ### 🏷️ customer
 
-**Records:** 9
+**Records:** 10
 
 #### 📐 Table Structure
 
