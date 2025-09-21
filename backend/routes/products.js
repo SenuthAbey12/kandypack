@@ -47,6 +47,13 @@ router.get('/', async (req, res) => {
         database.query(countQuery, params.slice(0, -2)) // Remove limit and offset for count
       ]);
 
+      console.log('Database query successful, returning', products.length, 'products');
+      console.log('Sample product with image:', products[0] ? {
+        id: products[0].product_id,
+        name: products[0].product_name,
+        image_url: products[0].image_url
+      } : 'No products');
+
       res.json({
         products,
         pagination: {
@@ -58,7 +65,7 @@ router.get('/', async (req, res) => {
       });
     } catch (dbError) {
       // Fallback to mock data when database is unavailable
-      console.log('Database unavailable, using mock data for products');
+      console.log('Database unavailable, using mock data for products. Error:', dbError.message);
       
       const mockProducts = [
         {
@@ -69,7 +76,8 @@ router.get('/', async (req, res) => {
           weight_per_item: 2.5,
           volume_per_item: 0.02,
           category: 'Electronics',
-          available_quantity: 50
+          available_quantity: 50,
+          image_url: 'https://picsum.photos/seed/MOCK_001/400/300'
         },
         {
           product_id: 'PROD_002',
@@ -79,7 +87,8 @@ router.get('/', async (req, res) => {
           weight_per_item: 0.5,
           volume_per_item: 0.005,
           category: 'Fashion',
-          available_quantity: 100
+          available_quantity: 100,
+          image_url: 'https://picsum.photos/seed/MOCK_002/400/300'
         },
         {
           product_id: 'PROD_003',
@@ -89,7 +98,8 @@ router.get('/', async (req, res) => {
           weight_per_item: 5.0,
           volume_per_item: 0.1,
           category: 'Home & Garden',
-          available_quantity: 25
+          available_quantity: 25,
+          image_url: 'https://picsum.photos/seed/MOCK_003/400/300'
         },
         {
           product_id: 'PROD_004',
@@ -99,7 +109,8 @@ router.get('/', async (req, res) => {
           weight_per_item: 0.8,
           volume_per_item: 0.003,
           category: 'Books',
-          available_quantity: 75
+          available_quantity: 75,
+          image_url: 'https://picsum.photos/seed/MOCK_004/400/300'
         },
         {
           product_id: 'PROD_005',
@@ -109,7 +120,8 @@ router.get('/', async (req, res) => {
           weight_per_item: 3.2,
           volume_per_item: 0.05,
           category: 'Sports',
-          available_quantity: 30
+          available_quantity: 30,
+          image_url: 'https://picsum.photos/seed/MOCK_005/400/300'
         }
       ];
 

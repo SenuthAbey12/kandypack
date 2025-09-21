@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { productsAPI } from '../services/api';
 
 const StoreContext = createContext(null);
 
@@ -122,6 +123,61 @@ export const StoreProvider = ({ children }) => {
     );
   }, [products, cart, orders, notifications, messages]);
 
+  // Load products from backend API (with mock fallback via api layer)
+  useEffect(() => {
+    let didCancel = false;
+
+    const mapProduct = (p, idx) => ({
+      id: p.product_id ?? p.id ?? p.productId ?? p.productID ?? `TMP_${idx}`,
+      title: p.product_name ?? p.title ?? p.name ?? 'Untitled Product',
+      price: typeof p.price === 'number' ? p.price : Number(p.price) || 0,
+      category: p.category || 'General',
+      stock: p.available_quantity ?? p.stock ?? 0,
+      image: p.image_url || p.image || null,
+      description: p.description || ''
+    });
+
+    const fetchProducts = async () => {
+      try {
+        const { data } = await productsAPI.getAll({ page: 1, limit: 200 });
+        const incoming = Array.isArray(data?.products) ? data.products : [];
+        if (!didCancel) {
+          const mapped = incoming.map(mapProduct);
+          setProducts(mapped);
+        }
+      } catch (err) {
+        // Keep seed/local products on failure; log once for visibility
+        console.warn('Failed to load products from API; using local products. Reason:', err?.message || err);
+      }
+    };
+
+    fetchProducts();
+
+    return () => { didCancel = true; };
+  }, []);
+
+  // Optional: expose a manual refresh method
+  const refreshProducts = useCallback(async () => {
+    try {
+      const { data } = await productsAPI.getAll({ page: 1, limit: 200 });
+      const incoming = Array.isArray(data?.products) ? data.products : [];
+      const mapped = incoming.map((p, i) => ({
+        id: p.product_id ?? p.id ?? p.productId ?? p.productID ?? `TMP_${i}`,
+        title: p.product_name ?? p.title ?? p.name ?? 'Untitled Product',
+        price: typeof p.price === 'number' ? p.price : Number(p.price) || 0,
+        category: p.category || 'General',
+        stock: p.available_quantity ?? p.stock ?? 0,
+        image: p.image_url || p.image || null,
+        description: p.description || ''
+      }));
+      setProducts(mapped);
+      return mapped;
+    } catch (err) {
+      console.warn('refreshProducts failed:', err?.message || err);
+      throw err;
+    }
+  }, []);
+
   // Cart helpers
   const addToCart = useCallback((id, qty = 1) => {
     setCart((prev) => {
@@ -180,7 +236,7 @@ export const StoreProvider = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ products, cart, orders, notifications, messages, addToCart, removeFromCart, clearCart, placeOrder, updateProduct, deleteProduct, addProduct, sendMessage }),
+    () => ({ products, cart, orders, notifications, messages, addToCart, removeFromCart, clearCart, placeOrder, updateProduct, deleteProduct, addProduct, sendMessage, refreshProducts }),
     [products, cart, orders, notifications, messages, addToCart, removeFromCart, clearCart, placeOrder, updateProduct, deleteProduct, addProduct, sendMessage]
   );
 
