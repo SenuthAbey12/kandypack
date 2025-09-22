@@ -115,6 +115,42 @@ const slideUpAnimation = `
   }
 }
 
+@keyframes borderGlow {
+  0%, 100% {
+    border-color: rgba(79, 70, 229, 0.3);
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.2);
+  }
+  50% {
+    border-color: rgba(79, 70, 229, 0.8);
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+  }
+}
+
+@keyframes borderPulse {
+  0% {
+    border-color: rgba(79, 70, 229, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    border-color: rgba(139, 92, 246, 0.8);
+    transform: scale(1.02);
+  }
+  100% {
+    border-color: rgba(79, 70, 229, 0.5);
+    transform: scale(1);
+  }
+}
+
+@keyframes rainbowBorder {
+  0% { border-color: #4f46e5; }
+  16.66% { border-color: #7c3aed; }
+  33.33% { border-color: #db2777; }
+  50% { border-color: #dc2626; }
+  66.66% { border-color: #ea580c; }
+  83.33% { border-color: #ca8a04; }
+  100% { border-color: #4f46e5; }
+}
+
 /* Enhanced Carousel Animations */
 .carousel-content-animated {
   transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1) !important;
@@ -161,6 +197,23 @@ const slideUpAnimation = `
 
 .hover-float {
   animation: float 3s ease-in-out infinite !important;
+}
+
+/* Border Animation Effects */
+.border-glow {
+  animation: borderGlow 2s ease-in-out infinite;
+  border: 2px solid rgba(79, 70, 229, 0.3);
+  transition: all 0.3s ease;
+}
+
+.border-pulse {
+  animation: borderPulse 1.5s ease-in-out infinite;
+  border: 2px solid rgba(79, 70, 229, 0.5);
+}
+
+.border-rainbow:hover {
+  animation: rainbowBorder 2s linear infinite;
+  border: 2px solid #4f46e5;
 }
 
 /* Loading and Entrance Animations */
@@ -927,6 +980,100 @@ const slideUpAnimation = `
   }
 }
 
+/* Navigation Responsive Styles */
+@media (max-width: 1024px) {
+  .home-page header [style*="topNavContainer"] {
+    padding: 0 clamp(1rem, 2.5vw, 2rem) !important;
+    gap: clamp(0.8rem, 1.5vw, 1.5rem) !important;
+    grid-template-columns: minmax(200px, 250px) 1fr minmax(180px, 220px) !important;
+  }
+  
+  .home-page nav [style*="topNavMenu"] {
+    gap: clamp(1rem, 2.5vw, 1.5rem) !important;
+    max-width: 500px !important;
+  }
+  
+  .home-page [style*="navDropdownBtn"] {
+    font-size: clamp(0.8rem, 1.6vw, 0.9rem) !important;
+    padding: clamp(0.4rem, 1.2vh, 0.6rem) clamp(0.4rem, 0.8vw, 0.6rem) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page header [style*="topNavContainer"] {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem clamp(1rem, 3vw, 2rem) !important;
+    min-height: auto !important;
+    gap: 1rem !important;
+    grid-template-columns: none !important;
+  }
+  
+  .home-page [style*="navLeft"] {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .home-page nav [style*="topNavMenu"] {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: clamp(1rem, 3vw, 2rem) !important;
+    min-width: auto !important;
+  }
+  
+  .home-page [style*="navRight"] {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .home-page [style*="navDropdownBtn"] {
+    font-size: 0.9rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .home-page [style*="topNavLogin"] {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .home-page [style*="topNavCta"] {
+    padding: 0.6rem 1.2rem !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-page header [style*="topNavContainer"] {
+    padding: 0 0.8rem !important;
+    min-height: auto !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 0.8rem !important;
+  }
+  
+  .home-page nav [style*="topNavMenu"] {
+    gap: 0.8rem !important;
+  }
+  
+  .home-page [style*="navDropdownBtn"] {
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0 !important;
+  }
+  
+  .home-page [style*="logoText"] {
+    font-size: 1.3rem !important;
+  }
+  
+  .home-page [style*="logoIcon"] {
+    width: 35px !important;
+    height: 35px !important;
+  }
+  
+  .home-page [style*="topNavActions"] {
+    gap: 0.5rem !important;
+  }
+}
+
 /* Landscape orientation adjustments */
 @media (max-height: 600px) and (orientation: landscape) {
   .home-carousel {
@@ -1061,7 +1208,7 @@ export default function Home() {
       accent: '#fd746c'
     },
     {
-      image: '/images/customer-service.svg',
+      image: process.env.PUBLIC_URL + '/images/customer-support-new.svg',
       title: '24/7 Customer Support',
       subtitle: 'Multi-channel customer service with 95% satisfaction rate and instant response',
       accent: '#ff9068'
@@ -1135,13 +1282,15 @@ export default function Home() {
       {/* Top Navigation Bar */}
       <header style={styles.topNavBar}>
         <div style={styles.topNavContainer}>
-          {/* Logo */}
-          <div style={styles.logo}>
-            <img src="/images/kandypack-logo.svg" alt="KandyPack" style={styles.logoIcon} />
-            <span style={styles.logoText}>KandyPack</span>
+          {/* Left Section - Logo */}
+          <div style={styles.navLeft}>
+            <div style={styles.logo}>
+              <img src="/images/kandypack-logo.svg" alt="KandyPack" style={styles.logoIcon} />
+              <span style={styles.logoText}>KandyPack</span>
+            </div>
           </div>
           
-          {/* Navigation Menu */}
+          {/* Center Section - Navigation Menu */}
           <nav style={styles.topNavMenu}>
             <div className="nav-dropdown" style={styles.navDropdown}>
               <button className="nav-dropdown-btn" style={styles.navDropdownBtn}>
@@ -1192,10 +1341,12 @@ export default function Home() {
             </div>
           </nav>
           
-          {/* Action Buttons */}
-          <div style={styles.topNavActions}>
-            <Link to="/login" className="top-nav-login" style={styles.topNavLogin}>Login</Link>
-            <Link to="/signup" className="top-nav-cta" style={styles.topNavCta}>Get Started</Link>
+          {/* Right Section - Action Buttons */}
+          <div style={styles.navRight}>
+            <div style={styles.topNavActions}>
+              <Link to="/login" className="top-nav-login" style={styles.topNavLogin}>Login</Link>
+              <Link to="/signup" className="top-nav-cta" style={styles.topNavCta}>Get Started</Link>
+            </div>
           </div>
         </div>
       </header>
@@ -1220,6 +1371,7 @@ export default function Home() {
                         src={slide.image} 
                         alt={slide.title}
                         style={styles.slideImg}
+                        onError={e => { e.target.onerror = null; e.target.src = process.env.PUBLIC_URL + '/images/product-placeholder.svg'; }}
                       />
                     </div>
                     <div className="home-slide-content" style={styles.slideContent}>
@@ -1243,7 +1395,7 @@ export default function Home() {
                         >
                           Browse Products
                         </Link>
-                        <Link to="/login" className="hover-lift" style={styles.secondaryButton}>
+                        <Link to="/signup" className="hover-lift" style={styles.secondaryButton}>
                           Get Started
                         </Link>
                       </div>
@@ -1293,7 +1445,7 @@ export default function Home() {
               {/* Quick Actions */}
               <div style={styles.quickActions}>
                 <Link to="/login" style={styles.actionLink}>
-                  <div className="hover-lift hover-glow shimmer" style={styles.primaryAction}>
+                  <div className="hover-lift hover-glow shimmer border-glow border-rainbow" style={styles.primaryAction}>
                     <span className="bounce-in" style={styles.actionIcon}>🔐</span>
                     <div style={styles.actionContent}>
                       <span style={styles.actionTitle}>Sign In</span>
@@ -1304,7 +1456,7 @@ export default function Home() {
                 </Link>
 
                 <Link to="/signup" style={styles.actionLink}>
-                  <div className="hover-lift" style={styles.secondaryAction}>
+                  <div className="hover-lift border-pulse border-rainbow" style={styles.secondaryAction}>
                     <span className="bounce-in" style={styles.actionIcon}>👤</span>
                     <div style={styles.actionContent}>
                       <span style={styles.actionTitle}>Sign Up</span>
@@ -1391,17 +1543,36 @@ const styles = {
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   },
   topNavContainer: {
-    maxWidth: '1200px',
+    maxWidth: '100%',
     margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-between',
+    display: 'grid',
+    gridTemplateColumns: 'minmax(250px, 300px) 1fr minmax(250px, 350px)',
     alignItems: 'center',
-    padding: '0 2rem',
+    padding: '0 clamp(1.5rem, 3vw, 2.5rem)',
     minHeight: '70px',
+    width: '100%',
+    boxSizing: 'border-box',
+    gap: 'clamp(1rem, 2vw, 2rem)',
+  },
+  navLeft: {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  navRight: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    minWidth: '200px',
   },
   topNavMenu: {
     display: 'flex',
-    gap: '2rem',
+    gap: 'clamp(1.2rem, 3vw, 2rem)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: '600px',
+    margin: '0 auto',
   },
   navDropdown: {
     position: 'relative',
@@ -1411,14 +1582,16 @@ const styles = {
     border: 'none',
     color: '#64748b',
     fontWeight: '500',
-    padding: '1rem 0',
+    padding: 'clamp(0.5rem, 1.5vh, 0.8rem) clamp(0.5rem, 1vw, 0.8rem)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     gap: '0.5rem',
-    fontSize: '0.95rem',
+    fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
     transition: 'color 0.2s ease',
     fontFamily: 'inherit',
+    whiteSpace: 'nowrap',
+    borderRadius: '6px',
   },
   dropdownArrow: {
     fontSize: '0.8rem',
@@ -1429,7 +1602,7 @@ const styles = {
     top: '100%',
     left: 0,
     background: 'white',
-    minWidth: '200px',
+    minWidth: 'clamp(180px, 25vw, 200px)',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
     borderRadius: '8px',
     padding: '0.5rem 0',
@@ -1438,50 +1611,57 @@ const styles = {
     transform: 'translateY(-10px)',
     transition: 'all 0.3s ease',
     border: '1px solid #e2e8f0',
+    zIndex: 1001,
   },
   dropdownLink: {
     display: 'block',
-    padding: '0.75rem 1rem',
+    padding: 'clamp(0.6rem, 1.5vh, 0.75rem) clamp(0.8rem, 2vw, 1rem)',
     color: '#64748b',
     textDecoration: 'none',
-    fontSize: '0.9rem',
+    fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
     transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap',
   },
   topNavActions: {
     display: 'flex',
-    gap: '1rem',
+    gap: 'clamp(0.8rem, 1.5vw, 1rem)',
     alignItems: 'center',
   },
   topNavLogin: {
     color: '#64748b',
     textDecoration: 'none',
     fontWeight: '500',
-    padding: '0.5rem 1rem',
+    padding: 'clamp(0.5rem, 1.5vw, 0.5rem) clamp(0.8rem, 2vw, 1rem)',
     borderRadius: '6px',
     transition: 'all 0.2s ease',
+    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+    whiteSpace: 'nowrap',
   },
   topNavCta: {
     background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
     color: 'white',
     textDecoration: 'none',
     fontWeight: '600',
-    padding: '0.75rem 1.5rem',
+    padding: 'clamp(0.6rem, 2vh, 0.75rem) clamp(1rem, 3vw, 1.5rem)',
     borderRadius: '8px',
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+    whiteSpace: 'nowrap',
   },
   // Logo Styles
   logo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: 'clamp(0.5rem, 2vw, 0.75rem)',
+    flexShrink: 0,
   },
   logoIcon: {
-    width: '40px',
-    height: '40px',
+    width: 'clamp(35px, 5vw, 40px)',
+    height: 'clamp(35px, 5vw, 40px)',
   },
   logoText: {
-    fontSize: '1.5rem',
+    fontSize: 'clamp(1.3rem, 3vw, 1.5rem)',
     fontWeight: 'bold',
     background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
     backgroundClip: 'text',
@@ -1561,7 +1741,7 @@ const styles = {
     maxWidth: 'clamp(150px, 18vw, 220px)',
     maxHeight: 'clamp(150px, 18vh, 220px)',
     objectFit: 'contain',
-    filter: 'brightness(0) invert(1)',
+    filter: 'drop-shadow(0 0 10px rgba(255, 255, 255, 0.3))',
   },
   slideContent: {
     flex: 1,
