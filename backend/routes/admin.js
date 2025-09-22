@@ -97,12 +97,13 @@ router.get('/customers', async (req, res) => {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY name LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+  const limitInt = Number.isFinite(limit) ? limit : parseInt(limit, 10) || 10;
+  const offsetInt = Number.isFinite(offset) ? offset : parseInt(offset, 10) || 0;
+  query += ` ORDER BY name LIMIT ${limitInt} OFFSET ${offsetInt}`;
 
     const [customers, [{ total }]] = await Promise.all([
       database.query(query, params),
-      database.query(countQuery, search ? params.slice(0, -2) : [])
+      database.query(countQuery, search ? params : [])
     ]);
 
     res.json({
@@ -237,12 +238,13 @@ router.get('/inventory', async (req, res) => {
       countQuery += whereClause;
     }
 
-    query += ' ORDER BY product_name LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+  const limitInt2 = Number.isFinite(limit) ? limit : parseInt(limit, 10) || 10;
+  const offsetInt2 = Number.isFinite(offset) ? offset : parseInt(offset, 10) || 0;
+  query += ` ORDER BY product_name LIMIT ${limitInt2} OFFSET ${offsetInt2}`;
 
     const [products, [{ total }]] = await Promise.all([
       database.query(query, params),
-      database.query(countQuery, params.slice(0, -2))
+      database.query(countQuery, params)
     ]);
 
     res.json({

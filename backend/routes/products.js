@@ -36,17 +36,21 @@ router.get('/', async (req, res) => {
       countQuery += whereClause;
     }
 
-    // Add pagination - ensure limit and offset are valid numbers
-    query += ' LIMIT ? OFFSET ?';
-    params.push(Number(limit), Number(offset));
+  const countParams = [...params];
 
-    console.log('Query params:', { page, limit, offset, params: params.slice(-2) });
+  // Add pagination (inline numerics to avoid prepared stmt issues with LIMIT/OFFSET)
+  const limitInt = Number.isFinite(limit) ? limit : parseInt(limit, 10) || 10;
+  const offsetInt = Number.isFinite(offset) ? offset : parseInt(offset, 10) || 0;
+  query += ` LIMIT ${limitInt} OFFSET ${offsetInt}`;
+
+  console.log('Query:', query);
+  console.log('Params (filters only):', params);
 
     try {
       // Try database query first
       const [products, [{ total }]] = await Promise.all([
         database.query(query, params),
-        database.query(countQuery, params.slice(0, -2)) // Remove limit and offset for count
+        database.query(countQuery, countParams)
       ]);
 
       console.log('Database query successful, returning', products.length, 'products');

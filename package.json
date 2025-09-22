@@ -25,7 +25,8 @@
   "server": "npm --prefix backend run start",
   "server:dev": "npm --prefix backend run dev",
   "install:server": "cd backend && npm install",
-  "dev": "powershell -NoProfile -Command \"Start-Process powershell -ArgumentList '-NoProfile','-NoExit','-Command','npm run server:dev' ; npm start\"",
+    "dev": "powershell -NoProfile -Command \"Start-Process powershell -ArgumentList '-NoProfile','-NoExit','-Command','npm run server:dev' ; npm start\"",
+    "postinstall": "npm --prefix backend install",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

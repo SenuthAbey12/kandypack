@@ -69,7 +69,9 @@ router.get('/orders', authenticateToken, requireCustomer, async (req, res) => {
     const offset = (page - 1) * limit;
 
     // Get orders with summary
-    const orders = await database.query(
+  const limitInt = Number.isFinite(limit) ? limit : parseInt(limit, 10) || 10;
+  const offsetInt = Number.isFinite(offset) ? offset : parseInt(offset, 10) || 0;
+  const orders = await database.query(
       `SELECT o.*, 
               COUNT(oi.order_item_id) as item_count,
               SUM(oi.quantity * oi.price) as total_amount
@@ -78,8 +80,8 @@ router.get('/orders', authenticateToken, requireCustomer, async (req, res) => {
        WHERE o.customer_id = ?
        GROUP BY o.order_id
        ORDER BY o.order_date DESC
-       LIMIT ? OFFSET ?`,
-      [customerId, limit, offset]
+       LIMIT ${limitInt} OFFSET ${offsetInt}`,
+      [customerId]
     );
 
     // Get total count

@@ -119,3 +119,18 @@ class Database {
 }
 
 module.exports = new Database();
+
+// Provide a lightweight getDB accessor for routes that need pool.execute
+// This returns the pool, which supports pool.execute(sql, params) and handles
+// connection acquisition/release automatically. Usage:
+//   const { getDB } = require('../config/database');
+//   const db = await getDB();
+//   const [rows] = await db.execute('SELECT 1');
+module.exports.getDB = async function getDB() {
+  try {
+    return module.exports.pool;
+  } catch (err) {
+    console.error('getDB error:', err);
+    throw err;
+  }
+};
