@@ -10,11 +10,23 @@ Use these credentials to test the application:
 - **Name:** Admin User
 - **Access:** Full admin dashboard with product management, order management, customer communication
 
-### 👤 Customer Account
-- **Username:** `customer`
-- **Password:** `customer123`
-- **Name:** John Doe
-- **Access:** Customer dashboard with order tracking, profile management
+### 👤 Customer Accounts
+- **Username:** `john` | **Password:** `john123` | **Name:** John Doe | **ID:** CUST001
+- **Username:** `jane` | **Password:** `jane123` | **Name:** Jane Smith | **ID:** CUST002
+- **Username:** `bob` | **Password:** `bob123` | **Name:** Bob Wilson | **ID:** CUST003
+- **Username:** `alice` | **Password:** `alice123` | **Name:** Alice Brown | **ID:** CUST004
+
+### 🚛 Driver Accounts (Employee Portal)
+- **Username:** `saman` | **Password:** `saman123` | **Name:** Saman Perera | **ID:** DRV001
+- **Username:** `kamal` | **Password:** `kamal123` | **Name:** Kamal Silva | **ID:** DRV002
+- **Username:** `nimal` | **Password:** `nimal123` | **Name:** Nimal Fernando | **ID:** DRV003
+- **Username:** `sunil` | **Password:** `sunil123` | **Name:** Sunil Rathnayake | **ID:** DRV004
+
+### 👨‍🔧 Assistant Accounts (Employee Portal)
+- **Username:** `priya` | **Password:** `priya123` | **Name:** Priya Jayasinghe | **ID:** AST001
+- **Username:** `chamara` | **Password:** `chamara123` | **Name:** Chamara Wijesekara | **ID:** AST002
+- **Username:** `sanduni` | **Password:** `sanduni123` | **Name:** Sanduni Mendis | **ID:** AST003
+- **Username:** `thilaka` | **Password:** `thilaka123` | **Name:** Thilaka Kumari | **ID:** AST004
 
 
 ## 📋 Registered Customers
