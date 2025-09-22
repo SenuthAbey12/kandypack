@@ -12,10 +12,10 @@ function Stop-ProcessOnPort {
         }
     } | Sort-Object -Unique
     
-    foreach ($pid in $processes) {
+    foreach ($processId in $processes) {
         try {
-            Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
-            Write-Host "Stopped process $pid on port $Port" -ForegroundColor Yellow
+            Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+            Write-Host "Stopped process $processId on port $Port" -ForegroundColor Yellow
         } catch {
             # Process might already be stopped
         }
@@ -41,6 +41,7 @@ if ($mysqlService -and $mysqlService.Status -eq "Running") {
         Write-Host "✗ Failed to start MySQL service" -ForegroundColor Red
         Write-Host "Please start MySQL service manually" -ForegroundColor Yellow
     }
+}
 
 Write-Host ""
 

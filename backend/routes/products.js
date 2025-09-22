@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
 
     // Add pagination - ensure limit and offset are valid numbers
     query += ' LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    params.push(Number(limit), Number(offset));
 
     console.log('Query params:', { page, limit, offset, params: params.slice(-2) });
 
