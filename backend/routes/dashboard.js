@@ -116,8 +116,8 @@ router.get('/fleet', async (req, res) => {
             LEFT JOIN truck t ON d.assigned_vehicle_id = t.truck_id
         `);
 
-        const [[totalVehicles]] = await db.query("SELECT COUNT(*) as count FROM truck");
-        const [[totalDrivers]] = await db.query("SELECT COUNT(*) as count FROM driver");
+        const [totalVehicles] = await db.query("SELECT COUNT(*) as count FROM truck");
+        const [totalDrivers] = await db.query("SELECT COUNT(*) as count FROM driver");
 
         const stats = {
             totalVehicles: totalVehicles.count,
