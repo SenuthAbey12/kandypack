@@ -68,10 +68,10 @@ router.get('/analytics', async (req, res) => {
     try {
         const { timeframe = 'month' } = req.query; 
 
-        const [[{ deliveryRate }]] = await db.query("SELECT (SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as deliveryRate FROM orders");
-        const [[{ fleetUtilization }]] = await db.query("SELECT (SUM(CASE WHEN status = 'on-duty' OR status = 'en-route' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as fleetUtilization FROM driver");
-        const [[{ costPerMile }]] = await db.query("SELECT AVG(cost_per_mile) as costPerMile FROM routes");
-        const [[{ inventoryTurnover }]] = await db.query("SELECT AVG(turnover_rate) as inventoryTurnover FROM inventory_turnover");
+        const [{ deliveryRate }] = await db.query("SELECT (SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as deliveryRate FROM orders");
+        const [{ fleetUtilization }] = await db.query("SELECT (SUM(CASE WHEN status = 'on-duty' OR status = 'en-route' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as fleetUtilization FROM driver");
+        const [{ costPerMile }] = await db.query("SELECT AVG(cost_per_mile) as costPerMile FROM routes");
+        const [{ inventoryTurnover }] = await db.query("SELECT AVG(turnover_rate) as inventoryTurnover FROM inventory_turnover");
 
         const analyticsData = {
             deliveryRate: Math.round(deliveryRate),
@@ -155,9 +155,9 @@ router.get('/railway', async (req, res) => {
             WHERE t.type = 'rail'
         `);
 
-        const [[totalEngines]] = await db.query("SELECT COUNT(*) as count FROM truck WHERE type = 'rail'");
-        const [[totalOperators]] = await db.query("SELECT COUNT(*) as count FROM driver WHERE role = 'rail_operator'");
-        const [[totalRailShipments]] = await db.query("SELECT COUNT(*) as count FROM train_shipments");
+        const [totalEngines] = await db.query("SELECT COUNT(*) as count FROM truck WHERE type = 'rail'");
+        const [totalOperators] = await db.query("SELECT COUNT(*) as count FROM driver WHERE role = 'rail_operator'");
+        const [totalRailShipments] = await db.query("SELECT COUNT(*) as count FROM train_shipments");
 
         const stats = {
             totalEngines: totalEngines.count,
@@ -180,11 +180,11 @@ router.get('/routes', async (req, res) => {
     try {
         const [routes] = await db.query("SELECT route_id as id, name, start_location as start, end_location as end, distance, status, type, on_time_performance as performance, (SELECT COUNT(*) FROM truck_deliveries WHERE route_id = routes.route_id) as vehicles FROM routes");
         
-        const [[{ totalRoutes }]] = await db.query("SELECT COUNT(*) as totalRoutes FROM routes");
-        const [[{ activeRoutes }]] = await db.query("SELECT COUNT(*) as activeRoutes FROM routes WHERE status = 'active'");
-        const [[{ routesWithIssues }]] = await db.query("SELECT COUNT(*) as routesWithIssues FROM routes WHERE status = 'issue'");
-        const [[{ vehiclesAssigned }]] = await db.query("SELECT COUNT(DISTINCT vehicle_id) as vehiclesAssigned FROM truck_deliveries");
-        const [[{ onTimePerformance }]] = await db.query("SELECT AVG(on_time_performance) as onTimePerformance FROM routes");
+        const [{ totalRoutes }] = await db.query("SELECT COUNT(*) as totalRoutes FROM routes");
+        const [{ activeRoutes }] = await db.query("SELECT COUNT(*) as activeRoutes FROM routes WHERE status = 'active'");
+        const [{ routesWithIssues }] = await db.query("SELECT COUNT(*) as routesWithIssues FROM routes WHERE status = 'issue'");
+        const [{ vehiclesAssigned }] = await db.query("SELECT COUNT(DISTINCT vehicle_id) as vehiclesAssigned FROM truck_deliveries");
+        const [{ onTimePerformance }] = await db.query("SELECT AVG(on_time_performance) as onTimePerformance FROM routes");
 
         const stats = {
             totalRoutes,
@@ -272,9 +272,9 @@ router.get('/warehouses', async (req, res) => {
     try {
         const [warehouses] = await db.query("SELECT warehouse_id as id, name, location, capacity, utilization, status FROM warehouses");
 
-        const [[{ totalWarehouses }]] = await db.query("SELECT COUNT(*) as totalWarehouses FROM warehouses");
-        const [[{ totalCapacity }]] = await db.query("SELECT SUM(capacity) as totalCapacity FROM warehouses");
-        const [[{ avgUtilization }]] = await db.query("SELECT AVG(utilization) as avgUtilization FROM warehouses");
+        const [{ totalWarehouses }] = await db.query("SELECT COUNT(*) as totalWarehouses FROM warehouses");
+        const [{ totalCapacity }] = await db.query("SELECT SUM(capacity) as totalCapacity FROM warehouses");
+        const [{ avgUtilization }] = await db.query("SELECT AVG(utilization) as avgUtilization FROM warehouses");
 
         const stats = {
             totalWarehouses,
@@ -297,9 +297,9 @@ router.get('/inventory', async (req, res) => {
     try {
         const [inventory] = await db.query("SELECT item_id as id, sku, name, category, stock_level as stock, status FROM inventory");
 
-        const [[{ totalItems }]] = await db.query("SELECT COUNT(*) as totalItems FROM inventory");
-        const [[{ lowStockItems }]] = await db.query("SELECT COUNT(*) as lowStockItems FROM inventory WHERE status = 'low-stock'");
-        const [[{ outOfStockItems }]] = await db.query("SELECT COUNT(*) as outOfStockItems FROM inventory WHERE status = 'out-of-stock'");
+        const [{ totalItems }] = await db.query("SELECT COUNT(*) as totalItems FROM inventory");
+        const [{ lowStockItems }] = await db.query("SELECT COUNT(*) as lowStockItems FROM inventory WHERE status = 'low-stock'");
+        const [{ outOfStockItems }] = await db.query("SELECT COUNT(*) as outOfStockItems FROM inventory WHERE status = 'out-of-stock'");
 
         const stats = {
             totalItems,
@@ -322,9 +322,9 @@ router.get('/staff', async (req, res) => {
     try {
         const [staff] = await db.query("SELECT assistant_id as id, name, role, contact_no as contact, status FROM assistant");
 
-        const [[{ totalStaff }]] = await db.query("SELECT COUNT(*) as totalStaff FROM assistant");
-        const [[{ activeStaff }]] = await db.query("SELECT COUNT(*) as activeStaff FROM assistant WHERE status = 'active'");
-        const [[{ onLeaveStaff }]] = await db.query("SELECT COUNT(*) as onLeaveStaff FROM assistant WHERE status = 'on-leave'");
+        const [{ totalStaff }] = await db.query("SELECT COUNT(*) as totalStaff FROM assistant");
+        const [{ activeStaff }] = await db.query("SELECT COUNT(*) as activeStaff FROM assistant WHERE status = 'active'");
+        const [{ onLeaveStaff }] = await db.query("SELECT COUNT(*) as onLeaveStaff FROM assistant WHERE status = 'on-leave'");
 
         const stats = {
             totalStaff,

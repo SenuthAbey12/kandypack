@@ -1,11 +1,11 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 9/22/2025, 1:57:02 AM*
+*Last Updated: 9/22/2025, 11:48:39 AM*
 
 ## 🗄️ Database Overview
 
 **Database Name:** kandypack  
-**Total Tables:** 9  
+**Total Tables:** 14  
 **Database Engine:** MySQL  
 
 ## 📋 Table Summary
@@ -14,11 +14,16 @@
 - **assistant**: 4 records
 - **customer**: 10 records
 - **driver**: 4 records
+- **inventory**: 6 records
+- **inventory_turnover**: 6 records
 - **order_item**: 0 records
 - **orders**: 0 records
 - **product**: 5 records
+- **routes**: 6 records
 - **train_shipments**: 0 records
+- **truck**: 6 records
 - **truck_deliveries**: 0 records
+- **warehouses**: 4 records
 
 ## 📊 Detailed Table Information
 
@@ -107,14 +112,68 @@
 | city | varchar(50) | YES |  | NULL |  |
 | user_name | varchar(50) | NO | UNI | NULL |  |
 | password | varchar(255) | NO |  | NULL |  |
+| status | enum('available','on-duty','en-route','offline') | YES |  | available |  |
+| assigned_vehicle_id | int | YES |  | NULL |  |
+| current_location | varchar(100) | YES |  | Depot |  |
+| rating | decimal(3,2) | YES |  | 4.50 |  |
 
 #### 📄 Sample Data
 
-| driver_id | name | phone_no | city | user_name | password |
-|---|---|---|---|---|---|
-| DRV001 | Saman Perera | 0775678901 | Colombo | saman | $2a$10$lguTZJwPKVL9gzc5l6fL... |
-| DRV002 | Kamal Silva | 0776789012 | Kandy | kamal | $2a$10$Jwd3JRh1Q1SGCmSWilrI... |
-| DRV003 | Nimal Fernando | 0777890123 | Galle | nimal | $2a$10$UgVGn3vs.hAofJng7EyV... |
+| driver_id | name | phone_no | city | user_name | password | status | assigned_vehicle_id | current_location | rating |
+|---|---|---|---|---|---|---|---|---|---|
+| DRV001 | Saman Perera | 0775678901 | Colombo | saman | $2a$10$lguTZJwPKVL9gzc5l6fL... | on-duty | 1 | Colombo 03 | 4.90 |
+| DRV002 | Kamal Silva | 0776789012 | Kandy | kamal | $2a$10$Jwd3JRh1Q1SGCmSWilrI... | en-route | 2 | Kandy | 4.70 |
+| DRV003 | Nimal Fernando | 0777890123 | Galle | nimal | $2a$10$UgVGn3vs.hAofJng7EyV... | available | 3 | Depot | 4.80 |
+
+---
+
+### 🏷️ inventory
+
+**Records:** 6
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| item_id | int | NO | PRI | NULL | auto_increment |
+| sku | varchar(50) | NO | UNI | NULL |  |
+| name | varchar(100) | NO |  | NULL |  |
+| category | varchar(50) | YES |  | NULL |  |
+| stock_level | int | YES |  | 0 |  |
+| status | enum('in-stock','low-stock','out-of-stock') | YES |  | in-stock |  |
+| created_at | timestamp | YES |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+
+#### 📄 Sample Data
+
+| item_id | sku | name | category | stock_level | status | created_at |
+|---|---|---|---|---|---|---|
+| 1 | SKU001 | Heavy Duty Boxes | Packaging | 150 | in-stock | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 2 | SKU002 | Bubble Wrap Roll | Packaging | 45 | low-stock | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 3 | SKU003 | Electronics Crate | Containers | 75 | in-stock | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+
+---
+
+### 🏷️ inventory_turnover
+
+**Records:** 6
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| id | int | NO | PRI | NULL | auto_increment |
+| item_id | int | YES | MUL | NULL |  |
+| turnover_rate | decimal(10,2) | YES |  | 0.00 |  |
+| period_start | date | YES |  | NULL |  |
+| period_end | date | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| id | item_id | turnover_rate | period_start | period_end |
+|---|---|---|---|---|
+| 1 | 1 | 8.50 | Mon Jan 01 2024 00:00:00 GMT+0530 (India Standard Time) | Wed Jan 31 2024 00:00:00 GMT+0530 (India Standard Time) |
+| 2 | 2 | 6.20 | Mon Jan 01 2024 00:00:00 GMT+0530 (India Standard Time) | Wed Jan 31 2024 00:00:00 GMT+0530 (India Standard Time) |
+| 3 | 3 | 9.10 | Mon Jan 01 2024 00:00:00 GMT+0530 (India Standard Time) | Wed Jan 31 2024 00:00:00 GMT+0530 (India Standard Time) |
 
 ---
 
@@ -189,6 +248,35 @@
 
 ---
 
+### 🏷️ routes
+
+**Records:** 6
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| route_id | int | NO | PRI | NULL | auto_increment |
+| name | varchar(100) | NO |  | NULL |  |
+| start_location | varchar(100) | NO |  | NULL |  |
+| end_location | varchar(100) | NO |  | NULL |  |
+| distance | varchar(20) | YES |  | NULL |  |
+| type | enum('road','rail') | YES |  | road |  |
+| status | enum('active','inactive','issue') | YES |  | active |  |
+| on_time_performance | int | YES |  | 85 |  |
+| cost_per_mile | decimal(10,2) | YES |  | 2.50 |  |
+| created_at | timestamp | YES |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+
+#### 📄 Sample Data
+
+| route_id | name | start_location | end_location | distance | type | status | on_time_performance | cost_per_mile | created_at |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | Colombo-Kandy | Colombo | Kandy | 115 km | road | active | 94 | 2.35 | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 2 | Kandy-Galle | Kandy | Galle | 220 km | road | active | 85 | 2.45 | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 3 | Colombo-Jaffna | Colombo | Jaffna | 400 km | road | issue | 72 | 2.65 | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+
+---
+
 ### 🏷️ train_shipments
 
 **Records:** 0
@@ -209,6 +297,34 @@
 
 ---
 
+### 🏷️ truck
+
+**Records:** 6
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| truck_id | int | NO | PRI | NULL | auto_increment |
+| plate_no | varchar(20) | NO | UNI | NULL |  |
+| type | enum('road','rail') | YES |  | road |  |
+| capacity | int | YES |  | NULL |  |
+| fuel_level | int | YES |  | 100 |  |
+| last_maintenance | date | YES |  | NULL |  |
+| status | enum('active','inactive','maintenance') | YES |  | active |  |
+| speed | varchar(20) | YES |  | 0 km/h |  |
+| created_at | timestamp | YES |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+
+#### 📄 Sample Data
+
+| truck_id | plate_no | type | capacity | fuel_level | last_maintenance | status | speed | created_at |
+|---|---|---|---|---|---|---|---|---|
+| 1 | CAB-1234 | road | 5000 | 85 | Mon Jan 15 2024 00:00:00 GMT+0530 (India Standard Time) | active | 45 km/h | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 2 | CAC-5678 | road | 3000 | 60 | Wed Jan 10 2024 00:00:00 GMT+0530 (India Standard Time) | active | 60 km/h | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 3 | CAE-9101 | road | 7000 | 95 | Sat Jan 20 2024 00:00:00 GMT+0530 (India Standard Time) | active | 0 km/h | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+
+---
+
 ### 🏷️ truck_deliveries
 
 **Records:** 0
@@ -225,6 +341,32 @@
 #### 📄 Sample Data
 
 *No data available*
+
+---
+
+### 🏷️ warehouses
+
+**Records:** 4
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| warehouse_id | int | NO | PRI | NULL | auto_increment |
+| name | varchar(100) | NO |  | NULL |  |
+| location | varchar(100) | NO |  | NULL |  |
+| capacity | int | NO |  | NULL |  |
+| utilization | decimal(5,2) | YES |  | 0.00 |  |
+| status | enum('active','inactive') | YES |  | active |  |
+| created_at | timestamp | YES |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+
+#### 📄 Sample Data
+
+| warehouse_id | name | location | capacity | utilization | status | created_at |
+|---|---|---|---|---|---|---|
+| 1 | Colombo Main | Colombo | 10000 | 87.50 | active | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 2 | Kandy Hub | Kandy | 7500 | 82.70 | active | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
+| 3 | Galle Depot | Galle | 5000 | 76.00 | inactive | Mon Sep 22 2025 10:00:52 GMT+0530 (India Standard Time) |
 
 ---
 
