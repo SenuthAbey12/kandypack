@@ -494,6 +494,101 @@ const AdminFleet = () => {
           </div>
         </div>
       )}
+
+      {/* Add Vehicle Modal */}
+      {showAddVehicleModal && (
+        <div className="modal-overlay" onClick={() => setShowAddVehicleModal(false)}>
+          <div className="modal fleet-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Add New Vehicle</h2>
+              <button 
+                className="modal-close"
+                onClick={() => setShowAddVehicleModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <form className="vehicle-form" onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const newVehicle = {
+                  id: vehicles.length + 1,
+                  vehicleNumber: formData.get('vehicleNumber'),
+                  type: formData.get('type'),
+                  model: formData.get('model'),
+                  capacity: formData.get('capacity'),
+                  status: 'available',
+                  driver: null,
+                  location: 'Depot',
+                  fuelLevel: 100,
+                  mileage: 0,
+                  lastService: new Date().toISOString().split('T')[0],
+                  nextService: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  insurance: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+                };
+                setVehicles([...vehicles, newVehicle]);
+                setShowAddVehicleModal(false);
+                e.target.reset();
+              }}>
+                <div className="form-group">
+                  <label>Vehicle Number</label>
+                  <input 
+                    type="text" 
+                    name="vehicleNumber"
+                    placeholder="e.g., CAB-1234" 
+                    required 
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Vehicle Type</label>
+                  <select name="type" required>
+                    <option value="">Select Type</option>
+                    <option value="Lorry">Lorry</option>
+                    <option value="Van">Van</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Train Engine">Train Engine</option>
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label>Model</label>
+                  <input 
+                    type="text" 
+                    name="model"
+                    placeholder="e.g., Tata 1613" 
+                    required 
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label>Capacity</label>
+                  <input 
+                    type="text" 
+                    name="capacity"
+                    placeholder="e.g., 10 tons" 
+                    required 
+                  />
+                </div>
+
+                <div className="modal-footer">
+                  <button 
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => setShowAddVehicleModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="primary-button">
+                    Add Vehicle
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
