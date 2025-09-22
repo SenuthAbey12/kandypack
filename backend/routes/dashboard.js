@@ -109,7 +109,7 @@ router.get('/fleet', async (req, res) => {
                 d.status, 
                 d.current_location as location, 
                 d.rating,
-                (SELECT COUNT(*) FROM orders WHERE customer_id = d.driver_id) as orders,
+                0 as orders,
                 t.fuel_level as fuelLevel,
                 t.last_maintenance as lastMaintenance
             FROM driver d 
