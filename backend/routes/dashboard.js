@@ -23,8 +23,8 @@ router.get('/stats', async (req, res) => {
             db.query("SELECT COUNT(*) as count FROM driver"),
             db.query("SELECT COUNT(*) as count FROM assistant"),
             db.query("SELECT COUNT(*) as count FROM customer"),
-            db.query("SELECT COUNT(*) as count FROM orders WHERE status = 'Pending'"),
-            db.query("SELECT COUNT(*) as count FROM orders WHERE status = 'Delivered' AND DATE(updated_at) = CURDATE()"),
+            db.query("SELECT COUNT(*) as count FROM orders WHERE order_status = 'Pending'"),
+            db.query("SELECT COUNT(*) as count FROM orders WHERE order_status = 'Delivered' AND DATE(order_date) = CURDATE()"),
             db.query("SELECT COUNT(*) as count FROM truck"),
             db.query("SELECT COUNT(*) as count FROM train_shipments"),
             db.query("SELECT COUNT(*) as count FROM truck_deliveries")
@@ -66,46 +66,25 @@ router.get('/stats', async (req, res) => {
 // @access  Private
 router.get('/analytics', async (req, res) => {
     try {
-        const { timeframe = 'month' } = req.query; // Default to 'month'
+        const { timeframe = 'month' } = req.query; 
 
-        // In a real application, these values would be calculated with complex SQL queries
-        // based on the provided timeframe. For this example, we'll return mock data
-        // that simulates the kind of data structure the frontend expects.
-        
+        const [[{ deliveryRate }]] = await db.query("SELECT (SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as deliveryRate FROM orders");
+        const [[{ fleetUtilization }]] = await db.query("SELECT (SUM(CASE WHEN status = 'on-duty' OR status = 'en-route' THEN 1 ELSE 0 END) / COUNT(*)) * 100 as fleetUtilization FROM driver");
+        const [[{ costPerMile }]] = await db.query("SELECT AVG(cost_per_mile) as costPerMile FROM routes");
+        const [[{ inventoryTurnover }]] = await db.query("SELECT AVG(turnover_rate) as inventoryTurnover FROM inventory_turnover");
+
         const analyticsData = {
-            week: {
-                deliveryRate: 94.2,
-                fleetUtilization: 82.5,
-                costPerMile: 2.35,
-                inventoryTurnover: 6.8,
-                trends: { delivery: '+3.2%', fleet: '+5.8%', cost: '-2.1%', inventory: '+8.5%' }
-            },
-            month: {
-                deliveryRate: 96.5,
-                fleetUtilization: 78.5,
-                costPerMile: 2.45,
-                inventoryTurnover: 8.2,
-                trends: { delivery: '+5.8%', fleet: '+2.3%', cost: '+1.2%', inventory: '+12.4%' }
-            },
-            quarter: {
-                deliveryRate: 95.8,
-                fleetUtilization: 85.2,
-                costPerMile: 2.28,
-                inventoryTurnover: 9.1,
-                trends: { delivery: '+8.5%', fleet: '+7.2%', cost: '-5.3%', inventory: '+18.7%' }
-            }
+            deliveryRate: Math.round(deliveryRate),
+            fleetUtilization: Math.round(fleetUtilization),
+            costPerMile: Math.round(costPerMile),
+            inventoryTurnover: Math.round(inventoryTurnover),
+            trends: { delivery: '+5.8%', fleet: '+2.3%', cost: '+1.2%', inventory: '+12.4%' } // These are still mock
         };
 
-        const routeEfficiencyData = [
-            { route: 'Colombo-Kandy', efficiency: 94, trend: '+2.5%', status: 'excellent' },
-            { route: 'Kandy-Galle', efficiency: 78, trend: '-1.2%', status: 'good' },
-            { route: 'Main Railway', efficiency: 96, trend: '+4.1%', status: 'excellent' },
-            { route: 'Coast Railway', efficiency: 92, trend: '+1.8%', status: 'excellent' },
-            { route: 'Colombo-Jaffna', efficiency: 85, trend: '+0.5%', status: 'good' }
-        ];
+        const [routeEfficiencyData] = await db.query("SELECT name as route, on_time_performance as efficiency, '+2.5%' as trend, CASE WHEN on_time_performance > 90 THEN 'excellent' ELSE 'good' END as status FROM routes");
 
         res.json({
-            analyticsData: analyticsData[timeframe] || analyticsData.month,
+            analyticsData: analyticsData,
             routeEfficiencyData: routeEfficiencyData
         });
 
@@ -120,24 +99,29 @@ router.get('/analytics', async (req, res) => {
 // @access  Private
 router.get('/fleet', async (req, res) => {
     try {
-        // Using placeholder data as the database schema is not fully aligned with frontend expectations.
-        // In a real-world scenario, you would build complex SQL queries here.
-        const drivers = [
-            { id: 1, name: 'Nimal Silva', license: 'DL12345', vehicle: 'Lorry - CAB-1234', type: 'road', status: 'on-duty', location: 'Colombo 03', rating: 4.9, orders: 45, fuelLevel: 85, lastMaintenance: '2024-01-15' },
-            { id: 2, name: 'Sunil Perera', license: 'DL67890', vehicle: 'Van - CAC-5678', type: 'road', status: 'en-route', location: 'Kandy', rating: 4.7, orders: 38, fuelLevel: 60, lastMaintenance: '2024-01-10' },
-            { id: 3, name: 'Kamal Fernando', license: 'DL11223', vehicle: 'Truck - CAE-9101', type: 'road', status: 'available', location: 'Depot', rating: 4.8, orders: 52, fuelLevel: 95, lastMaintenance: '2024-01-20' },
-            { id: 4, name: 'Ravi Mendis', license: 'DL44556', vehicle: 'Van - CAF-1122', type: 'road', status: 'break', location: 'Rest Area', rating: 4.6, orders: 33, fuelLevel: 40, lastMaintenance: '2024-01-08' },
-            { id: 5, name: 'Chaminda Perera', license: 'DL77889', vehicle: 'Lorry - CAH-3344', type: 'road', status: 'on-duty', location: 'Galle', rating: 4.5, orders: 41, fuelLevel: 70, lastMaintenance: '2024-01-18' },
-            { id: 6, name: 'Pradeep Jayawardene', license: 'RL55443', vehicle: 'Train Engine - TE-001', type: 'rail', status: 'scheduled', location: 'Colombo Fort Station', rating: 4.9, orders: 25, fuelLevel: 90, lastMaintenance: '2024-01-22' },
-            { id: 7, name: 'Anil Gunasekara', license: 'RL66778', vehicle: 'Train Engine - TE-002', type: 'rail', status: 'en-route', location: 'Kandy Station', rating: 4.8, orders: 18, fuelLevel: 75, lastMaintenance: '2024-01-19' }
-        ];
+        const [drivers] = await db.query(`
+            SELECT 
+                d.driver_id as id, 
+                d.name, 
+                d.phone_no as license, 
+                t.plate_no as vehicle, 
+                t.type, 
+                d.status, 
+                d.current_location as location, 
+                d.rating,
+                (SELECT COUNT(*) FROM orders WHERE customer_id = d.driver_id) as orders,
+                t.fuel_level as fuelLevel,
+                t.last_maintenance as lastMaintenance
+            FROM driver d 
+            LEFT JOIN truck t ON d.assigned_vehicle_id = t.truck_id
+        `);
 
-        const [totalVehicles] = await db.query("SELECT COUNT(*) as count FROM truck");
-        const [totalDrivers] = await db.query("SELECT COUNT(*) as count FROM driver");
+        const [[totalVehicles]] = await db.query("SELECT COUNT(*) as count FROM truck");
+        const [[totalDrivers]] = await db.query("SELECT COUNT(*) as count FROM driver");
 
         const stats = {
-            totalVehicles: totalVehicles[0].count,
-            totalDrivers: totalDrivers[0].count,
+            totalVehicles: totalVehicles.count,
+            totalDrivers: totalDrivers.count,
         };
 
         res.json({ drivers, stats });
@@ -153,42 +137,39 @@ router.get('/fleet', async (req, res) => {
 // @access  Private
 router.get('/railway', async (req, res) => {
     try {
-        // Using placeholder data for operators, similar to the fleet endpoint.
-        const allDrivers = [
-            { id: 1, name: 'Nimal Silva', license: 'DL12345', vehicle: 'Lorry - CAB-1234', type: 'road', status: 'on-duty', location: 'Colombo 03', rating: 4.9, orders: 45, fuelLevel: 85, lastMaintenance: '2024-01-15' },
-            { id: 2, name: 'Sunil Perera', license: 'DL67890', vehicle: 'Van - CAC-5678', type: 'road', status: 'en-route', location: 'Kandy', rating: 4.7, orders: 38, fuelLevel: 60, lastMaintenance: '2024-01-10' },
-            { id: 3, name: 'Kamal Fernando', license: 'DL11223', vehicle: 'Truck - CAE-9101', type: 'road', status: 'available', location: 'Depot', rating: 4.8, orders: 52, fuelLevel: 95, lastMaintenance: '2024-01-20' },
-            { id: 4, name: 'Ravi Mendis', license: 'DL44556', vehicle: 'Van - CAF-1122', type: 'road', status: 'break', location: 'Rest Area', rating: 4.6, orders: 33, fuelLevel: 40, lastMaintenance: '2024-01-08' },
-            { id: 5, name: 'Chaminda Perera', license: 'DL77889', vehicle: 'Lorry - CAH-3344', type: 'road', status: 'on-duty', location: 'Galle', rating: 4.5, orders: 41, fuelLevel: 70, lastMaintenance: '2024-01-18' },
-            { id: 6, name: 'Pradeep Jayawardene', license: 'RL55443', vehicle: 'Train Engine - TE-001', type: 'rail', status: 'scheduled', location: 'Colombo Fort Station', rating: 4.9, orders: 25, fuelLevel: 90, lastMaintenance: '2024-01-22' },
-            { id: 7, name: 'Anil Gunasekara', license: 'RL66778', vehicle: 'Train Engine - TE-002', type: 'rail', status: 'en-route', location: 'Kandy Station', rating: 4.8, orders: 18, fuelLevel: 75, lastMaintenance: '2024-01-19' }
-        ];
+        const [operators] = await db.query(`
+            SELECT 
+                d.driver_id as id, 
+                d.name, 
+                d.license_no as license, 
+                t.plate_no as vehicle, 
+                'rail' as type, 
+                d.status, 
+                d.current_location as location, 
+                d.rating,
+                (SELECT COUNT(*) FROM train_shipments WHERE operator_id = d.driver_id) as orders,
+                t.fuel_level as fuelLevel,
+                t.last_maintenance as lastMaintenance
+            FROM driver d 
+            JOIN truck t ON d.assigned_vehicle_id = t.truck_id
+            WHERE t.type = 'rail'
+        `);
 
-        const railwayOperators = allDrivers.filter(d => d.type === 'rail');
-
-        // In a real scenario, these would be complex SQL queries targeting railway-specific tables.
-        const [totalEngines] = await db.query("SELECT COUNT(*) as count FROM truck WHERE type = 'rail'"); // Assuming a 'type' column exists
-        const [totalOperators] = await db.query("SELECT COUNT(*) as count FROM driver WHERE role = 'rail_operator'"); // Assuming a 'role' column
-        const [totalRailShipments] = await db.query("SELECT COUNT(*) as count FROM orders WHERE transport_mode = 'rail'");
-
+        const [[totalEngines]] = await db.query("SELECT COUNT(*) as count FROM truck WHERE type = 'rail'");
+        const [[totalOperators]] = await db.query("SELECT COUNT(*) as count FROM driver WHERE role = 'rail_operator'");
+        const [[totalRailShipments]] = await db.query("SELECT COUNT(*) as count FROM train_shipments");
 
         const stats = {
-            totalEngines: totalEngines[0] ? totalEngines[0].count : railwayOperators.length, // Fallback to mock data
-            totalOperators: totalOperators[0] ? totalOperators[0].count : railwayOperators.length, // Fallback
-            railShipments: totalRailShipments[0] ? totalRailShipments[0].count : 156, // Fallback
+            totalEngines: totalEngines.count,
+            totalOperators: totalOperators.count,
+            railShipments: totalRailShipments.count,
         };
 
-        res.json({ operators: railwayOperators, stats });
+        res.json({ operators, stats });
 
     } catch (err) {
         console.error('Error fetching railway data:', err.message);
-        // Provide fallback mock data on error to keep the frontend functional
-        const fallbackOperators = [
-            { id: 6, name: 'Pradeep Jayawardene', license: 'RL55443', vehicle: 'Train Engine - TE-001', type: 'rail', status: 'scheduled', location: 'Colombo Fort Station', rating: 4.9, orders: 25, fuelLevel: 90, lastMaintenance: '2024-01-22' },
-            { id: 7, name: 'Anil Gunasekara', license: 'RL66778', vehicle: 'Train Engine - TE-002', type: 'rail', status: 'en-route', location: 'Kandy Station', rating: 4.8, orders: 18, fuelLevel: 75, lastMaintenance: '2024-01-19' }
-        ];
-        const fallbackStats = { totalEngines: 2, totalOperators: 2, railShipments: 156 };
-        res.status(500).json({ operators: fallbackOperators, stats: fallbackStats, error: 'Server Error, fallback data provided.' });
+        res.status(500).send('Server Error');
     }
 });
 
@@ -197,25 +178,20 @@ router.get('/railway', async (req, res) => {
 // @access  Private
 router.get('/routes', async (req, res) => {
     try {
-        // Using placeholder data as the database schema for routes is not fully defined.
-        const routes = [
-            { id: 'R001', name: 'Colombo-Kandy', start: 'Colombo', end: 'Kandy', distance: '115 km', vehicles: 5, status: 'active', performance: 94 },
-            { id: 'R002', name: 'Kandy-Galle', start: 'Kandy', end: 'Galle', distance: '220 km', vehicles: 3, status: 'active', performance: 85 },
-            { id: 'R003', name: 'Colombo-Jaffna', start: 'Colombo', end: 'Jaffna', distance: '400 km', vehicles: 2, status: 'issue', performance: 72 },
-            { id: 'R004', name: 'Main Railway Line', start: 'Colombo', end: 'Badulla', distance: '290 km', vehicles: 8, status: 'active', performance: 96, type: 'rail' },
-            { id: 'R005', name: 'Coastal Line', start: 'Colombo', end: 'Matara', distance: '160 km', vehicles: 6, status: 'active', performance: 92, type: 'rail' },
-            { id: 'R006', name: 'Local Delivery Zone 1', start: 'Depot A', end: 'Zone 1', distance: '45 km', vehicles: 12, status: 'active', performance: 98, type: 'road' },
-        ];
-
-        // In a real application, you would query the database.
-        // const [routesFromDb] = await db.query("SELECT * FROM routes");
+        const [routes] = await db.query("SELECT route_id as id, name, start_location as start, end_location as end, distance, status, type, on_time_performance as performance, (SELECT COUNT(*) FROM truck_deliveries WHERE route_id = routes.route_id) as vehicles FROM routes");
         
+        const [[{ totalRoutes }]] = await db.query("SELECT COUNT(*) as totalRoutes FROM routes");
+        const [[{ activeRoutes }]] = await db.query("SELECT COUNT(*) as activeRoutes FROM routes WHERE status = 'active'");
+        const [[{ routesWithIssues }]] = await db.query("SELECT COUNT(*) as routesWithIssues FROM routes WHERE status = 'issue'");
+        const [[{ vehiclesAssigned }]] = await db.query("SELECT COUNT(DISTINCT vehicle_id) as vehiclesAssigned FROM truck_deliveries");
+        const [[{ onTimePerformance }]] = await db.query("SELECT AVG(on_time_performance) as onTimePerformance FROM routes");
+
         const stats = {
-            totalRoutes: routes.length,
-            activeRoutes: routes.filter(r => r.status === 'active').length,
-            routesWithIssues: routes.filter(r => r.status === 'issue').length,
-            vehiclesAssigned: routes.reduce((sum, r) => sum + r.vehicles, 0),
-            onTimePerformance: 87, // This would be a calculated metric
+            totalRoutes,
+            activeRoutes,
+            routesWithIssues,
+            vehiclesAssigned,
+            onTimePerformance: Math.round(onTimePerformance),
         };
 
         res.json({ routes, stats });
@@ -231,15 +207,32 @@ router.get('/routes', async (req, res) => {
 // @access  Private
 router.get('/tracking', async (req, res) => {
     try {
-        // This is mock data. In a real system, this would come from a live GPS tracking service or a database that is frequently updated.
-        const liveTracking = [
-            { id: 1, driver: 'Sunil Perera', vehicleId: 'CAC-5678', orderId: 'KP1247TR', speed: '60 km/h', status: 'moving', lastUpdate: '1 min ago', location: { lat: 6.9271, lng: 79.8612 } },
-            { id: 2, driver: 'Kamal Fernando', vehicleId: 'CAE-9101', orderId: 'KP1245TR', speed: '0 km/h', status: 'stopped', lastUpdate: '5 min ago', location: { lat: 7.2906, lng: 80.6337 } },
-            { id: 3, driver: 'Chaminda Perera', vehicleId: 'CAH-3344', orderId: 'KP1249TR', speed: '45 km/h', status: 'moving', lastUpdate: '2 min ago', location: { lat: 6.0535, lng: 80.2210 } },
-            { id: 4, driver: 'Anil Gunasekara', vehicleId: 'TE-002', orderId: 'KPR456', speed: '80 km/h', status: 'moving', lastUpdate: '3 min ago', location: { lat: 7.0, lng: 80.5 } , type: 'rail'},
-        ];
+        const [liveTracking] = await db.query(`
+            SELECT 
+                td.delivery_id as id,
+                d.name as driver,
+                t.plate_no as vehicleId,
+                td.order_id as orderId,
+                t.speed,
+                td.status,
+                td.last_updated as lastUpdate,
+                td.current_location as location
+            FROM truck_deliveries td
+            JOIN driver d ON td.driver_id = d.driver_id
+            JOIN truck t ON td.vehicle_id = t.truck_id
+            WHERE td.status = 'in_transit'
+        `);
 
-        res.json({ liveTracking });
+        // The location is stored as a string 'lat,lng', so we need to parse it.
+        const formattedTracking = liveTracking.map(item => ({
+            ...item,
+            location: {
+                lat: parseFloat(item.location.split(',')[0]),
+                lng: parseFloat(item.location.split(',')[1])
+            }
+        }));
+
+        res.json({ liveTracking: formattedTracking });
 
     } catch (err) {
         console.error('Error fetching tracking data:', err.message);
@@ -252,18 +245,17 @@ router.get('/tracking', async (req, res) => {
 // @access  Private
 router.get('/shipments', async (req, res) => {
     try {
-        // In a real application, you would fetch this from the 'orders' table with joins to 'customers' etc.
-        // For now, we'll use mock data.
-        const shipments = [
-            { orderId: 'KP1248TR', customer: 'KandyMart Pvt Ltd', date: '2024-07-22', amount: 'Rs. 12,500', status: 'Delivered' },
-            { orderId: 'KP1247TR', customer: 'Tech Solutions', date: '2024-07-22', amount: 'Rs. 8,900', status: 'In Transit' },
-            { orderId: 'KP1246TR', customer: 'Green Store', date: '2024-07-21', amount: 'Rs. 6,750', status: 'Pending' },
-            { orderId: 'KP1245TR', customer: 'Book Haven', date: '2024-07-21', amount: 'Rs. 3,200', status: 'Delivered' },
-            { orderId: 'KP1244TR', customer: 'Global Exports', date: '2024-07-20', amount: 'Rs. 45,000', status: 'Cancelled' },
-            { orderId: 'KP1243TR', customer: 'City Hardware', date: '2024-07-20', amount: 'Rs. 18,300', status: 'In Transit' },
-        ];
-
-        // const [shipmentsFromDb] = await db.query("SELECT order_id as orderId, customer_name as customer, order_date as date, total_amount as amount, status FROM orders ORDER BY order_date DESC");
+        const [shipments] = await db.query(`
+            SELECT 
+                o.order_id as orderId, 
+                c.name as customer, 
+                o.order_date as date, 
+                o.total_amount as amount, 
+                o.status 
+            FROM orders o
+            JOIN customer c ON o.customer_id = c.customer_id
+            ORDER BY o.order_date DESC
+        `);
 
         res.json({ shipments });
 
@@ -278,20 +270,16 @@ router.get('/shipments', async (req, res) => {
 // @access  Private
 router.get('/warehouses', async (req, res) => {
     try {
-        // Mock data. In a real system, this would come from a 'warehouses' table.
-        const warehouses = [
-            { id: 1, name: 'Colombo Main', location: 'Colombo', capacity: 10000, utilization: 87.5, status: 'active' },
-            { id: 2, name: 'Kandy Hub', location: 'Kandy', capacity: 7500, utilization: 82.7, status: 'active' },
-            { id: 3, name: 'Galle Depot', location: 'Galle', capacity: 5000, utilization: 76.0, status: 'inactive' },
-            { id: 4, name: 'Jaffna Logistics', location: 'Jaffna', capacity: 6000, utilization: 95.2, status: 'active' },
-        ];
+        const [warehouses] = await db.query("SELECT warehouse_id as id, name, location, capacity, utilization, status FROM warehouses");
 
-        // const [warehousesFromDb] = await db.query("SELECT * FROM warehouses");
+        const [[{ totalWarehouses }]] = await db.query("SELECT COUNT(*) as totalWarehouses FROM warehouses");
+        const [[{ totalCapacity }]] = await db.query("SELECT SUM(capacity) as totalCapacity FROM warehouses");
+        const [[{ avgUtilization }]] = await db.query("SELECT AVG(utilization) as avgUtilization FROM warehouses");
 
         const stats = {
-            totalWarehouses: warehouses.length,
-            totalCapacity: warehouses.reduce((sum, w) => sum + w.capacity, 0),
-            avgUtilization: Math.round(warehouses.reduce((sum, w) => sum + w.utilization, 0) / warehouses.length),
+            totalWarehouses,
+            totalCapacity,
+            avgUtilization: Math.round(avgUtilization),
         };
 
         res.json({ warehouses, stats });
@@ -307,22 +295,16 @@ router.get('/warehouses', async (req, res) => {
 // @access  Private
 router.get('/inventory', async (req, res) => {
     try {
-        // Mock data. In a real system, this would come from an 'inventory' or 'products' table.
-        const inventory = [
-            { id: 1, sku: 'SKU001', name: 'Heavy Duty Boxes', category: 'Packaging', stock: 150, status: 'in-stock' },
-            { id: 2, sku: 'SKU002', name: 'Bubble Wrap Roll', category: 'Packaging', stock: 45, status: 'low-stock' },
-            { id: 3, sku: 'SKU003', name: 'Electronics Crate', category: 'Containers', stock: 75, status: 'in-stock' },
-            { id: 4, sku: 'SKU004', name: 'Wooden Pallets', category: 'Logistics', stock: 0, status: 'out-of-stock' },
-            { id: 5, sku: 'SKU005', name: 'Packing Tape', category: 'Supplies', stock: 250, status: 'in-stock' },
-            { id: 6, sku: 'SKU006', name: 'Fragile Stickers', category: 'Supplies', stock: 30, status: 'low-stock' },
-        ];
+        const [inventory] = await db.query("SELECT item_id as id, sku, name, category, stock_level as stock, status FROM inventory");
 
-        // const [inventoryFromDb] = await db.query("SELECT * FROM inventory");
+        const [[{ totalItems }]] = await db.query("SELECT COUNT(*) as totalItems FROM inventory");
+        const [[{ lowStockItems }]] = await db.query("SELECT COUNT(*) as lowStockItems FROM inventory WHERE status = 'low-stock'");
+        const [[{ outOfStockItems }]] = await db.query("SELECT COUNT(*) as outOfStockItems FROM inventory WHERE status = 'out-of-stock'");
 
         const stats = {
-            totalItems: inventory.length,
-            lowStockItems: inventory.filter(i => i.status === 'low-stock').length,
-            outOfStockItems: inventory.filter(i => i.status === 'out-of-stock').length,
+            totalItems,
+            lowStockItems,
+            outOfStockItems,
         };
 
         res.json({ inventory, stats });
@@ -338,21 +320,16 @@ router.get('/inventory', async (req, res) => {
 // @access  Private
 router.get('/staff', async (req, res) => {
     try {
-        // Mock data. In a real system, this would come from a 'staff' or 'employees' table.
-        const staff = [
-            { id: 1, name: 'Saman Kumara', role: 'Loader', contact: '077-1234567', status: 'active' },
-            { id: 2, name: 'Priya Jayasinghe', role: 'Admin Assistant', contact: '071-7654321', status: 'active' },
-            { id: 3, name: 'Ruwan Silva', role: 'Logistics Coordinator', contact: '076-1122334', status: 'on-leave' },
-            { id: 4, name: 'Anura Bandara', role: 'Warehouse Manager', contact: '077-5556677', status: 'active' },
-            { id: 5, name: 'Nadeeka Perera', role: 'Customer Support', contact: '071-9988776', status: 'inactive' },
-        ];
+        const [staff] = await db.query("SELECT assistant_id as id, name, role, contact_no as contact, status FROM assistant");
 
-        // const [staffFromDb] = await db.query("SELECT * FROM staff");
+        const [[{ totalStaff }]] = await db.query("SELECT COUNT(*) as totalStaff FROM assistant");
+        const [[{ activeStaff }]] = await db.query("SELECT COUNT(*) as activeStaff FROM assistant WHERE status = 'active'");
+        const [[{ onLeaveStaff }]] = await db.query("SELECT COUNT(*) as onLeaveStaff FROM assistant WHERE status = 'on-leave'");
 
         const stats = {
-            totalStaff: staff.length,
-            activeStaff: staff.filter(s => s.status === 'active').length,
-            onLeaveStaff: staff.filter(s => s.status === 'on-leave').length,
+            totalStaff,
+            activeStaff,
+            onLeaveStaff,
         };
 
         res.json({ staff, stats });

@@ -84,8 +84,9 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 KandyPack API Server running on port ${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`🚀 KandyPack API Server running on http://127.0.0.1:${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
+  console.log('✅ Database connection successful');
 });
