@@ -1,16 +1,63 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStatus, stats }) => {
-    const filteredDrivers = drivers.filter(driver => {
-      const matchesSearch = (driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           driver.vehicle.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                           driver.type === 'rail';
-      const matchesStatus = filterStatus === 'all' || driver.status === filterStatus;
-      return matchesSearch && matchesStatus;
+const Railway = () => {
+    const [railwayData, setRailwayData] = useState({ operators: [], stats: {} });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchRailwayData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/railway');
+                setRailwayData(res.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch railway data. Please try again later.');
+                // If the server provides fallback data on error, use it
+                if (err.response && err.response.data) {
+                    setRailwayData(err.response.data);
+                }
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRailwayData();
+    }, []);
+
+    const { operators, stats } = railwayData;
+
+    const filteredOperators = (operators || []).filter(operator => {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const matchesSearch = (operator.name && operator.name.toLowerCase().includes(lowerSearchTerm)) ||
+                              (operator.vehicle && operator.vehicle.toLowerCase().includes(lowerSearchTerm));
+        
+        const matchesStatus = filterStatus === 'all' || operator.status === filterStatus;
+        
+        return matchesSearch && matchesStatus;
     });
+
+    const enginesOnDuty = (operators || []).filter(d => d.status === 'on-duty' || d.status === 'en-route' || d.status === 'scheduled').length;
+    const avgFuel = (operators && operators.length > 0) 
+        ? Math.round(operators.reduce((sum, d) => sum + (d.fuelLevel || 0), 0) / operators.length) 
+        : 0;
+
+    if (loading) {
+        return <div className="loading-spinner"><div></div><div></div><div></div></div>;
+    }
+
+    if (error && !railwayData.operators) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
       <div>
+        {error && <div className="error-message" style={{ marginBottom: '1rem' }}>{error}</div>}
         <div className="section-header">
           <h2 className="section-title">Railway Operations</h2>
           <div className="table-actions">
@@ -27,10 +74,10 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">🚄</div>
-              <div className="stat-trend up">↗️ +1</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{drivers.filter(d => d.type === 'rail').length}</h3>
+              <h3>{stats.totalEngines || 0}</h3>
               <p>Total Engines</p>
             </div>
           </div>
@@ -38,10 +85,10 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">👨‍💼</div>
-              <div className="stat-trend up">↗️ +1</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{drivers.filter(d => d.type === 'rail').length}</h3>
+              <h3>{stats.totalOperators || 0}</h3>
               <p>Active Operators</p>
             </div>
           </div>
@@ -49,10 +96,10 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">✅</div>
-              <div className="stat-trend up">↗️ 100%</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{drivers.filter(d => d.type === 'rail' && (d.status === 'on-duty' || d.status === 'en-route' || d.status === 'scheduled')).length}</h3>
+              <h3>{enginesOnDuty}</h3>
               <p>Engines On Duty</p>
             </div>
           </div>
@@ -60,10 +107,10 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">📦</div>
-              <div className="stat-trend up">↗️ {stats.railShipments}</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{stats.railShipments}</h3>
+              <h3>{stats.railShipments || 0}</h3>
               <p>Total Rail Shipments</p>
             </div>
           </div>
@@ -71,10 +118,10 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">⛽</div>
-              <div className="stat-trend up">↗️ 83%</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{Math.round(drivers.filter(d => d.type === 'rail').reduce((sum, d) => sum + d.fuelLevel, 0) / drivers.filter(d => d.type === 'rail').length)}%</h3>
+              <h3>{avgFuel}%</h3>
               <p>Avg Fuel Level</p>
             </div>
           </div>
@@ -109,7 +156,7 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
 
         <div className="data-table">
           <div className="table-header">
-            <h3 className="section-title">Railway Fleet Overview ({filteredDrivers.length})</h3>
+            <h3 className="section-title">Railway Fleet Overview ({filteredOperators.length})</h3>
             <div className="table-actions">
               <button className="btn-secondary">
                 📋 Export Data
@@ -133,67 +180,59 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
                 </tr>
               </thead>
               <tbody>
-                {filteredDrivers.map(driver => (
-                  <tr key={driver.id}>
+                {filteredOperators.map(operator => (
+                  <tr key={operator.id}>
                     <td>
                       <div className="driver-info">
                         <div className="driver-avatar">
-                          {driver.name.split(' ').map(n => n[0]).join('')}
+                          {operator.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
-                          <div className="driver-name">{driver.name}</div>
-                          <div className="driver-id">ID: {driver.id.toString().padStart(3, '0')}</div>
+                          <div className="driver-name">{operator.name}</div>
+                          <div className="driver-id">ID: {operator.id.toString().padStart(3, '0')}</div>
                         </div>
                       </div>
                     </td>
-                    <td>{driver.license}</td>
+                    <td>{operator.license}</td>
                     <td>
                       <div className="vehicle-info">
-                        <div className="vehicle-name">{driver.vehicle}</div>
+                        <div className="vehicle-name">{operator.vehicle}</div>
                         <div className="maintenance-info">
-                          Last service: {driver.lastMaintenance}
+                          Last service: {operator.lastMaintenance}
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className={`transport-badge ${driver.type}`}>
-                        {driver.type === 'rail' ? '🚄' : '🚛'} {driver.type.toUpperCase()}
+                      <span className={`transport-badge ${operator.type}`}>
+                        {'🚄'} {operator.type.toUpperCase()}
                       </span>
                     </td>
                     <td>
-                      <span className={`status-badge ${driver.status === 'en-route' ? 'in-transit' :
-                        driver.status === 'scheduled' ? 'pending' : 'delivered'}`}>
-                        {driver.status.replace('-', ' ')}
+                      <span className={`status-badge ${operator.status === 'en-route' ? 'in-transit' : 
+                        operator.status === 'available' ? 'delivered' : 
+                        operator.status === 'scheduled' ? 'pending' : 'pending'}`}>
+                        {operator.status.replace('-', ' ')}
                       </span>
                     </td>
-                    <td>{driver.location}</td>
+                    <td>{operator.location}</td>
                     <td>
-                      <div className="fuel-indicator">
-                        <div className={`fuel-bar ${driver.fuelLevel < 30 ? 'low' : driver.fuelLevel < 60 ? 'medium' : 'high'}`}>
-                          <div className="fuel-fill" style={{ width: `${driver.fuelLevel}%` }}></div>
-                        </div>
-                        <span className="fuel-percentage">{driver.fuelLevel}%</span>
+                      <div className="fuel-bar-container">
+                        <div className="fuel-bar" style={{ width: `${operator.fuelLevel}%` }}></div>
+                        <span className="fuel-level-text">{operator.fuelLevel}%</span>
                       </div>
                     </td>
                     <td>
                       <div className="rating">
-                        ⭐ {driver.rating}
+                        {'★'.repeat(Math.round(operator.rating))}
+                        {'☆'.repeat(5 - Math.round(operator.rating))}
+                        <span className="rating-text">{operator.rating.toFixed(1)}</span>
                       </div>
                     </td>
                     <td>
                       <div className="action-buttons">
-                        <button className="btn-action btn-view" title="View Details">
-                          👁️
-                        </button>
-                        <button className="btn-action btn-contact" title="Contact">
-                          📞
-                        </button>
-                        <button className="btn-action btn-track" title="Track">
-                          📍
-                        </button>
-                        <button className="btn-action btn-edit" title="Edit">
-                          ✏️
-                        </button>
+                        <button className="btn-action view">👁️</button>
+                        <button className="btn-action edit">✏️</button>
+                        <button className="btn-action delete">🗑️</button>
                       </div>
                     </td>
                   </tr>
@@ -204,6 +243,6 @@ const Railway = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterSt
         </div>
       </div>
     );
-};
+}
 
 export default Railway;

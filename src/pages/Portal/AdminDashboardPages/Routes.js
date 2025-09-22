@@ -1,13 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStatus }) => {
-    const filteredRoutes = routes.filter(route => {
-        const matchesSearch = route.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              route.start.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              route.end.toLowerCase().includes(searchTerm.toLowerCase());
+const Routes = () => {
+    const [routesData, setRoutesData] = useState({ routes: [], stats: {} });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchRoutesData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/routes');
+                setRoutesData(res.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch routes data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRoutesData();
+    }, []);
+
+    const { routes, stats } = routesData;
+
+    const filteredRoutes = (routes || []).filter(route => {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const matchesSearch = (route.name && route.name.toLowerCase().includes(lowerSearchTerm)) ||
+                              (route.start && route.start.toLowerCase().includes(lowerSearchTerm)) ||
+                              (route.end && route.end.toLowerCase().includes(lowerSearchTerm));
         const matchesStatus = filterStatus === 'all' || route.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
+
+    if (loading) {
+        return <div className="loading-spinner"><div></div><div></div><div></div></div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className="section-container">
@@ -27,10 +63,10 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon">📍</div>
-                        <div className="stat-trend up">↗️ +5</div>
+                        <div className="stat-trend up"></div>
                     </div>
                     <div className="stat-body">
-                        <h3>{routes.length}</h3>
+                        <h3>{stats.totalRoutes || 0}</h3>
                         <p>Total Routes</p>
                     </div>
                 </div>
@@ -38,10 +74,10 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon">✅</div>
-                        <div className="stat-trend up">↗️ 92%</div>
+                        <div className="stat-trend up"></div>
                     </div>
                     <div className="stat-body">
-                        <h3>{routes.filter(r => r.status === 'active').length}</h3>
+                        <h3>{stats.activeRoutes || 0}</h3>
                         <p>Active Routes</p>
                     </div>
                 </div>
@@ -49,10 +85,10 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon">⚠️</div>
-                        <div className="stat-trend down">↘️ 1</div>
+                        <div className="stat-trend down"></div>
                     </div>
                     <div className="stat-body">
-                        <h3>{routes.filter(r => r.status === 'issue').length}</h3>
+                        <h3>{stats.routesWithIssues || 0}</h3>
                         <p>Routes with Issues</p>
                     </div>
                 </div>
@@ -60,10 +96,10 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon">🚚</div>
-                        <div className="stat-trend up">↗️ 18</div>
+                        <div className="stat-trend up"></div>
                     </div>
                     <div className="stat-body">
-                        <h3>{routes.reduce((sum, r) => sum + r.vehicles, 0)}</h3>
+                        <h3>{stats.vehiclesAssigned || 0}</h3>
                         <p>Vehicles Assigned</p>
                     </div>
                 </div>
@@ -71,10 +107,10 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                 <div className="stat-card">
                     <div className="stat-header">
                         <div className="stat-icon">📈</div>
-                        <div className="stat-trend up">↗️ 87%</div>
+                        <div className="stat-trend up"></div>
                     </div>
                     <div className="stat-body">
-                        <h3>87%</h3>
+                        <h3>{stats.onTimePerformance || 0}%</h3>
                         <p>On-Time Performance</p>
                     </div>
                 </div>
@@ -149,24 +185,16 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
                                         </span>
                                     </td>
                                     <td>
-                                        <div className="performance-indicator">
-                                            <div className={`performance-bar ${route.performance < 70 ? 'low' : route.performance < 90 ? 'medium' : 'high'}`}>
-                                                <div className="performance-fill" style={{ width: `${route.performance}%` }}></div>
-                                            </div>
-                                            <span className="performance-percentage">{route.performance}%</span>
+                                        <div className="performance-bar-container">
+                                            <div className="performance-bar" style={{ width: `${route.performance}%`, backgroundColor: route.performance > 90 ? '#28a745' : route.performance > 80 ? '#ffc107' : '#dc3545' }}></div>
+                                            <span className="performance-text">{route.performance}%</span>
                                         </div>
                                     </td>
                                     <td>
                                         <div className="action-buttons">
-                                            <button className="btn-action btn-view" title="View Details">
-                                                👁️
-                                            </button>
-                                            <button className="btn-action btn-edit" title="Edit Route">
-                                                ✏️
-                                            </button>
-                                            <button className="btn-action btn-track" title="Analyze">
-                                                📈
-                                            </button>
+                                            <button className="btn-action view">👁️</button>
+                                            <button className="btn-action edit">✏️</button>
+                                            <button className="btn-action delete">🗑️</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -177,6 +205,6 @@ const Routes = ({ routes, searchTerm, setSearchTerm, filterStatus, setFilterStat
             </div>
         </div>
     );
-};
+}
 
 export default Routes;

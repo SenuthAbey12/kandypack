@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Warehouses = ({ warehouses, searchTerm, setSearchTerm, filterStatus, setFilterStatus }) => {
-    const filteredWarehouses = warehouses.filter(warehouse => {
-        const matchesSearch = warehouse.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              warehouse.location.toLowerCase().includes(searchTerm.toLowerCase());
+const Warehouses = () => {
+    const [warehouseData, setWarehouseData] = useState({ warehouses: [], stats: {} });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchWarehouseData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/warehouses');
+                setWarehouseData(res.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch warehouse data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchWarehouseData();
+    }, []);
+
+    const { warehouses, stats } = warehouseData;
+
+    const filteredWarehouses = (warehouses || []).filter(warehouse => {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const matchesSearch = (warehouse.name && warehouse.name.toLowerCase().includes(lowerSearchTerm)) ||
+                              (warehouse.location && warehouse.location.toLowerCase().includes(lowerSearchTerm));
         const matchesStatus = filterStatus === 'all' || warehouse.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
+
+    if (loading) {
+        return <div className="loading-spinner"><div></div><div></div><div></div></div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className="section-container">
@@ -25,7 +61,7 @@ const Warehouses = ({ warehouses, searchTerm, setSearchTerm, filterStatus, setFi
                         <div className="stat-icon">🏢</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{warehouses.length}</h3>
+                        <h3>{stats.totalWarehouses || 0}</h3>
                         <p>Total Warehouses</p>
                     </div>
                 </div>
@@ -34,7 +70,7 @@ const Warehouses = ({ warehouses, searchTerm, setSearchTerm, filterStatus, setFi
                         <div className="stat-icon">📦</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{warehouses.reduce((sum, w) => sum + w.capacity, 0)}</h3>
+                        <h3>{stats.totalCapacity || 0}</h3>
                         <p>Total Capacity</p>
                     </div>
                 </div>
@@ -43,7 +79,7 @@ const Warehouses = ({ warehouses, searchTerm, setSearchTerm, filterStatus, setFi
                         <div className="stat-icon">📈</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{Math.round(warehouses.reduce((sum, w) => sum + w.utilization, 0) / warehouses.length)}%</h3>
+                        <h3>{stats.avgUtilization || 0}%</h3>
                         <p>Avg. Utilization</p>
                     </div>
                 </div>

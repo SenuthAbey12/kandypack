@@ -1,8 +1,75 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Overview = ({ stats, handleNavigation, warehouses, routes, getPerformanceData, performancePeriod, setPerformancePeriod, orders }) => {
+const Overview = ({ handleNavigation, warehouses, routes, getPerformanceData, performancePeriod, setPerformancePeriod, orders }) => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const renderStatsCards = () => (
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        // In a real app, you'd use a configured base URL
+        const response = await axios.get('http://localhost:5000/api/dashboard/stats');
+        setStats(response.data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch dashboard stats. Please try again later.');
+        console.error(err);
+        // Set some mock data for UI development if the backend isn't running
+        setStats({
+          totalOrders: 0,
+          totalVehicles: 0,
+          totalDrivers: 0,
+          pendingOrders: 0,
+          completedToday: 0,
+          revenue: 0,
+          costPerMile: 0,
+          warehouseUtilization: 0,
+          fuelEfficiency: 0,
+          railShipments: 0,
+          roadShipments: 0,
+          customerSatisfaction: 0,
+          averageDeliveryTime: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  const renderStatsCards = () => {
+    if (loading) {
+      return (
+        <div className="stats-grid">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="stat-card is-loading">
+              <div className="stat-header">
+                <div className="stat-icon"></div>
+                <div className="stat-trend"></div>
+              </div>
+              <div className="stat-body">
+                <h3>&nbsp;</h3>
+                <p>&nbsp;</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return <div className="error-message">{error}</div>;
+    }
+
+    if (!stats) {
+      return null;
+    }
+
+    return (
     <div className="stats-grid">
       <div className="stat-card">
         <div className="stat-header">
@@ -115,7 +182,8 @@ const Overview = ({ stats, handleNavigation, warehouses, routes, getPerformanceD
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderQuickActions = () => (
     <div className="quick-actions">
@@ -149,7 +217,9 @@ const Overview = ({ stats, handleNavigation, warehouses, routes, getPerformanceD
     </div>
   );
 
-  const renderSupplyChainOverview = () => (
+  const renderSupplyChainOverview = () => {
+    if (!stats) return null;
+    return (
     <div className="supply-chain-overview">
       <div className="overview-section">
         <div className="section-header">
@@ -195,7 +265,8 @@ const Overview = ({ stats, handleNavigation, warehouses, routes, getPerformanceD
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   const renderWarehouseStatus = () => (
     <div className="warehouse-status">
@@ -331,8 +402,8 @@ const Overview = ({ stats, handleNavigation, warehouses, routes, getPerformanceD
         </div>
       </div>
     </div>
-  );
-};
+    );
+  };
 
   const renderRecentOrders = () => (
     <div className="recent-orders">

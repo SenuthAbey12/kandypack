@@ -1,13 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStatus, stats }) => {
+const Fleet = () => {
+    const [fleetData, setFleetData] = useState({ drivers: [], stats: { totalVehicles: 0, totalDrivers: 0 } });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchFleetData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/fleet');
+                setFleetData(res.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch fleet data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFleetData();
+    }, []);
+
+    const { drivers, stats } = fleetData;
+
     const filteredDrivers = drivers.filter(driver => {
-      const matchesSearch = driver.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           driver.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           driver.type.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = filterStatus === 'all' || driver.status === filterStatus;
-      return matchesSearch && matchesStatus;
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        const matchesSearch = (driver.name && driver.name.toLowerCase().includes(lowerSearchTerm)) ||
+                           (driver.vehicle && driver.vehicle.toLowerCase().includes(lowerSearchTerm)) ||
+                           (driver.type && driver.type.toLowerCase().includes(lowerSearchTerm));
+                           
+        const matchesStatus = filterStatus === 'all' || 
+                              (filterStatus === 'road' && driver.type === 'road') ||
+                              (filterStatus === 'rail' && driver.type === 'rail') ||
+                              driver.status === filterStatus;
+                              
+        return matchesSearch && matchesStatus;
     });
+
+    const onDutyCount = drivers.filter(d => d.status === 'on-duty' || d.status === 'en-route').length;
+    const railOperatorsCount = drivers.filter(d => d.type === 'rail').length;
+    const avgFuel = drivers.length > 0 ? Math.round(drivers.reduce((sum, d) => sum + (d.fuelLevel || 0), 0) / drivers.length) : 0;
+
+    if (loading) {
+        return <div className="loading-spinner"><div></div><div></div><div></div></div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
       <div>
@@ -27,7 +72,7 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">🚛</div>
-              <div className="stat-trend up">↗️ +2</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
               <h3>{stats.totalVehicles}</h3>
@@ -38,7 +83,7 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">👨‍💼</div>
-              <div className="stat-trend up">↗️ +1</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
               <h3>{stats.totalDrivers}</h3>
@@ -49,10 +94,10 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">✅</div>
-              <div className="stat-trend up">↗️ 95%</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{drivers.filter(d => d.status === 'on-duty' || d.status === 'en-route').length}</h3>
+              <h3>{onDutyCount}</h3>
               <p>Vehicles On Duty</p>
             </div>
           </div>
@@ -60,10 +105,10 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon"></div>
-              <div className="stat-trend up">↗️ 2</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{drivers.filter(d => d.type === 'rail').length}</h3>
+              <h3>{railOperatorsCount}</h3>
               <p>Rail Operators</p>
             </div>
           </div>
@@ -71,10 +116,10 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon">⛽</div>
-              <div className="stat-trend up">↗️ 85%</div>
+              <div className="stat-trend up">↗️</div>
             </div>
             <div className="stat-body">
-              <h3>{Math.round(drivers.reduce((sum, d) => sum + d.fuelLevel, 0) / drivers.length)}%</h3>
+              <h3>{avgFuel}%</h3>
               <p>Avg Fuel Level</p>
             </div>
           </div>
@@ -173,32 +218,23 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
                     </td>
                     <td>{driver.location}</td>
                     <td>
-                      <div className="fuel-indicator">
-                        <div className={`fuel-bar ${driver.fuelLevel < 30 ? 'low' : driver.fuelLevel < 60 ? 'medium' : 'high'}`}>
-                          <div className="fuel-fill" style={{ width: `${driver.fuelLevel}%` }}></div>
-                        </div>
-                        <span className="fuel-percentage">{driver.fuelLevel}%</span>
+                      <div className="fuel-bar-container">
+                        <div className="fuel-bar" style={{ width: `${driver.fuelLevel}%` }}></div>
+                        <span className="fuel-level-text">{driver.fuelLevel}%</span>
                       </div>
                     </td>
                     <td>
                       <div className="rating">
-                        ⭐ {driver.rating}
+                        {'★'.repeat(Math.round(driver.rating))}
+                        {'☆'.repeat(5 - Math.round(driver.rating))}
+                        <span className="rating-text">{driver.rating.toFixed(1)}</span>
                       </div>
                     </td>
                     <td>
                       <div className="action-buttons">
-                        <button className="btn-action btn-view" title="View Details">
-                          👁️
-                        </button>
-                        <button className="btn-action btn-contact" title="Contact">
-                          📞
-                        </button>
-                        <button className="btn-action btn-track" title="Track">
-                          📍
-                        </button>
-                        <button className="btn-action btn-edit" title="Edit">
-                          ✏️
-                        </button>
+                        <button className="btn-action view">👁️</button>
+                        <button className="btn-action edit">✏️</button>
+                        <button className="btn-action delete">🗑️</button>
                       </div>
                     </td>
                   </tr>
@@ -209,6 +245,6 @@ const Fleet = ({ drivers, searchTerm, setSearchTerm, filterStatus, setFilterStat
         </div>
       </div>
     );
-};
+}
 
 export default Fleet;

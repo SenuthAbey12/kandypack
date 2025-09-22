@@ -14,6 +14,7 @@ const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const adminRoutes = require('./routes/admin');
 const databaseRoutes = require('./routes/database');
+const dashboardRoutes = require('./routes/dashboard');
 
 // Import new portal routes
 const portalAuthRoutes = require('./routes/portalAuth');
@@ -53,6 +54,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/database', databaseRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Portal-specific routes
 app.use('/api/portal/auth', portalAuthRoutes);

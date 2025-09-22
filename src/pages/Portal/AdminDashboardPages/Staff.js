@@ -1,12 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterStatus }) => {
-    const filteredAssistants = assistants.filter(assistant => {
+const Staff = () => {
+    const [staff, setStaff] = useState([]);
+    const [stats, setStats] = useState({ totalStaff: 0, activeStaff: 0, onLeaveStaff: 0 });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+
+    useEffect(() => {
+        const fetchStaffData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/staff');
+                setStaff(res.data.staff);
+                setStats(res.data.stats);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch staff data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStaffData();
+    }, []);
+
+    const filteredStaff = staff.filter(assistant => {
         const matchesSearch = assistant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               assistant.role.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === 'all' || assistant.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
+
+    if (loading) {
+        return <div className="loading-spinner">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className="section-container">
@@ -25,7 +60,7 @@ const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterS
                         <div className="stat-icon">👨‍💼</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{assistants.length}</h3>
+                        <h3>{stats.totalStaff}</h3>
                         <p>Total Staff</p>
                     </div>
                 </div>
@@ -34,7 +69,7 @@ const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterS
                         <div className="stat-icon">✅</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{assistants.filter(a => a.status === 'active').length}</h3>
+                        <h3>{stats.activeStaff}</h3>
                         <p>Active Staff</p>
                     </div>
                 </div>
@@ -43,7 +78,7 @@ const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterS
                         <div className="stat-icon">📝</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{assistants.filter(a => a.status === 'on-leave').length}</h3>
+                        <h3>{stats.onLeaveStaff}</h3>
                         <p>On Leave</p>
                     </div>
                 </div>
@@ -78,7 +113,7 @@ const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterS
 
             <div className="data-table">
                 <div className="table-header">
-                    <h3 className="section-title">All Staff ({filteredAssistants.length})</h3>
+                    <h3 className="section-title">All Staff ({filteredStaff.length})</h3>
                     <div className="table-actions">
                         <button className="btn-secondary">
                             📋 Export Data
@@ -98,7 +133,7 @@ const Staff = ({ assistants, searchTerm, setSearchTerm, filterStatus, setFilterS
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredAssistants.map(assistant => (
+                            {filteredStaff.map(assistant => (
                                 <tr key={assistant.id}>
                                     <td>{assistant.name}</td>
                                     <td>{assistant.role}</td>

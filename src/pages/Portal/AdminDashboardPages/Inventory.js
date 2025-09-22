@@ -1,12 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Inventory = ({ inventory, searchTerm, setSearchTerm, filterStatus, setFilterStatus }) => {
+const Inventory = () => {
+    const [inventory, setInventory] = useState([]);
+    const [stats, setStats] = useState({ totalItems: 0, lowStockItems: 0, outOfStockItems: 0 });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+
+    useEffect(() => {
+        const fetchInventoryData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/inventory');
+                setInventory(res.data.inventory);
+                setStats(res.data.stats);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch inventory data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchInventoryData();
+    }, []);
+
     const filteredInventory = inventory.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                               item.sku.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
+
+    if (loading) {
+        return <div className="loading-spinner">Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className="section-container">
@@ -25,7 +60,7 @@ const Inventory = ({ inventory, searchTerm, setSearchTerm, filterStatus, setFilt
                         <div className="stat-icon">📦</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{inventory.length}</h3>
+                        <h3>{stats.totalItems}</h3>
                         <p>Total Items</p>
                     </div>
                 </div>
@@ -34,7 +69,7 @@ const Inventory = ({ inventory, searchTerm, setSearchTerm, filterStatus, setFilt
                         <div className="stat-icon">⚠️</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{inventory.filter(i => i.status === 'low-stock').length}</h3>
+                        <h3>{stats.lowStockItems}</h3>
                         <p>Low Stock</p>
                     </div>
                 </div>
@@ -43,7 +78,7 @@ const Inventory = ({ inventory, searchTerm, setSearchTerm, filterStatus, setFilt
                         <div className="stat-icon">❌</div>
                     </div>
                     <div className="stat-body">
-                        <h3>{inventory.filter(i => i.status === 'out-of-stock').length}</h3>
+                        <h3>{stats.outOfStockItems}</h3>
                         <p>Out of Stock</p>
                     </div>
                 </div>

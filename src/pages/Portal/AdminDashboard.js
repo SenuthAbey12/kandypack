@@ -3,17 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import './AdminDashboard.css';
-
-import Overview from './AdminDashboardPages/Overview';
-import Analytics from './AdminDashboardPages/Analytics';
-import Fleet from './AdminDashboardPages/Fleet';
-import Railway from './AdminDashboardPages/Railway';
-import Routes from './AdminDashboardPages/Routes';
-import Tracking from './AdminDashboardPages/Tracking';
-import Shipments from './AdminDashboardPages/Shipments';
-import Warehouses from './AdminDashboardPages/Warehouses';
-import Inventory from './AdminDashboardPages/Inventory';
-import Staff from './AdminDashboardPages/Staff';
+import ContentRenderer from './ContentRenderer';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -26,38 +16,17 @@ const AdminDashboard = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [performancePeriod, setPerformancePeriod] = useState('today');
-  
-  // Filter and search states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  
-  // Analytics states
   const [analyticsTimeframe, setAnalyticsTimeframe] = useState('month');
   const [analyticsView, setAnalyticsView] = useState('overview');
   
-  const [stats, setStats] = useState({
-    totalOrders: 1248,
+  const mockStats = {
     totalDrivers: 45,
     totalAssistants: 23,
-    totalCustomers: 892,
-    pendingOrders: 18,
-    completedToday: 67,
-    revenue: 45670,
-    deliveryRate: 96.5,
-    // Enhanced supply chain metrics
-    totalVehicles: 78,
-    activeRoutes: 24,
-    warehouseUtilization: 87.5,
-    fuelEfficiency: 12.8,
     railShipments: 156,
-    roadShipments: 1092,
-    averageDeliveryTime: 2.4,
-    customerSatisfaction: 94.8,
-    inventoryTurnover: 8.2,
-    costPerMile: 2.45
-  });
+    activeRoutes: 24,
+    pendingOrders: 18,
+  };
 
-  // Performance data that changes based on time period
   const getPerformanceData = () => {
     const baseData = {
       today: {
@@ -85,7 +54,6 @@ const AdminDashboard = () => {
     return baseData[performancePeriod] || baseData.today;
   };
 
-  // Analytics data that changes based on timeframe and filters
   const getAnalyticsData = () => {
     const analyticsData = {
       week: {
@@ -131,7 +99,6 @@ const AdminDashboard = () => {
     return analyticsData[analyticsTimeframe] || analyticsData.month;
   };
 
-  // Route efficiency data
   const getRouteEfficiencyData = () => {
     return [
       { route: 'Colombo-Kandy', efficiency: 94, trend: '+2.5%', status: 'excellent' },
@@ -142,28 +109,6 @@ const AdminDashboard = () => {
     ];
   };
 
-  const [drivers, setDrivers] = useState([
-    { id: 1, name: 'Nimal Silva', license: 'DL12345', vehicle: 'Lorry - CAB-1234', type: 'road', status: 'on-duty', location: 'Colombo 03', rating: 4.9, orders: 45, fuelLevel: 85, lastMaintenance: '2024-01-15' },
-    { id: 2, name: 'Sunil Perera', license: 'DL67890', vehicle: 'Van - CAC-5678', type: 'road', status: 'en-route', location: 'Kandy', rating: 4.7, orders: 38, fuelLevel: 60, lastMaintenance: '2024-01-10' },
-    { id: 3, name: 'Kamal Fernando', license: 'DL11223', vehicle: 'Truck - CAE-9101', type: 'road', status: 'available', location: 'Depot', rating: 4.8, orders: 52, fuelLevel: 95, lastMaintenance: '2024-01-20' },
-    { id: 4, name: 'Ravi Mendis', license: 'DL44556', vehicle: 'Van - CAF-1122', type: 'road', status: 'break', location: 'Rest Area', rating: 4.6, orders: 33, fuelLevel: 40, lastMaintenance: '2024-01-08' },
-    { id: 5, name: 'Chaminda Perera', license: 'DL77889', vehicle: 'Lorry - CAH-3344', type: 'road', status: 'on-duty', location: 'Galle', rating: 4.5, orders: 41, fuelLevel: 70, lastMaintenance: '2024-01-18' },
-    { id: 6, name: 'Pradeep Jayawardene', license: 'RL55443', vehicle: 'Train Engine - TE-001', type: 'rail', status: 'scheduled', location: 'Colombo Fort Station', rating: 4.9, orders: 25, fuelLevel: 90, lastMaintenance: '2024-01-22' },
-    { id: 7, name: 'Anil Gunasekara', license: 'RL66778', vehicle: 'Train Engine - TE-002', type: 'rail', status: 'en-route', location: 'Kandy Station', rating: 4.8, orders: 18, fuelLevel: 75, lastMaintenance: '2024-01-19' }
-  ]);
-
-  const [orders, setOrders] = useState([
-    { orderId: 'KP1248TR', customer: 'KandyMart Pvt Ltd', date: '2024-07-22', amount: 'Rs. 12,500', status: 'Delivered' },
-    { orderId: 'KP1247TR', customer: 'Tech Solutions', date: '2024-07-22', amount: 'Rs. 8,900', status: 'In Transit' },
-    { orderId: 'KP1246TR', customer: 'Green Store', date: '2024-07-21', amount: 'Rs. 6,750', status: 'Pending' },
-  ]);
-
-  const [assistants, setAssistants] = useState([
-    { id: 1, name: 'Saman Kumara', role: 'Loader', contact: '077-1234567', status: 'active' },
-    { id: 2, name: 'Priya Jayasinghe', role: 'Admin Assistant', contact: '071-7654321', status: 'active' },
-    { id: 3, name: 'Ruwan Silva', role: 'Logistics Coordinator', contact: '076-1122334', status: 'on-leave' },
-  ]);
-
   const [notifications] = useState([
     { id: 1, type: 'warning', message: '5 orders pending driver assignment', timestamp: '2 min ago' },
     { id: 2, type: 'success', message: 'Monthly target achieved!', timestamp: '15 min ago' },
@@ -171,26 +116,6 @@ const AdminDashboard = () => {
     { id: 4, type: 'warning', message: 'Low fuel alert: Vehicle CAF-1122', timestamp: '30 min ago' },
     { id: 5, type: 'critical', message: 'Train TE-002 delayed by 45 minutes', timestamp: '1 hour ago' },
     { id: 6, type: 'info', message: 'Warehouse A reaching 90% capacity', timestamp: '2 hours ago' }
-  ]);
-
-  // New state for enhanced supply chain features
-  const [warehouses] = useState([
-    { id: 1, name: 'Colombo Main', location: 'Colombo', capacity: 10000, utilization: 87.5, status: 'active' },
-    { id: 2, name: 'Kandy Hub', location: 'Kandy', capacity: 7500, utilization: 82.7, status: 'active' },
-    { id: 3, name: 'Galle Depot', location: 'Galle', capacity: 5000, utilization: 76.0, status: 'inactive' },
-  ]);
-
-  const [routes] = useState([
-    { id: 'R001', name: 'Colombo-Kandy', start: 'Colombo', end: 'Kandy', distance: '115 km', vehicles: 5, status: 'active', performance: 94 },
-    { id: 'R002', name: 'Kandy-Galle', start: 'Kandy', end: 'Galle', distance: '220 km', vehicles: 3, status: 'active', performance: 85 },
-    { id: 'R003', name: 'Colombo-Jaffna', start: 'Colombo', end: 'Jaffna', distance: '400 km', vehicles: 2, status: 'issue', performance: 72 },
-  ]);
-
-  const [inventory] = useState([
-    { id: 1, name: 'Standard Boxes', sku: 'BOX-ST-01', category: 'Packaging', stock: 1500, status: 'in-stock' },
-    { id: 2, name: 'Bubble Wrap', sku: 'WRAP-BU-01', category: 'Packaging', stock: 200, status: 'low-stock' },
-    { id: 3, name: 'Pallets', sku: 'PAL-WD-01', category: 'Equipment', stock: 50, status: 'in-stock' },
-    { id: 4, name: 'Tape', sku: 'TAPE-HV-01', category: 'Supplies', stock: 0, status: 'out-of-stock' },
   ]);
 
   const profileRef = useRef(null);
@@ -284,7 +209,7 @@ const AdminDashboard = () => {
             >
               <span className="nav-item-icon">🚛</span>
               <span className="nav-item-text">Fleet & Drivers</span>
-              <span className="nav-item-badge">{stats.totalDrivers}</span>
+              <span className="nav-item-badge">{mockStats.totalDrivers}</span>
             </button>
             
             <button 
@@ -293,7 +218,7 @@ const AdminDashboard = () => {
             >
               <span className="nav-item-icon">🚂</span>
               <span className="nav-item-text">Railway Operations</span>
-              <span className="nav-item-badge">{stats.railShipments}</span>
+              <span className="nav-item-badge">{mockStats.railShipments}</span>
             </button>
             
             <button 
@@ -302,7 +227,7 @@ const AdminDashboard = () => {
             >
               <span className="nav-item-icon">🛤️</span>
               <span className="nav-item-text">Routes & Scheduling</span>
-              <span className="nav-item-badge">{stats.activeRoutes}</span>
+              <span className="nav-item-badge">{mockStats.activeRoutes}</span>
             </button>
             
             <button 
@@ -322,7 +247,7 @@ const AdminDashboard = () => {
             >
               <span className="nav-item-icon">📦</span>
               <span className="nav-item-text">Shipments</span>
-              <span className="nav-item-badge">{stats.pendingOrders}</span>
+              <span className="nav-item-badge">{mockStats.pendingOrders}</span>
             </button>
             
             <button 
@@ -348,7 +273,7 @@ const AdminDashboard = () => {
             >
               <span className="nav-item-icon">🤝</span>
               <span className="nav-item-text">Staff</span>
-              <span className="nav-item-badge">{stats.totalAssistants}</span>
+              <span className="nav-item-badge">{mockStats.totalAssistants}</span>
             </button>
           </div>
           
@@ -486,65 +411,24 @@ const AdminDashboard = () => {
     </div>
   );
 
-  const ContentRenderer = () => {
-    const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
-
-    const sortedOrders = [...orders].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-    });
-
-    const handleSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
-
-    const liveTracking = [
-        { id: 1, driver: 'Sunil Perera', vehicleId: 'CAC-5678', orderId: 'KP1247TR', speed: '60 km/h', status: 'moving', lastUpdate: '1 min ago' },
-        { id: 2, driver: 'Kamal Fernando', vehicleId: 'CAE-9101', orderId: 'KP1245TR', speed: '0 km/h', status: 'stopped', lastUpdate: '5 min ago' },
-    ];
-
-    switch (activeTab) {
-      case 'overview':
-        return <Overview stats={stats} handleNavigation={handleNavigation} routes={routes} warehouses={warehouses} getPerformanceData={getPerformanceData} performancePeriod={performancePeriod} setPerformancePeriod={setPerformancePeriod} orders={orders} />;
-      case 'analytics':
-        return <Analytics getAnalyticsData={getAnalyticsData} getRouteEfficiencyData={getRouteEfficiencyData} analyticsTimeframe={analyticsTimeframe} setAnalyticsTimeframe={setAnalyticsTimeframe} analyticsView={analyticsView} setAnalyticsView={setAnalyticsView} />;
-      case 'drivers':
-        return <Fleet drivers={drivers} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} stats={stats} />;
-      case 'railway':
-        return <Railway drivers={drivers} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} stats={stats} />;
-      case 'routes':
-        return <Routes routes={routes} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} />;
-      case 'tracking':
-        return <Tracking liveTracking={liveTracking} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} />;
-      case 'orders':
-        return <Shipments orders={sortedOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} handleSort={handleSort} sortConfig={sortConfig} />;
-      case 'warehouses':
-        return <Warehouses warehouses={warehouses} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} />;
-      case 'inventory':
-        return <Inventory inventory={inventory} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} />;
-      case 'assistants':
-        return <Staff assistants={assistants} searchTerm={searchTerm} setSearchTerm={setSearchTerm} filterStatus={filterStatus} setFilterStatus={setFilterStatus} />;
-      default:
-        return <Overview stats={stats} handleNavigation={handleNavigation} routes={routes} warehouses={warehouses} getPerformanceData={getPerformanceData} performancePeriod={performancePeriod} setPerformancePeriod={setPerformancePeriod} orders={orders} />;
-    }
-  };
-
   return (
     <div className={`dashboard-container ${theme}`}>
       {renderSidebar()}
       <div className="dashboard-main">
         {renderHeader()}
         <main className="dashboard-content">
-          <ContentRenderer />
+          <ContentRenderer 
+            handleNavigation={handleNavigation}
+            getPerformanceData={getPerformanceData}
+            performancePeriod={performancePeriod}
+            setPerformancePeriod={setPerformancePeriod}
+            getAnalyticsData={getAnalyticsData}
+            getRouteEfficiencyData={getRouteEfficiencyData}
+            analyticsTimeframe={analyticsTimeframe}
+            setAnalyticsTimeframe={setAnalyticsTimeframe}
+            analyticsView={analyticsView}
+            setAnalyticsView={setAnalyticsView}
+          />
         </main>
       </div>
     </div>

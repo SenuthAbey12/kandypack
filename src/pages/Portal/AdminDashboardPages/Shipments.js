@@ -1,12 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Shipments = ({ orders, searchTerm, setSearchTerm, filterStatus, setFilterStatus, handleSort, sortConfig }) => {
-    const filteredOrders = orders.filter(order => {
-        const matchesSearch = order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              order.orderId.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-        return matchesSearch && matchesStatus;
-    });
+const Shipments = () => {
+    const [shipmentsData, setShipmentsData] = useState({ shipments: [] });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
+    const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchShipmentsData = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('/api/dashboard/shipments');
+                setShipmentsData(res.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch shipments data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchShipmentsData();
+    }, []);
+
+    const { shipments } = shipmentsData;
+
+    const sortedAndFilteredOrders = (shipments || [])
+        .filter(order => {
+            const lowerSearchTerm = searchTerm.toLowerCase();
+            const matchesSearch = (order.customer && order.customer.toLowerCase().includes(lowerSearchTerm)) ||
+                                  (order.orderId && order.orderId.toLowerCase().includes(lowerSearchTerm));
+            const matchesStatus = filterStatus === 'all' || (order.status && order.status.toLowerCase() === filterStatus.toLowerCase());
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            if (!sortConfig.key) return 0;
+            if (a[sortConfig.key] < b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (a[sortConfig.key] > b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+
+    const handleSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const getSortIndicator = (key) => {
         if (sortConfig.key === key) {
@@ -14,6 +62,14 @@ const Shipments = ({ orders, searchTerm, setSearchTerm, filterStatus, setFilterS
         }
         return '';
     };
+
+    if (loading) {
+        return <div className="loading-spinner"><div></div><div></div><div></div></div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
 
     return (
         <div className="section-container">
@@ -46,7 +102,7 @@ const Shipments = ({ orders, searchTerm, setSearchTerm, filterStatus, setFilterS
                         >
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
-                            <option value="in-transit">In Transit</option>
+                            <option value="in transit">In Transit</option>
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
@@ -56,7 +112,7 @@ const Shipments = ({ orders, searchTerm, setSearchTerm, filterStatus, setFilterS
 
             <div className="data-table">
                 <div className="table-header">
-                    <h3 className="section-title">All Shipments ({filteredOrders.length})</h3>
+                    <h3 className="section-title">All Shipments ({sortedAndFilteredOrders.length})</h3>
                     <div className="table-actions">
                         <button className="btn-secondary">
                             📋 Export Data
@@ -77,7 +133,7 @@ const Shipments = ({ orders, searchTerm, setSearchTerm, filterStatus, setFilterS
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredOrders.map(order => (
+                            {sortedAndFilteredOrders.map(order => (
                                 <tr key={order.orderId}>
                                     <td>{order.orderId}</td>
                                     <td>{order.customer}</td>

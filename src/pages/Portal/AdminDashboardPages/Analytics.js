@@ -1,9 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Analytics = ({ getAnalyticsData, analyticsTimeframe, setAnalyticsTimeframe, analyticsView, setAnalyticsView, getRouteEfficiencyData }) => {
-    const analyticsData = getAnalyticsData();
-    const routeData = getRouteEfficiencyData();
+const Analytics = ({ analyticsTimeframe, setAnalyticsTimeframe, analyticsView, setAnalyticsView }) => {
+    const [analyticsData, setAnalyticsData] = useState(null);
+    const [routeData, setRouteData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchAnalyticsData = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`/api/dashboard/analytics?timeframe=${analyticsTimeframe}`);
+                setAnalyticsData(response.data.analyticsData);
+                setRouteData(response.data.routeEfficiencyData);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch analytics data. Please try again later.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAnalyticsData();
+    }, [analyticsTimeframe]);
+
+    if (loading) {
+        return <div className="loading-spinner">Loading Analytics...</div>;
+    }
+
+    if (error) {
+        return <div className="error-message">{error}</div>;
+    }
     
+    if (!analyticsData) {
+        return <div>No analytics data available.</div>;
+    }
+
     return (
       <div className="analytics-container">
         <div className="section-header">
