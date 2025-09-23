@@ -2,6 +2,135 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+// Add floating bubble animations
+const bubbleAnimations = `
+<style>
+@keyframes floatUp {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-10vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes floatLeft {
+  0% {
+    transform: translateX(100vw) translateY(50vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.4;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateX(-10vw) translateY(-10vh) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.floating-bubble {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(1px);
+}
+
+.bubble-1 {
+  width: 60px;
+  height: 60px;
+  left: 10%;
+  animation: floatUp 15s infinite linear;
+  animation-delay: 0s;
+}
+
+.bubble-2 {
+  width: 40px;
+  height: 40px;
+  left: 20%;
+  animation: floatUp 18s infinite linear;
+  animation-delay: 2s;
+}
+
+.bubble-3 {
+  width: 30px;
+  height: 30px;
+  left: 35%;
+  animation: floatUp 20s infinite linear;
+  animation-delay: 4s;
+}
+
+.bubble-4 {
+  width: 50px;
+  height: 50px;
+  left: 50%;
+  animation: floatUp 16s infinite linear;
+  animation-delay: 6s;
+}
+
+.bubble-5 {
+  width: 35px;
+  height: 35px;
+  left: 65%;
+  animation: floatUp 22s infinite linear;
+  animation-delay: 8s;
+}
+
+.bubble-6 {
+  width: 45px;
+  height: 45px;
+  left: 80%;
+  animation: floatUp 17s infinite linear;
+  animation-delay: 10s;
+}
+
+.bubble-7 {
+  width: 25px;
+  height: 25px;
+  left: 90%;
+  animation: floatUp 19s infinite linear;
+  animation-delay: 12s;
+}
+
+.bubble-8 {
+  width: 55px;
+  height: 55px;
+  top: 20%;
+  animation: floatLeft 14s infinite linear;
+  animation-delay: 1s;
+}
+
+.bubble-9 {
+  width: 32px;
+  height: 32px;
+  top: 60%;
+  animation: floatLeft 21s infinite linear;
+  animation-delay: 5s;
+}
+
+.bubble-10 {
+  width: 42px;
+  height: 42px;
+  top: 80%;
+  animation: floatLeft 18s infinite linear;
+  animation-delay: 9s;
+}
+</style>
+`;
+
 export default function SignUp() {
   const [formData, setFormData] = useState({
     name: '',
@@ -88,7 +217,23 @@ export default function SignUp() {
   };
 
   return (
-    <div style={styles.container}>
+    <>
+      {/* Inject bubble animations CSS */}
+      <div dangerouslySetInnerHTML={{ __html: bubbleAnimations }} />
+      
+      {/* Floating Bubbles */}
+      <div className="floating-bubble bubble-1"></div>
+      <div className="floating-bubble bubble-2"></div>
+      <div className="floating-bubble bubble-3"></div>
+      <div className="floating-bubble bubble-4"></div>
+      <div className="floating-bubble bubble-5"></div>
+      <div className="floating-bubble bubble-6"></div>
+      <div className="floating-bubble bubble-7"></div>
+      <div className="floating-bubble bubble-8"></div>
+      <div className="floating-bubble bubble-9"></div>
+      <div className="floating-bubble bubble-10"></div>
+
+      <div style={styles.container}>
       <div style={styles.formContainer}>
         {/* Header */}
         <div style={styles.header}>
@@ -258,6 +403,7 @@ export default function SignUp() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

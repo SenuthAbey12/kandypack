@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Container, Row, Col, Form, Badge, Modal } from "react-bootstrap";
 import Cards from "../Components/Card.js"; 
@@ -25,11 +25,20 @@ import {
   Eye,
   Share2,
   GitCompare,
+  Home as HomeIcon,
+  User as UserIcon,
+  Settings as SettingsIcon,
+  PhoneCall as PhoneIcon,
+  LogOut as LogOutIcon,
+  ClipboardList as OrdersIcon,
+  ChevronDown as ChevronDownIcon,
+  ChevronUp as ChevronUpIcon,
 } from 'lucide-react';
 
 // --- Profile Menu Component for Products Page ---
 const ProductsProfileMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [loadingItem, setLoadingItem] = useState(null);
   const navigate = useNavigate();
 
   // Close dropdown when clicking outside
@@ -45,28 +54,65 @@ const ProductsProfileMenu = ({ user, onLogout }) => {
   }, [isOpen]);
 
   const menuItems = [
-    { icon: '🏠', label: 'Dashboard', action: () => {
+    { 
+      icon: <HomeIcon size={18} />, 
+      label: 'Dashboard', 
+      action: () => {
         // Navigate to appropriate dashboard based on user role
         if (user?.role === 'customer') {
           navigate('/customer');
         } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
           navigate('/employee');
         } else {
-          navigate('/login'); // Fallback if no user or unknown role
+          navigate('/'); // Navigate to home page as fallback
         }
       }
     },
-    { icon: '👤', label: 'Profile', action: () => alert('Profile coming soon!') },
-    { icon: '📋', label: 'My Orders', action: () => alert('Order history coming soon!') },
-    { icon: '❤️', label: 'Wishlist', action: () => alert('Wishlist coming soon!') },
-    { icon: '⚙️', label: 'Settings', action: () => alert('Settings coming soon!') },
-    { icon: '📞', label: 'Support', action: () => alert('Support coming soon!') },
-    { icon: '🚪', label: 'Logout', action: onLogout, isLogout: true }
+    { 
+      icon: <UserIcon size={18} />, 
+      label: 'Profile', 
+      action: () => navigate('/account/profile')
+    },
+    { 
+      icon: <OrdersIcon size={18} />, 
+      label: 'My Orders', 
+      action: () => navigate('/account/orders')
+    },
+    { 
+      icon: <HeartIcon size={18} />, 
+      label: 'Wishlist', 
+      action: () => {
+        // Create a wishlist page or show wishlist items
+        navigate('/wishlist');
+      }
+    },
+    { 
+      icon: <SettingsIcon size={18} />, 
+      label: 'Settings', 
+      action: () => navigate('/account/settings')
+    },
+    { 
+      icon: <PhoneIcon size={18} />, 
+      label: 'Support', 
+      action: () => navigate('/support/chat')
+    },
+    { 
+      icon: <LogOutIcon size={18} />, 
+      label: 'Logout', 
+      action: onLogout, 
+      isLogout: true 
+    }
   ];
 
-  const handleItemClick = (item) => {
-    setIsOpen(false);
-    item.action();
+  const handleItemClick = async (item, index) => {
+    setLoadingItem(index);
+    
+    // Add a small delay to show loading state
+    setTimeout(() => {
+      setIsOpen(false);
+      setLoadingItem(null);
+      item.action();
+    }, 300);
   };
 
   if (!user) return null;
@@ -74,14 +120,9 @@ const ProductsProfileMenu = ({ user, onLogout }) => {
   return (
     <div className="products-profile-menu" style={productsStyles.profileMenu}>
       <button 
+        className="profile-trigger"
         style={productsStyles.profileTrigger}
         onClick={() => setIsOpen(!isOpen)}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = 'rgba(255,255,255,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'transparent';
-        }}
       >
         <div style={productsStyles.avatarContainer}>
           <div style={productsStyles.avatar}>
@@ -91,7 +132,9 @@ const ProductsProfileMenu = ({ user, onLogout }) => {
             <span style={productsStyles.userName}>{user?.username || 'Customer'}</span>
             <span style={productsStyles.userRole}>Customer</span>
           </div>
-          <span style={productsStyles.dropdownArrow}>{isOpen ? '▲' : '▼'}</span>
+          <div className="dropdown-arrow" style={productsStyles.dropdownArrow}>
+            {isOpen ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />}
+          </div>
         </div>
       </button>
 
@@ -112,26 +155,212 @@ const ProductsProfileMenu = ({ user, onLogout }) => {
           {menuItems.map((item, index) => (
             <button
               key={index}
+              className={`dropdown-item ${item.isLogout ? 'logout-item' : ''}`}
               style={{
                 ...productsStyles.dropdownItem,
-                ...(item.isLogout ? productsStyles.logoutItem : {})
+                ...(item.isLogout ? productsStyles.logoutItem : {}),
+                ...(loadingItem === index ? { opacity: 0.7, pointerEvents: 'none' } : {})
               }}
-              onClick={() => handleItemClick(item)}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = item.isLogout ? '#fef2f2' : '#f1f5f9';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-              }}
+              onClick={() => handleItemClick(item, index)}
+              disabled={loadingItem === index}
             >
-              <span style={productsStyles.itemIcon}>{item.icon}</span>
+              <span className="item-icon" style={productsStyles.itemIcon}>
+                {loadingItem === index ? (
+                  <div style={productsStyles.loadingSpinner}></div>
+                ) : (
+                  item.icon
+                )}
+              </span>
               <span style={productsStyles.itemLabel}>{item.label}</span>
+              <ArrowRight 
+                size={14} 
+                className="arrow-right" 
+                style={{ 
+                  opacity: loadingItem === index ? 0.3 : 0.5, 
+                  marginLeft: 'auto', 
+                  transition: 'all 0.3s ease' 
+                }} 
+              />
             </button>
           ))}
         </div>
       )}
     </div>
   );
+};
+
+// --- Custom Sort Dropdown Component ---
+const CustomSortDropdown = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  const handleSelect = (optionValue) => {
+    onChange(optionValue);
+    setIsOpen(false);
+  };
+
+  return (
+    <div ref={dropdownRef} style={sortDropdownStyles.container}>
+      <button
+        className="sort-dropdown-trigger"
+        style={{
+          ...sortDropdownStyles.trigger,
+          ...(isOpen ? sortDropdownStyles.triggerActive : {})
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span style={sortDropdownStyles.selectedContent}>
+          <span style={sortDropdownStyles.selectedIcon}>{selectedOption?.icon}</span>
+          <span style={sortDropdownStyles.selectedLabel}>{selectedOption?.label}</span>
+        </span>
+        <ChevronDownIcon 
+          size={18} 
+          style={{
+            ...sortDropdownStyles.chevron,
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+          }} 
+        />
+      </button>
+
+      {isOpen && (
+        <div style={sortDropdownStyles.dropdown}>
+          {options.map((option) => (
+            <button
+              key={option.value}
+              className="sort-option"
+              style={{
+                ...sortDropdownStyles.option,
+                ...(value === option.value ? sortDropdownStyles.optionActive : {})
+              }}
+              onClick={() => handleSelect(option.value)}
+            >
+              <span style={sortDropdownStyles.optionIcon}>{option.icon}</span>
+              <div style={sortDropdownStyles.optionContent}>
+                <span style={sortDropdownStyles.optionLabel}>{option.label}</span>
+                <span className="sort-option-description" style={sortDropdownStyles.optionDescription}>{option.description}</span>
+              </div>
+              {value === option.value && (
+                <span style={sortDropdownStyles.checkIcon}>✓</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const sortDropdownStyles = {
+  container: {
+    position: 'relative',
+    width: '100%',
+  },
+  trigger: {
+    width: '100%',
+    height: '48px',
+    padding: '12px 16px',
+    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+    border: '2px solid #e2e8f0',
+    borderRadius: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    cursor: 'pointer',
+    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#374151',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+  },
+  triggerActive: {
+    borderColor: '#667eea',
+    boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+    background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+  },
+  selectedContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  selectedIcon: {
+    fontSize: '16px',
+  },
+  selectedLabel: {
+    fontWeight: '600',
+  },
+  chevron: {
+    color: '#64748b',
+    transition: 'transform 0.3s ease',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: '0',
+    right: '0',
+    marginTop: '8px',
+    background: 'white',
+    border: '2px solid #e2e8f0',
+    borderRadius: '16px',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+    zIndex: 1000,
+    overflow: 'hidden',
+    animation: 'fadeInDown 0.2s ease-out',
+  },
+  option: {
+    width: '100%',
+    padding: '14px 16px',
+    border: 'none',
+    background: 'transparent',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textAlign: 'left',
+  },
+  optionActive: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+  },
+  optionIcon: {
+    fontSize: '18px',
+    minWidth: '20px',
+  },
+  optionContent: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  optionLabel: {
+    fontSize: '14px',
+    fontWeight: '600',
+    lineHeight: '1.2',
+  },
+  optionDescription: {
+    fontSize: '12px',
+    opacity: 0.7,
+    lineHeight: '1.2',
+  },
+  checkIcon: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    color: 'currentColor',
+  },
 };
 
 export default function Product() {
@@ -142,11 +371,11 @@ export default function Product() {
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [showFilters, setShowFilters] = useState(false);
-  const [favorites, setFavorites] = useState(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [compareItems, setCompareItems] = useState(new Set());
   const [quickView, setQuickView] = useState(null); // product or null
   const [ratingFilter, setRatingFilter] = useState(0);
+  const [wishlist, setWishlist] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
   
@@ -236,6 +465,19 @@ export default function Product() {
     return () => clearTimeout(timer);
   }, [category, sortBy]);
 
+  // Load wishlist from localStorage
+  useEffect(() => {
+    try {
+      const savedWishlist = localStorage.getItem(`wishlist_${user?.username || 'guest'}`);
+      if (savedWishlist) {
+        const wishlistIds = JSON.parse(savedWishlist);
+        setWishlist(new Set(wishlistIds));
+      }
+    } catch (error) {
+      console.error('Failed to load wishlist:', error);
+    }
+  }, [user]);
+
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(products.map(p => p.category)))],
     [products]
@@ -272,6 +514,37 @@ export default function Product() {
     return result;
   }, [query, category, sortBy, priceRange, ratingFilter, products]);
 
+  // Wishlist helper functions
+  const toggleWishlist = (productId) => {
+    try {
+      const newWishlist = new Set(wishlist);
+      if (newWishlist.has(productId)) {
+        newWishlist.delete(productId);
+      } else {
+        newWishlist.add(productId);
+      }
+      setWishlist(newWishlist);
+      
+      // Save to localStorage
+      const wishlistArray = Array.from(newWishlist);
+      localStorage.setItem(`wishlist_${user?.username || 'guest'}`, JSON.stringify(wishlistArray));
+    } catch (error) {
+      console.error('Failed to update wishlist:', error);
+    }
+  };
+
+  // Check if filters are active
+  const hasActiveFilters = useMemo(() => {
+    return (
+      query !== "" ||
+      category !== "All" ||
+      sortBy !== "name" ||
+      priceRange[0] !== 0 ||
+      priceRange[1] !== 1000 ||
+      ratingFilter !== 0
+    );
+  }, [query, category, sortBy, priceRange, ratingFilter]);
+
   // Reset to first page on filter changes
   useEffect(() => {
     setCurrentPage(1);
@@ -297,18 +570,6 @@ export default function Product() {
     }, 2000);
   }
 
-  function handleToggleFavorite(productId) {
-    setFavorites(prev => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
-      }
-      return next;
-    });
-  }
-
   function handleGoToCheckout() {
     navigate('/checkout');
   }
@@ -318,6 +579,7 @@ export default function Product() {
     setCategory("All");
     setSortBy("name");
     setPriceRange([0, 1000]);
+    setRatingFilter(0);
   }
 
   function handleLogout() {
@@ -392,6 +654,18 @@ export default function Product() {
         <div style={styles.blobOne} aria-hidden="true"></div>
         <div style={styles.blobTwo} aria-hidden="true"></div>
         <div style={styles.blobThree} aria-hidden="true"></div>
+        
+        {/* Back to Home button in upper left corner */}
+        <div style={styles.backToHomeContainer}>
+          <button 
+            className="back-to-home-button"
+            style={styles.backToHomeButton}
+            onClick={() => navigate('/')}
+          >
+            <HomeIcon size={18} style={{ marginRight: 8 }} /> Back to Home
+          </button>
+        </div>
+        
         {/* Profile Menu in upper right corner */}
         <div style={styles.heroProfileMenu}>
           {user ? (
@@ -468,7 +742,7 @@ export default function Product() {
               <span style={styles.searchIcon}><SearchIcon size={18} color="#64748b" /></span>
               <Form.Control
                 className="search-input"
-                type="search"
+                type="text"
                 placeholder="Search rail & road distribution supplies, logistics solutions..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -487,6 +761,33 @@ export default function Product() {
 
           {/* Filter Toggle & View Options */}
           <div style={styles.toolbarActions}>
+            {/* View Toggle - Move to prominent position */}
+            <div style={styles.viewToggle}>
+              <span style={styles.viewToggleLabel}>View:</span>
+              <button 
+                style={{
+                  ...styles.viewBtn,
+                  ...(viewMode === "grid" ? styles.viewBtnActive : {})
+                }}
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
+              >
+                <GridIcon size={18} />
+                <span style={styles.viewBtnText}>Grid</span>
+              </button>
+              <button 
+                style={{
+                  ...styles.viewBtn,
+                  ...(viewMode === "list" ? styles.viewBtnActive : {})
+                }}
+                onClick={() => setViewMode("list")}
+                title="List View"
+              >
+                <ListIcon size={18} />
+                <span style={styles.viewBtnText}>List</span>
+              </button>
+            </div>
+
             <button 
               style={{
                 ...styles.actionBtn,
@@ -499,38 +800,23 @@ export default function Product() {
             
             <button 
               style={styles.actionBtn}
-              onClick={() => alert('Wishlist shows your favorited items. Use the heart on products to add/remove.')}
+              onClick={() => navigate('/wishlist')}
             >
-              <HeartIcon size={16} style={{ marginRight: 8 }} /> Wishlist ({favorites.size})
+              <HeartIcon size={16} style={{ marginRight: 8 }} /> Wishlist ({wishlist.size})
             </button>
 
             <button 
               style={styles.actionBtn}
-              onClick={() => alert('Compare up to 3 items. Use the compare icon on a product to add/remove.')}
+              onClick={() => {
+                if (compareItems.size === 0) {
+                  alert('Add products to compare by clicking the compare icon on product cards.');
+                } else {
+                  alert(`Comparing ${compareItems.size} products. Full comparison view coming soon!`);
+                }
+              }}
             >
               <GitCompare size={16} style={{ marginRight: 8 }} /> Compare ({compareItems.size})
             </button>
-
-            <div style={styles.viewToggle}>
-              <button 
-                style={{
-                  ...styles.viewBtn,
-                  ...(viewMode === "grid" ? styles.viewBtnActive : {})
-                }}
-                onClick={() => setViewMode("grid")}
-              >
-                <GridIcon size={16} />
-              </button>
-              <button 
-                style={{
-                  ...styles.viewBtn,
-                  ...(viewMode === "list" ? styles.viewBtnActive : {})
-                }}
-                onClick={() => setViewMode("list")}
-              >
-                <ListIcon size={16} />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -608,28 +894,30 @@ export default function Product() {
               {/* Sort Options */}
               <div style={styles.filterGroup}>
                 <label style={styles.filterLabel}>Sort By</label>
-                <Form.Select
+                <CustomSortDropdown 
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={styles.modernSelect}
-                >
-                  <option value="name">📝 Name (A-Z)</option>
-                  <option value="price">💰 Price (Low to High)</option>
-                  <option value="priceDesc">💸 Price (High to Low)</option>
-                  <option value="rating">⭐ Rating (High to Low)</option>
-                  <option value="newest">🆕 Newest First</option>
-                </Form.Select>
+                  onChange={setSortBy}
+                  options={[
+                    { value: "name", label: "Name (A-Z)", icon: "📝", description: "Alphabetical order" },
+                    { value: "price", label: "Price (Low to High)", icon: "💰", description: "Cheapest first" },
+                    { value: "priceDesc", label: "Price (High to Low)", icon: "💸", description: "Most expensive first" },
+                    { value: "rating", label: "Rating (High to Low)", icon: "⭐", description: "Best rated first" },
+                    { value: "newest", label: "Newest First", icon: "🆕", description: "Latest products first" }
+                  ]}
+                />
               </div>
             </div>
 
             <div style={styles.filterActions}>
-              <button 
-                className="clear-filters-btn"
-                style={styles.clearFiltersBtn} 
-                onClick={clearAllFilters}
-              >
-                🗑️ Clear All Filters
-              </button>
+              {hasActiveFilters && (
+                <button 
+                  className="clear-filters-btn"
+                  style={styles.clearFiltersBtn} 
+                  onClick={clearAllFilters}
+                >
+                  🗑️ Clear All Filters
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -640,6 +928,32 @@ export default function Product() {
             <span style={styles.resultsCount}>
               {isLoading ? "Loading..." : `${filtered.length} products found`}
             </span>
+            <div style={styles.viewModeIndicator}>
+              <span style={styles.viewModeText}>
+                {viewMode === "grid" ? "📱 Grid View" : "📋 List View"}
+              </span>
+            </div>
+            {hasActiveFilters && (
+              <div style={styles.filterSummary}>
+                <span style={styles.filterSummaryText}>
+                  Filters active: 
+                  {query && ` Search: "${query}"`}
+                  {category !== "All" && ` Category: ${category}`}
+                  {(priceRange[0] !== 0 || priceRange[1] !== 1000) && 
+                    ` Price: $${priceRange[0]} - $${priceRange[1] === 1000 ? '1000+' : priceRange[1]}`}
+                  {ratingFilter > 0 && ` Rating: ${ratingFilter}+ stars`}
+                  {sortBy !== "name" && ` Sort: ${sortBy}`}
+                </span>
+                <button 
+                  className="quick-clear-btn"
+                  style={styles.quickClearBtn}
+                  onClick={clearAllFilters}
+                  title="Clear all filters"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
             {(query || category !== "All") && (
               <div style={styles.activeFilters}>
                 {query && (
@@ -712,11 +1026,12 @@ export default function Product() {
                       <button 
                         style={{
                           ...styles.favoriteBtn,
-                          ...(favorites.has(p.id) ? styles.favoriteBtnActive : {})
+                          ...(wishlist.has(p.id) ? styles.favoriteBtnActive : {})
                         }}
-                        onClick={() => handleToggleFavorite(p.id)}
+                        onClick={() => toggleWishlist(p.id)}
+                        title={wishlist.has(p.id) ? "Remove from wishlist" : "Add to wishlist"}
                       >
-                        {favorites.has(p.id) ? (
+                        {wishlist.has(p.id) ? (
                           <HeartIcon size={18} color="#ef4444" fill="#ef4444" />
                         ) : (
                           <HeartIcon size={18} color="#64748b" />
@@ -787,17 +1102,24 @@ export default function Product() {
               <Col>
                 <div style={styles.emptyState}>
                   <div style={styles.emptyIcon}><PackageIcon size={64} /></div>
-                  <h3 style={styles.emptyTitle}>No products found</h3>
+                  <h3 style={styles.emptyTitle}>
+                    {hasActiveFilters ? "No products match your filters" : "No products found"}
+                  </h3>
                   <p style={styles.emptyText}>
-                    We couldn't find any products matching your criteria.
+                    {hasActiveFilters 
+                      ? "Try adjusting your search criteria or clearing some filters to see more results."
+                      : "We couldn't find any products at the moment. Please try again later."
+                    }
                   </p>
-                  <button 
-                    className="empty-action-btn"
-                    style={styles.emptyActionBtn} 
-                    onClick={clearAllFilters}
-                  >
-                    🔄 Clear All Filters
-                  </button>
+                  {hasActiveFilters && (
+                    <button 
+                      className="empty-action-btn"
+                      style={styles.emptyActionBtn} 
+                      onClick={clearAllFilters}
+                    >
+                      🔄 Clear All Filters
+                    </button>
+                  )}
                 </div>
               </Col>
             )}
@@ -974,6 +1296,28 @@ const styles = {
     top: 'clamp(15px, 3vh, 25px)',
     right: 'clamp(15px, 3vw, 25px)',
     zIndex: 10,
+  },
+  backToHomeContainer: {
+    position: 'absolute',
+    top: 'clamp(15px, 3vh, 25px)',
+    left: 'clamp(15px, 3vw, 25px)',
+    zIndex: 10,
+  },
+  backToHomeButton: {
+    background: 'rgba(255,255,255,0.15)',
+    border: '2px solid rgba(255,255,255,0.3)',
+    borderRadius: 'clamp(8px, 2vw, 15px)',
+    color: 'white',
+    padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px)',
+    cursor: 'pointer',
+    fontSize: 'clamp(0.8rem, 2.5vw, 1rem)',
+    fontWeight: '600',
+    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+    backdropFilter: 'blur(10px)',
+    whiteSpace: 'nowrap',
+    display: 'flex',
+    alignItems: 'center',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
   },
   loginPrompt: {
     display: 'flex',
@@ -1179,23 +1523,45 @@ const styles = {
   },
   viewToggle: {
     display: 'flex',
+    alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: '12px',
+    borderRadius: '16px',
     border: '2px solid #e2e8f0',
     overflow: 'hidden',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    marginRight: '20px',
+  },
+  viewToggleLabel: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#64748b',
+    padding: '0 16px 0 20px',
+    borderRight: '1px solid #e2e8f0',
+    marginRight: '0',
   },
   viewBtn: {
-    padding: '12px 16px',
+    padding: '14px 18px',
     background: 'none',
     border: 'none',
-    fontSize: '16px',
+    fontSize: '14px',
+    fontWeight: '600',
     color: '#64748b',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    position: 'relative',
+  },
+  viewBtnText: {
+    fontSize: '13px',
+    fontWeight: '600',
   },
   viewBtnActive: {
     backgroundColor: '#667eea',
     color: 'white',
+    transform: 'scale(1.05)',
+    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
   },
 
   // Filters Panel
@@ -1312,6 +1678,43 @@ const styles = {
     fontWeight: '600',
     color: '#1e293b',
   },
+  viewModeIndicator: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '8px 16px',
+    backgroundColor: '#f1f5f9',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+  },
+  viewModeText: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#475569',
+  },
+  filterSummary: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 12px',
+    backgroundColor: '#f1f5f9',
+    borderRadius: '12px',
+    fontSize: '14px',
+    color: '#475569',
+  },
+  filterSummaryText: {
+    fontSize: '13px',
+    color: '#64748b',
+  },
+  quickClearBtn: {
+    background: 'none',
+    border: 'none',
+    fontSize: '14px',
+    color: '#64748b',
+    cursor: 'pointer',
+    padding: '2px 6px',
+    borderRadius: '50%',
+    transition: 'all 0.2s ease',
+  },
   activeFilters: {
     display: 'flex',
     gap: '8px',
@@ -1375,9 +1778,12 @@ const styles = {
     flexDirection: 'column',
   },
   listViewCard: {
-    display: 'flex',
+    flexDirection: 'row',
     height: 'auto',
+    minHeight: '200px',
     background: 'linear-gradient(135deg, #ffffff 0%, #fefefe 100%)',
+    display: 'flex',
+    alignItems: 'stretch',
   },
   productCardAdded: {
     transform: 'translateY(-8px) scale(1.02)',
@@ -1397,11 +1803,19 @@ const styles = {
     justifyContent: 'center',
   },
   listImageContainer: {
-    width: '220px',
-    minWidth: '220px',
-    height: '220px',
-    borderRadius: '16px',
+    width: '240px',
+    minWidth: '240px',
+    height: '200px',
+    borderRadius: '0',
+    margin: '0',
+    background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
   },
+  
   productImage: {
     width: '90%',
     height: '90%',
@@ -1503,6 +1917,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
+    padding: '24px 32px',
   },
   productHeader: {
     marginBottom: '16px',
@@ -1718,128 +2133,167 @@ const productsStyles = {
     position: 'relative',
   },
   profileTrigger: {
-    background: 'rgba(255,255,255,0.1)',
-    border: '1px solid rgba(255,255,255,0.2)',
-    borderRadius: '12px',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
+    border: '2px solid rgba(255,255,255,0.3)',
+    borderRadius: '16px',
     cursor: 'pointer',
-    padding: '8px',
-    transition: 'all 0.2s ease',
-    backdropFilter: 'blur(10px)',
+    padding: '12px 16px',
+    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
+    backdropFilter: 'blur(15px)',
+    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+    position: 'relative',
+    overflow: 'hidden',
   },
   avatarContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '14px',
     padding: '4px',
+    position: 'relative',
+    zIndex: 2,
   },
   avatar: {
-    width: '36px',
-    height: '36px',
+    width: '42px',
+    height: '42px',
     borderRadius: '50%',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    border: '2px solid rgba(255,255,255,0.3)',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    border: '3px solid rgba(255,255,255,0.4)',
     color: 'white',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '14px',
-    fontWeight: '600',
+    fontSize: '16px',
+    fontWeight: '700',
+    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+    position: 'relative',
   },
   userInfo: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
+    flex: 1,
   },
   userName: {
     color: 'white',
-    fontSize: '14px',
-    fontWeight: '600',
+    fontSize: '15px',
+    fontWeight: '700',
     lineHeight: '1.2',
+    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   userRole: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: '12px',
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: '13px',
     lineHeight: '1.2',
+    fontWeight: '500',
   },
   dropdownArrow: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: '12px',
-    marginLeft: '4px',
+    color: 'rgba(255,255,255,0.9)',
+    transition: 'all 0.3s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileDropdown: {
     position: 'absolute',
     top: '100%',
     right: '0',
-    marginTop: '8px',
-    backgroundColor: '#ffffff',
-    borderRadius: '12px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-    border: '1px solid #e2e8f0',
-    minWidth: '220px',
+    marginTop: '12px',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95))',
+    borderRadius: '20px',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.8)',
+    border: 'none',
+    minWidth: '280px',
     zIndex: 1000,
     overflow: 'hidden',
+    backdropFilter: 'blur(20px)',
+    animation: 'fadeInDown 0.3s ease-out',
   },
   dropdownHeader: {
-    padding: '16px',
-    borderBottom: '1px solid #e2e8f0',
+    padding: '24px 20px 20px',
+    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    backgroundColor: '#f8fafc',
+    gap: '16px',
+    position: 'relative',
+    overflow: 'hidden',
   },
   avatarLarge: {
-    width: '48px',
-    height: '48px',
+    width: '56px',
+    height: '56px',
     borderRadius: '50%',
-    backgroundColor: '#667eea',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     color: 'white',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '18px',
-    fontWeight: '600',
+    fontSize: '22px',
+    fontWeight: '700',
+    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+    border: '3px solid rgba(255,255,255,0.8)',
   },
   dropdownUserName: {
-    fontSize: '16px',
-    fontWeight: '600',
+    fontSize: '18px',
+    fontWeight: '700',
     color: '#1e293b',
     lineHeight: '1.2',
+    marginBottom: '2px',
   },
   dropdownUserEmail: {
     fontSize: '14px',
     color: '#64748b',
     lineHeight: '1.2',
+    fontWeight: '500',
   },
   dropdownDivider: {
     height: '1px',
-    backgroundColor: '#e2e8f0',
+    background: 'linear-gradient(90deg, transparent, rgba(226,232,240,0.8), transparent)',
+    margin: '0 20px',
   },
   dropdownItem: {
     width: '100%',
-    padding: '12px 16px',
+    padding: '16px 20px',
     border: 'none',
     backgroundColor: 'transparent',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '16px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '15px',
     color: '#374151',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
     textAlign: 'left',
+    fontWeight: '500',
+    position: 'relative',
+    overflow: 'hidden',
   },
   logoutItem: {
     color: '#dc2626',
-    borderTop: '1px solid #e2e8f0',
+    marginTop: '8px',
+    borderTop: '1px solid rgba(226,232,240,0.6)',
+    paddingTop: '20px',
   },
   itemIcon: {
-    fontSize: '16px',
     width: '20px',
-    textAlign: 'center',
+    height: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'currentColor',
+    transition: 'all 0.3s ease',
   },
   itemLabel: {
     flex: 1,
     textAlign: 'left',
+    fontWeight: '600',
+  },
+  
+  loadingSpinner: {
+    width: '18px',
+    height: '18px',
+    border: '2px solid #e2e8f0',
+    borderTop: '2px solid #667eea',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
   },
 };
 
@@ -1858,11 +2312,20 @@ const productPageStyles = `
   @keyframes fadeInDown {
     from {
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translateY(-15px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { 
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); 
+    }
+    50% { 
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); 
     }
   }
 
@@ -2035,13 +2498,44 @@ const productPageStyles = `
     background-color: #fecaca;
   }
   
+  .quick-clear-btn:hover {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+  }
+  
   .products-profile-menu .profile-dropdown {
-    animation: fadeInDown 0.2s ease-out;
+    animation: fadeInDown 0.3s ease-out;
   }
   
   .products-profile-menu .profile-trigger:hover {
-    background-color: rgba(255,255,255,0.15) !important;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.15)) !important;
+    border-color: rgba(255,255,255,0.5) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .products-profile-menu .dropdown-item:hover {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0) !important;
+    transform: translateX(4px) !important;
+  }
+  
+  .products-profile-menu .dropdown-item:hover .item-icon {
+    transform: scale(1.1);
+    color: #667eea;
+  }
+  
+  .products-profile-menu .logout-item:hover {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+  }
+  
+  .products-profile-menu .profile-trigger:hover .dropdown-arrow {
+    transform: scale(1.1);
+    color: rgba(255,255,255,1) !important;
+  }
+  
+  .products-profile-menu .dropdown-item:hover .arrow-right {
+    opacity: 1 !important;
+    transform: translateX(4px);
   }
   
   .login-button:hover {
@@ -2049,6 +2543,14 @@ const productPageStyles = `
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255,255,255,0.1);
   }
+  
+  .back-to-home-button:hover {
+    background: rgba(255,255,255,0.25) !important;
+    border-color: rgba(255,255,255,0.5) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
   .primary-cta:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(96,165,250,0.45); }
   .secondary-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(255,255,255,0.25); }
   
@@ -2071,6 +2573,28 @@ const productPageStyles = `
     .modern-product-card:active {
       transform: scale(0.98) !important;
     }
+  }
+  
+  /* Dropdown animations */
+  @keyframes fadeInDown {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Sort option hover effects */
+  .sort-option:hover:not(.sort-option:has(.checkIcon)) {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%) !important;
+    color: #374151 !important;
+  }
+
+  .sort-option:hover .sort-option-description {
+    opacity: 1 !important;
   }
 `;
 

@@ -8,6 +8,54 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Back to Home button (top-left) */
+.login-back-home {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 3000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-back-home:hover {
+  transform: translateX(-2px) scale(1.03);
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+}
+
+.login-back-home .arrow {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.login-back-home .label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .login-back-home {
+    padding: 10px 12px;
+  }
+  .login-back-home .label {
+    display: none;
+  }
+  .login-back-home .arrow {
+    font-size: 1.25rem;
+  }
+}
+
 .login-container {
   background: white;
   border-radius: 20px;
@@ -16,7 +64,7 @@
   width: 100%;
   max-width: 500px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* allow fixed back button to be clickable even if near edge */
 }
 
 .login-container::before {

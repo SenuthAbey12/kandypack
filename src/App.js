@@ -36,6 +36,7 @@ import Settings from './pages/Account/Settings.js';
 import Password from './pages/Account/Password.js';
 import Addresses from './pages/Account/Addresses.js';
 import Payments from './pages/Account/Payments.js';
+import Wishlist from './pages/Wishlist.js';
 import TrackOrder from './pages/Support/TrackOrder.js';
 import Returns from './pages/Support/Returns.js';
 import Chat from './pages/Support/Chat.js';
@@ -79,6 +80,7 @@ function App() {
               <Route path="/auth" element={<AuthPage/>}/>
               <Route path="/products" element={<Product/>}/>
               <Route path="/products/learn-more" element={<LearnMoreProducts/>}/>
+              {/* Wishlist route available below as protected; remove duplicate here */}
               
               {/* Products Routes */}
               <Route path="/products/tracking" element={<SupplyChainTracking/>}/>
@@ -112,13 +114,16 @@ function App() {
               <Route path="/employee/*" element={<EmployeePortalRouter/>}/>
               <Route path="/customer/*" element={<CustomerPortalRouter/>}/>
 
-                {/* Account Routes */}
-                <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
-                <Route path="/account/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>} />
-                <Route path="/account/settings" element={<ProtectedRoute><Settings/></ProtectedRoute>} />
+              {/* Account Routes */}
+              <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
+              <Route path="/account/orders" element={<ProtectedRoute><Orders/></ProtectedRoute>} />
+              <Route path="/account/settings" element={<ProtectedRoute><Settings/></ProtectedRoute>} />
               <Route path="/account/password" element={<ProtectedRoute><Password/></ProtectedRoute>} />
               <Route path="/account/addresses" element={<ProtectedRoute><Addresses/></ProtectedRoute>} />
               <Route path="/account/payments" element={<ProtectedRoute><Payments/></ProtectedRoute>} />
+              
+              {/* Wishlist Route */}
+              <Route path="/wishlist" element={<ProtectedRoute><Wishlist/></ProtectedRoute>} />
 
               {/* Support Routes */}
               <Route path="/support/track-order" element={<ProtectedRoute><TrackOrder/></ProtectedRoute>} />

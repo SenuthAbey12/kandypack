@@ -5,6 +5,25 @@ import './PortalSelection.css';
 const PortalSelection = () => {
   return (
     <div className="portal-selection">
+      {/* Back to Homepage Button */}
+      <Link to="/" className="back-to-home-btn">
+        <span className="back-arrow">←</span>
+        <span className="back-text">Back to Home</span>
+      </Link>
+      
+      {/* Floating Particles */}
+      <div className="floating-particle particle-1"></div>
+      <div className="floating-particle particle-2"></div>
+      <div className="floating-particle particle-3"></div>
+      <div className="floating-particle particle-4"></div>
+      <div className="floating-particle particle-5"></div>
+      <div className="floating-particle particle-6"></div>
+      
+      {/* Geometric Shapes */}
+      <div className="geometric-shape shape-1"></div>
+      <div className="geometric-shape shape-2"></div>
+      <div className="geometric-shape shape-3"></div>
+      
       <div className="portal-container">
         <h1>KandyPack Portal Access</h1>
         <p>Please select your portal to continue</p>

@@ -38,6 +38,10 @@ const CustomerLogin = () => {
 
   return (
     <div className="portal-login customer-portal-login">
+      <a href="/" className="login-back-home" aria-label="Back to Home">
+        <span className="arrow">←</span>
+        <span className="label">Back to Home</span>
+      </a>
       <div className="login-container">
         <div className="login-header">
           <h1>Customer Login</h1>

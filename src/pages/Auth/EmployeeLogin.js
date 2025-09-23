@@ -49,7 +49,11 @@ const EmployeeLogin = () => {
   };
 
   return (
-    <div className="employee-login">
+    <div className="employee-login employee-portal-login">
+      <a href="/" className="login-back-home" aria-label="Back to Home">
+        <span className="arrow">←</span>
+        <span className="label">Back to Home</span>
+      </a>
       <div className="login-container">
         <div className="login-header">
           <h1>Employee Portal</h1>
