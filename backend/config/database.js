@@ -16,7 +16,14 @@ class Database {
     this.pool = mysql.createPool({
       host: env(process.env.DB_HOST, 'localhost'),
       user: env(process.env.DB_USER, 'root'),
-      password: env(process.env.DB_PASSWORD, 'hm$$mnmPP2003ML'),
+      // Removed insecure hardcoded password fallback; validation enforced in requiredEnv.js
+      password: (() => {
+        const pw = process.env.DB_PASSWORD;
+        if (!pw || !pw.trim()) {
+          throw new Error('DB_PASSWORD not set. See backend/config/requiredEnv.js enforcement.');
+        }
+        return pw.trim();
+      })(),
       database: env(process.env.DB_NAME, 'kandypack'),
       port: Number(env(process.env.DB_PORT, 3306)),
       waitForConnections: true,

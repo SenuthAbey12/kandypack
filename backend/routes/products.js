@@ -43,8 +43,10 @@ router.get('/', async (req, res) => {
   const offsetInt = Number.isFinite(offset) ? offset : parseInt(offset, 10) || 0;
   query += ` LIMIT ${limitInt} OFFSET ${offsetInt}`;
 
-  console.log('Query:', query);
-  console.log('Params (filters only):', params);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[products] Query:', query);
+    console.log('[products] Params (filters only):', params);
+  }
 
     try {
       // Try database query first
@@ -53,12 +55,14 @@ router.get('/', async (req, res) => {
         database.query(countQuery, countParams)
       ]);
 
-      console.log('Database query successful, returning', products.length, 'products');
-      console.log('Sample product with image:', products[0] ? {
-        id: products[0].product_id,
-        name: products[0].product_name,
-        image_url: products[0].image_url
-      } : 'No products');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Database query successful, returning', products.length, 'products');
+        console.log('Sample product with image:', products[0] ? {
+          id: products[0].product_id,
+          name: products[0].product_name,
+          image_url: products[0].image_url
+        } : 'No products');
+      }
 
       res.json({
         products,
@@ -71,7 +75,9 @@ router.get('/', async (req, res) => {
       });
     } catch (dbError) {
       // Fallback to mock data when database is unavailable
-      console.log('Database unavailable, using mock data for products. Error:', dbError.message);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Database unavailable, using mock data for products. Error:', dbError.message);
+      }
       
       const mockProducts = [
         {

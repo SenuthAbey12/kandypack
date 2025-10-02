@@ -8,29 +8,41 @@ const router = express.Router();
 
 // Generate JWT token
 const generateToken = (user) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET not configured');
+  }
   return jwt.sign(
-    { 
-      id: user.customer_id || user.admin_id || user.driver_id || user.assistant_id, 
+    {
+      id: user.customer_id || user.admin_id || user.driver_id || user.assistant_id,
       username: user.user_name || user.username,
       role: user.role,
       name: user.name,
       portalType: user.role === 'customer' ? 'customer' : 'employee'
     },
-    process.env.JWT_SECRET || 'fallback_secret_key_for_development',
+    secret,
     { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
   );
 };
+
+const { validate, rules } = require('../middleware/validation');
 
 // Customer Registration
 router.post('/register', async (req, res) => {
   try {
     const { name, phone_no, city, address, user_name, password } = req.body;
 
-    // Validate required fields
-    if (!name || !user_name || !password) {
-      return res.status(400).json({ 
-        error: 'Name, username, and password are required' 
-      });
+    const errors = validate(
+      { name, user_name, password },
+      {
+        name: [rules.required('Name is required'), rules.minLen(2, 'Name must be at least 2 characters')],
+        user_name: [rules.required('Username is required'), rules.minLen(3, 'Username must be at least 3 characters')],
+        password: [rules.required('Password is required'), rules.minLen(6, 'Password must be at least 6 characters')]
+      }
+    );
+
+    if (errors.length) {
+      return res.status(400).json({ error: errors[0], errors });
     }
 
     // Check if username already exists
@@ -88,11 +100,16 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { username, password, role, portalType } = req.body;
-
-    if (!username || !password || !role) {
-      return res.status(400).json({ 
-        error: 'Username, password, and role are required' 
-      });
+    const errors = validate(
+      { username, password, role },
+      {
+        username: [rules.required('Username is required'), rules.minLen(3, 'Username must be at least 3 characters')],
+        password: [rules.required('Password is required'), rules.minLen(6, 'Password must be at least 6 characters')],
+        role: [rules.required('Role is required'), rules.oneOf(['customer','admin','driver','assistant'], 'Invalid role')]
+      }
+    );
+    if (errors.length) {
+      return res.status(400).json({ error: errors[0], errors });
     }
 
     let user = null;
@@ -199,7 +216,11 @@ router.get('/verify', async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key_for_development');
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    const decoded = jwt.verify(token, secret);
     
     // Get fresh user data based on role
     let user = null;

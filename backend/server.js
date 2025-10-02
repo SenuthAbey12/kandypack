@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+// Validate critical environment configuration before continuing
+require('./config/requiredEnv');
 
 const database = require('./config/database');
 
@@ -85,8 +87,11 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, '127.0.0.1', () => {
-  console.log(`🚀 KandyPack API Server running on http://127.0.0.1:${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
-  console.log('✅ Database connection successful');
+  const baseMsg = `KandyPack API Server running on http://127.0.0.1:${PORT}`;
+  console.log('🚀 ' + baseMsg);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+    console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
+    console.log('✅ Database connection successful');
+  }
 });

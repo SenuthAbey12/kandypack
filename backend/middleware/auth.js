@@ -12,7 +12,12 @@ const authenticateToken = (req, res, next) => {
     });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    console.error('[SECURITY] JWT_SECRET not configured.');
+    return res.status(500).json({ success: false, message: 'Server configuration error' });
+  }
+  jwt.verify(token, secret, (err, user) => {
     if (err) {
       return res.status(403).json({
         success: false,
