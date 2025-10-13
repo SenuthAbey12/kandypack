@@ -60,7 +60,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', authenticateToken, orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/database', databaseRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+// Secure dashboard routes - requires authentication
+app.use('/api/dashboard', authenticateToken, dashboardRoutes);
 
 // Portal-specific routes
 app.use('/api/portal/auth', portalAuthRoutes);

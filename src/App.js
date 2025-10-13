@@ -54,7 +54,7 @@ import CustomerLogin from './pages/Auth/CustomerLogin.js';
 import ForgotPassword from './pages/Auth/ForgotPassword.js';
 import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
-import CustomerPortalRouter from './pages/Portal/CustomerPortalRouter.js';
+import CustomerPage from './pages/Portal/CustomerPage.js';
 
 // --- Main App Component ---
 function App() {
@@ -112,7 +112,7 @@ function App() {
               <Route path="/employee/login" element={<EmployeeLogin/>}/>
               <Route path="/customer/login" element={<CustomerLogin/>}/>
               <Route path="/employee/*" element={<EmployeePortalRouter/>}/>
-              <Route path="/customer/*" element={<CustomerPortalRouter/>}/>
+              <Route path="/customer" element={<CustomerPage/>}/>
 
               {/* Account Routes */}
               <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
