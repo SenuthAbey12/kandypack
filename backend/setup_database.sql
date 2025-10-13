@@ -1,25 +1,16 @@
--- =========================================================
--- KANDYPACK - RAIL & ROAD DISTRIBUTION DB (MySQL 8.0+)
--- Base tables have no destination_* or unit_price columns.
--- Views reconstruct those fields for reporting.
--- =========================================================
 
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
 SET sql_safe_updates = 0;
 
--- ---------------------------------------------------------
--- 0) Database
--- ---------------------------------------------------------
+
 DROP DATABASE IF EXISTS kandypack;
 CREATE DATABASE IF NOT EXISTS kandypack
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 USE kandypack;
 
--- ---------------------------------------------------------
--- 1) Core reference (Admin/Customer/Product/Store)
--- ---------------------------------------------------------
+
 CREATE TABLE admin (
   admin_id    VARCHAR(20) PRIMARY KEY,
   name        VARCHAR(100) NOT NULL,
@@ -38,7 +29,27 @@ CREATE TABLE customer (
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- space_consumption = "units of train space per one item"
+CREATE TABLE driver (
+  driver_id VARCHAR(40) PRIMARY KEY,
+  name      VARCHAR(120) NOT NULL,
+  address   TEXT,
+  phone_no  VARCHAR(20),
+  email     VARCHAR(120) UNIQUE,
+  user_name   VARCHAR(50) UNIQUE NOT NULL,
+  password    VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE assistant (
+  assistant_id VARCHAR(40) PRIMARY KEY,
+  name         VARCHAR(120) NOT NULL,
+  address      TEXT,
+  phone_no     VARCHAR(20),
+  email        VARCHAR(120) UNIQUE,
+  user_name   VARCHAR(50) UNIQUE NOT NULL,
+  password    VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+
 CREATE TABLE product (
   product_id         VARCHAR(40) PRIMARY KEY,
   name               VARCHAR(120) NOT NULL,
@@ -49,7 +60,7 @@ CREATE TABLE product (
   available_quantity INT NOT NULL DEFAULT 0 CHECK (available_quantity >= 0)
 ) ENGINE=InnoDB;
 
--- Stores near stations (destination hubs)
+
 CREATE TABLE store (
   store_id  VARCHAR(40) PRIMARY KEY,
   name      VARCHAR(120) NOT NULL,
@@ -58,9 +69,7 @@ CREATE TABLE store (
 
 CREATE INDEX idx_store_city ON store(city);
 
--- ---------------------------------------------------------
--- 2) Orders & items (NO destination_*; NO unit_price)
--- ---------------------------------------------------------
+
 CREATE TABLE orders (
   order_id     VARCHAR(40) PRIMARY KEY,
   customer_id  VARCHAR(40) NOT NULL,
@@ -92,9 +101,8 @@ CREATE TABLE order_item (
 CREATE INDEX idx_order_item_order   ON order_item(order_id);
 CREATE INDEX idx_order_item_product ON order_item(product_id);
 
--- ---------------------------------------------------------
--- 3) Rail layer (train routes, trains, trips, shipments)
--- ---------------------------------------------------------
+
+
 CREATE TABLE train_route (
   route_id     VARCHAR(40) PRIMARY KEY,
   start_city   VARCHAR(80) NOT NULL,
@@ -138,9 +146,8 @@ CREATE TABLE train_shipment (
 CREATE INDEX idx_train_shipment_order ON train_shipment(order_id);
 CREATE INDEX idx_train_shipment_trip  ON train_shipment(trip_id);
 
--- ---------------------------------------------------------
--- 4) Road layer (trucks, routes, schedule, deliveries)
--- ---------------------------------------------------------
+
+
 CREATE TABLE truck (
   truck_id       VARCHAR(40) PRIMARY KEY,
   license_plate  VARCHAR(40) UNIQUE NOT NULL,
@@ -156,22 +163,6 @@ CREATE TABLE truck_route (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_truck_route_store ON truck_route(store_id);
-
-CREATE TABLE driver (
-  driver_id VARCHAR(40) PRIMARY KEY,
-  name      VARCHAR(120) NOT NULL,
-  address   TEXT,
-  phone_no  VARCHAR(20),
-  email     VARCHAR(120) UNIQUE
-) ENGINE=InnoDB;
-
-CREATE TABLE assistant (
-  assistant_id VARCHAR(40) PRIMARY KEY,
-  name         VARCHAR(120) NOT NULL,
-  address      TEXT,
-  phone_no     VARCHAR(20),
-  email        VARCHAR(120) UNIQUE
-) ENGINE=InnoDB;
 
 CREATE TABLE truck_schedule (
   truck_schedule_id VARCHAR(40) PRIMARY KEY,
@@ -204,10 +195,9 @@ CREATE TABLE truck_delivery (
 
 CREATE INDEX idx_truck_delivery_order ON truck_delivery(order_id);
 
--- ---------------------------------------------------------
--- 5) Derived helpers & integrity
--- ---------------------------------------------------------
--- v_order_totals: compute value from current product.price (no unit_price stored)
+
+
+
 CREATE OR REPLACE VIEW v_order_totals AS
 SELECT
   oi.order_id,
@@ -217,7 +207,7 @@ FROM order_item oi
 JOIN product p ON p.product_id = oi.product_id
 GROUP BY oi.order_id;
 
--- Stock guards (unchanged)
+
 DELIMITER //
 CREATE TRIGGER trg_order_item_before_insert
 BEFORE INSERT ON order_item
@@ -254,7 +244,7 @@ BEGIN
       IF cs < delta THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Insufficient stock for increased quantity'; END IF;
       UPDATE product SET available_quantity = available_quantity - delta WHERE product_id = NEW.product_id;
     ELSEIF delta < 0 THEN
-      UPDATE product SET available_quantity = available_quantity - delta WHERE product_id = NEW.product_id; -- delta negative
+      UPDATE product SET available_quantity = available_quantity - delta WHERE product_id = NEW.product_id; 
     END IF;
   END IF;
 END;
@@ -271,7 +261,7 @@ END;
 //
 DELIMITER ;
 
--- Orders must be placed ≥7 days in advance
+
 DELIMITER //
 CREATE TRIGGER trg_orders_min_lead_time
 BEFORE INSERT ON orders
@@ -332,14 +322,12 @@ BEGIN
       AND fn_times_overlap(p_start_time, p_end_time, s.start_time, s.end_time)
   ) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Assistant has overlapping schedule'; END IF;
 
-  -- No back-to-back driver runs
   IF EXISTS (
     SELECT 1 FROM truck_schedule s
     WHERE s.driver_id = p_driver_id
       AND (s.end_time = p_start_time OR s.start_time = p_end_time)
   ) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Driver cannot take consecutive back-to-back deliveries'; END IF;
 
-  -- Assistant: max 2 consecutive routes
   IF EXISTS (
     SELECT 1 FROM (
       SELECT s1.start_time AS t1, s2.start_time AS t2
@@ -359,23 +347,21 @@ BEGIN
   SET wk_start = DATE_SUB(DATE(p_start_time), INTERVAL (WEEKDAY(p_start_time)) DAY);
   SET wk_end   = DATE_ADD(wk_start, INTERVAL 7 DAY);
 
-  -- Driver 40h/week
   IF (
     SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, s.start_time, s.end_time)),0)
     FROM truck_schedule s
     WHERE s.driver_id = p_driver_id
       AND s.start_time >= wk_start AND s.start_time < wk_end
   ) + TIMESTAMPDIFF(MINUTE, p_start_time, p_end_time) > 40*60
-  THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Driver weekly limit (40h) exceeded'; END IF;
+  THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Driver weekly limit 40h exceeded'; END IF;
 
-  -- Assistant 60h/week
   IF (
     SELECT COALESCE(SUM(TIMESTAMPDIFF(MINUTE, s.start_time, s.end_time)),0)
     FROM truck_schedule s
     WHERE s.assistant_id = p_assistant_id
       AND s.start_time >= wk_start AND s.start_time < wk_end
   ) + TIMESTAMPDIFF(MINUTE, p_start_time, p_end_time) > 60*60
-  THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Assistant weekly limit (60h) exceeded'; END IF;
+  THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Assistant weekly limit 60h exceeded'; END IF;
 
   INSERT INTO truck_schedule (truck_schedule_id, route_id, truck_id, driver_id, assistant_id, start_time, end_time)
   VALUES (p_truck_schedule_id, p_route_id, p_truck_id, p_driver_id, p_assistant_id, p_start_time, p_end_time);
@@ -610,6 +596,8 @@ INSERT INTO truck_route (route_id, store_id, route_name, max_minutes) VALUES
 ('TR_COL_01','ST_COL','Colombo City North', 240),
 ('TR_COL_02','ST_COL','Colombo City South', 240),
 ('TR_GAL_01','ST_GAL','Galle Town',         240);
+
+
 
 -- Example order: 8+ days out (passes 7-day rule)
 INSERT INTO orders (order_id, customer_id, order_date, status)

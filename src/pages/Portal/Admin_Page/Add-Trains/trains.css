@@ -1,0 +1,231 @@
+/* ===========================
+   trains.css (updated)
+   =========================== */
+
+/* Theme tokens (light) */
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #6b7280;
+
+  --line: #e5e7eb;      /* borders */
+  --line-2: #eef2f7;    /* table dividers */
+
+  /* Primary = your purple gradient */
+  --primary-1: #8e44ad;
+  --primary-2: #7d3c98;
+
+  --radius: 16px;
+  --r-sm: 10px;
+
+  --s-2: 8px;
+  --s-3: 10px;
+  --s-4: 12px;
+  --s-5: 14px;
+  --s-6: 16px;
+  --s-7: 24px;
+
+  --shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+
+/* Optional dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --card: #0f172a;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+
+    --line: #23314a;
+    --line-2: #1e293b;
+
+    --shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+}
+
+/* Root wrapper spacing (optional) */
+.trains { display: grid; gap: var(--s-4); }
+
+/* Heading */
+.trains h2 { margin: 0 0 var(--s-4); }
+
+/* Card */
+.trains .panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: var(--s-7);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--s-4);
+}
+
+/* Form grid */
+.trains .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-3);
+}
+.trains .grid .full { grid-column: 1 / -1; }
+@media (max-width: 720px) {
+  .trains .grid { grid-template-columns: 1fr; }
+}
+
+/* Labels & fields */
+.trains label { display: flex; flex-direction: column; gap: var(--s-2); }
+
+.trains input,
+.trains textarea,
+.trains select {
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--card);
+  color: var(--text);
+  outline: none; box-shadow: none;
+}
+.trains input::placeholder,
+.trains textarea::placeholder { color: var(--muted); }
+
+/* Focus ring */
+.trains input:focus,
+.trains textarea:focus,
+.trains select:focus {
+  border-color: color-mix(in srgb, var(--primary-1) 70%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-1) 25%, transparent);
+}
+
+/* Actions & buttons */
+.trains .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--s-3); }
+.trains .btn {
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease;
+  white-space: nowrap;
+}
+.trains .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.trains .btn:active { transform: translateY(0); }
+.trains .btn:disabled { opacity: .6; cursor: not-allowed; box-shadow: none; transform: none; }
+.trains .btn.primary {
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  color: #fff;
+  border: none;
+}
+
+/* New: destructive button */
+.trains .btn.danger {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+.trains .btn.danger:hover { box-shadow: var(--shadow); }
+
+/* Toolbar (Find Train) */
+.trains .toolbar {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.trains .toolbar .full { flex: 1; max-width: 560px; }
+
+.trains .toolbar input {
+  padding-left: 34px; /* room for icon */
+  background-position: 10px 50%;
+  background-size: 18px 18px;
+}
+
+.trains .toolbar .muted { color: var(--muted); }
+.trains .toolbar .count {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  font-size: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  .trains .toolbar .count { background: #111827; }
+}
+
+/* Table */
+.trains .table-wrap {
+  overflow: auto;
+  border-radius: var(--r-sm);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.trains table { width: 100%; border-collapse: collapse; min-width: 720px; }
+.trains thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: #f6f8fa;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: var(--text);
+}
+@media (prefers-color-scheme: dark) {
+  .trains thead th { background: #0f172a; color: #e5e7eb; }
+}
+.trains th, .trains td { padding: var(--s-3); border-bottom: 1px solid var(--line-2); }
+.trains tbody tr:hover { background: #f8fafc; }
+@media (prefers-color-scheme: dark) {
+  .trains tbody tr:hover { background: #121a2a; }
+}
+.trains .mono { font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace; font-variant-numeric: tabular-nums; }
+
+/* Inline actions column */
+.trains td:last-child > div {
+  display: inline-flex;
+  gap: 6px;
+}
+
+/* === New: Map + stations layout === */
+.map-and-stations {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: var(--s-3);
+}
+@media (max-width: 900px) {
+  .map-and-stations { grid-template-columns: 1fr; }
+}
+
+.map {
+  width: 100%;
+  height: 380px;
+  border-radius: 12px;
+  background: #e6edf5; /* placeholder color before map loads */
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+
+.stations {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: var(--s-3);
+  max-height: 380px;
+  overflow: auto;
+}
+.stations-head {
+  font-weight: 600;
+  margin-bottom: var(--s-2);
+}
+.station-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px dashed var(--line-2);
+}
+.station-row:last-child { border-bottom: 0; }
+
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+
+/* Accessibility */
+.trains :focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary-1) 70%, white);
+  outline-offset: 2px; border-radius: 8px;
+}

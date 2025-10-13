@@ -1,0 +1,10 @@
+.truckassign h2 { margin:0 0 12px; }
+.truckassign .panel { background:#fff; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+.truckassign .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.truckassign label { display:flex; flex-direction:column; gap:6px; }
+.truckassign input, .truckassign select { padding:10px; border:1px solid #e5e7eb; border-radius:10px; }
+.truckassign .actions { display:flex; justify-content:flex-end; margin-top:12px; }
+.truckassign .btn { padding:10px 14px; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
+.truckassign .btn.primary { background: linear-gradient(135deg,#27ae60,#229954); color:#fff; border:none; }
+.truckassign small.ok { color:#16a34a; }
+.truckassign small.err { color:#dc2626; }

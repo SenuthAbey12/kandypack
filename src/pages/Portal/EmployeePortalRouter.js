@@ -3,11 +3,12 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
-import AdminDashboard from './AdminDashboard';
+import Admin from './Admin_Page/Admin.js';
 import DriverDashboard from './DriverDashboard';
 import AssistantDashboard from './AssistantDashboard';
 import EmployeeProfile from './EmployeeProfile';
 import EmployeeSettings from './EmployeeSettings';
+
 
 const EmployeePortalRouter = () => {
   const { isEmployee, isAdmin, isDriver, isAssistant } = useAuth();
@@ -18,7 +19,7 @@ const EmployeePortalRouter = () => {
   }
 
   const getDashboardComponent = () => {
-    if (isAdmin) return <AdminDashboard />;
+    if (isAdmin) return <Admin />;
     if (isDriver) return <DriverDashboard />;
     if (isAssistant) return <AssistantDashboard />;
     return <Navigate to="/login" replace />;
@@ -34,8 +35,8 @@ const EmployeePortalRouter = () => {
         {/* Admin-specific routes */}
         {isAdmin && (
           <>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/*" element={<Admin />} />
           </>
         )}
         
