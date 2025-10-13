@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 10/13/2025, 6:53:51 PM*
+*Last Updated: 10/13/2025, 8:57:29 PM*
 
 ## 🗄️ Database Overview
 
@@ -12,10 +12,10 @@
 
 - **admin**: 1 records
 - **assistant**: 2 records
-- **customer**: 2 records
+- **customer**: 3 records
 - **driver**: 2 records
-- **order_item**: 0 records
-- **orders**: 0 records
+- **order_item**: 3 records
+- **orders**: 3 records
 - **product**: 3 records
 - **store**: 4 records
 - **train**: 2 records
@@ -26,7 +26,7 @@
 - **truck_delivery**: 0 records
 - **truck_route**: 3 records
 - **truck_schedule**: 0 records
-- **v_order_totals**: 0 records
+- **v_order_totals**: 3 records
 - **v_quarterly_sales**: 0 records
 
 ## 📊 Detailed Table Information
@@ -77,7 +77,7 @@
 
 ### 🏷️ customer
 
-**Records:** 2
+**Records:** 3
 
 #### 📐 Table Structure
 
@@ -98,6 +98,7 @@
 |---|---|---|---|---|---|---|---|
 | CUS001 | John Doe | +94771234567 | Colombo | 123 Galle Rd, Colombo 03 | john | hash1 | Thu Oct 02 2025 13:50:29 GMT+0530 (India Standard Time) |
 | CUS002 | Jane Smith | +94772345678 | Kandy | 456 Peradeniya Rd, Kandy | jane | hash2 | Thu Oct 02 2025 13:50:29 GMT+0530 (India Standard Time) |
+| CUS082651 | Dinuka | 0715311839 | Ranna | No,71 | dinuka | $2a$10$sAbSHN6nRnh5S08K1GLx... | Mon Oct 13 2025 19:48:02 GMT+0530 (India Standard Time) |
 
 ---
 
@@ -126,7 +127,7 @@
 
 ### 🏷️ order_item
 
-**Records:** 0
+**Records:** 3
 
 #### 📐 Table Structure
 
@@ -140,13 +141,17 @@
 
 #### 📄 Sample Data
 
-*No data available*
+| order_item_id | order_id | product_id | quantity | unit_price |
+|---|---|---|---|---|
+| OI_1760368488463_8edeusbko | ORD_1760368488448_80ccats95 | P002 | 1 | 450.00 |
+| OI_1760368923530_i4dg2pccq | ORD_1760368923519_tkx46qchw | P002 | 1 | 450.00 |
+| OI_1760369244601_evok4pqb8 | ORD_1760369244595_dvjwujt15 | P002 | 1 | 450.00 |
 
 ---
 
 ### 🏷️ orders
 
-**Records:** 0
+**Records:** 3
 
 #### 📐 Table Structure
 
@@ -163,7 +168,11 @@
 
 #### 📄 Sample Data
 
-*No data available*
+| order_id | customer_id | order_date | destination_city | destination_address | status | created_at | updated_at |
+|---|---|---|---|---|---|---|---|
+| ORD_1760368488448_80ccats95 | CUS082651 | Mon Oct 13 2025 20:44:48 GMT+0530 (India Standard Time) | galle | galle | pending | Mon Oct 13 2025 20:44:48 GMT+0530 (India Standard Time) | Mon Oct 13 2025 20:44:48 GMT+0530 (India Standard Time) |
+| ORD_1760368923519_tkx46qchw | CUS082651 | Mon Oct 13 2025 20:52:03 GMT+0530 (India Standard Time) | Galle | Galle | pending | Mon Oct 13 2025 20:52:03 GMT+0530 (India Standard Time) | Mon Oct 13 2025 20:52:03 GMT+0530 (India Standard Time) |
+| ORD_1760369244595_dvjwujt15 | CUS082651 | Mon Oct 13 2025 20:57:24 GMT+0530 (India Standard Time) | Matara | Matara Road,Matara,76543 | pending | Mon Oct 13 2025 20:57:24 GMT+0530 (India Standard Time) | Mon Oct 13 2025 20:57:24 GMT+0530 (India Standard Time) |
 
 ---
 
@@ -188,7 +197,7 @@
 | product_id | name | description | price | space_consumption | category | available_quantity |
 |---|---|---|---|---|---|---|
 | P001 | Detergent Box | 1kg box | 600.00 | 0.5000 | FMCG | 200 |
-| P002 | Shampoo Pack | 500ml | 450.00 | 0.2000 | FMCG | 300 |
+| P002 | Shampoo Pack | 500ml | 450.00 | 0.2000 | FMCG | 297 |
 | P003 | Soap Carton | 20 bars | 1200.00 | 1.0000 | FMCG | 150 |
 
 ---
@@ -388,7 +397,7 @@
 
 ### 🏷️ v_order_totals
 
-**Records:** 0
+**Records:** 3
 
 #### 📐 Table Structure
 
@@ -400,7 +409,11 @@
 
 #### 📄 Sample Data
 
-*No data available*
+| order_id | order_amount | required_space |
+|---|---|---|
+| ORD_1760368488448_80ccats95 | 450.00 | 0.2000 |
+| ORD_1760368923519_tkx46qchw | 450.00 | 0.2000 |
+| ORD_1760369244595_dvjwujt15 | 450.00 | 0.2000 |
 
 ---
 

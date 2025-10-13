@@ -39,11 +39,35 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
+// CORS configuration (allow common local dev URLs)
+const defaultOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173', // Vite
+  'http://127.0.0.1:5173'
+];
+const userOrigin = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
+const allowedOrigins = new Set([...defaultOrigins, ...userOrigin]);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow non-browser requests (no origin)
+    if (!origin) return callback(null, true);
+    // Allow any localhost/127.0.0.1 origin with any port (dev convenience)
+    const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1):\d{2,5}$/.test(origin);
+    if (isLocalhost || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS not allowed for origin: ${origin}`), false);
+  },
+  credentials: true,
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization','X-Requested-With']
+};
+
+app.use(cors(corsOptions));
+// Explicitly handle preflight for all routes
+app.options('*', cors(corsOptions));
 
 // Body parsing middleware
 app.use(bodyParser.json());
@@ -91,8 +115,8 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, '127.0.0.1', () => {
-  const baseMsg = `KandyPack API Server running on http://127.0.0.1:${PORT}`;
+app.listen(PORT, () => {
+  const baseMsg = `KandyPack API Server running on http://localhost:${PORT}`;
   console.log('🚀 ' + baseMsg);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`📊 Environment: ${process.env.NODE_ENV}`);

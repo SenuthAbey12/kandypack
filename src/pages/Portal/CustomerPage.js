@@ -1,112 +1,82 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { ordersAPI } from '../../services/api';
 
 const CustomerPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [trackingId, setTrackingId] = useState('');
   
-
-  // User-specific storage key
-  const userKey = useMemo(() => `kandypack_orders:${user?.id || user?.email || 'guest'}`, [user]);
-
-  // Load user orders from localStorage
+  // Load orders from API (with mock fallback via axios interceptor)
   useEffect(() => {
-    const loadOrders = () => {
+    const statusToProgress = (status) => {
+      const s = (status || '').toLowerCase();
+      if (s.includes('delivered')) return 100;
+      if (s.includes('in_transit') || s.includes('in transit')) return 75;
+      if (s.includes('scheduled') || s.includes('confirmed')) return 50;
+      if (s.includes('pending') || s.includes('processing')) return 25;
+      if (s.includes('cancel')) return 0;
+      return 10;
+    };
+
+    const fetchOrders = async () => {
+      setLoading(true);
       try {
-        const saved = localStorage.getItem(userKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setOrders(Array.isArray(parsed) ? parsed : []);
-        } else {
-          // Seed with realistic FMCG orders
-          const seededOrders = [
-            {
-              id: 'KP-2024-001',
-              customer_id: user?.id || 'CUST001',
-              status: 'In Transit',
-              transport_mode: 'Rail',
-              route: 'Kandy → Colombo',
-              items: [
-                { product_id: 'P001', quantity: 50, product_name: 'Detergent Powder 1kg' },
-                { product_id: 'P003', quantity: 30, product_name: 'Cooking Oil 1L' }
-              ],
-              total_space: 70.0,
-              total_value: 35100,
-              order_date: '2024-01-10',
-              estimated_delivery: '2024-01-17',
-              actual_delivery: null,
-              progress: 75,
-              delivery_city: 'Colombo',
-              train_assignment: { trip_id: 'TRAIN-A21', departure: '2024-01-15 08:00' },
-              truck_assignment: { truck_id: 'TRUCK-R7', driver: 'Kamal Perera' },
-              customer_notes: 'Urgent delivery for supermarket restock'
-            },
-            {
-              id: 'KP-2024-002',
-              customer_id: user?.id || 'CUST001',
-              status: 'Delivered',
-              transport_mode: 'Road',
-              route: 'Kandy → Galle',
-              items: [
-                { product_id: 'P005', quantity: 20, product_name: 'Tea Leaves 500g' },
-                { product_id: 'P006', quantity: 15, product_name: 'Biscuits 200g (Pack of 24)' }
-              ],
-              total_space: 20.0,
-              total_value: 14600,
-              order_date: '2024-01-05',
-              estimated_delivery: '2024-01-12',
-              actual_delivery: '2024-01-12',
-              progress: 100,
-              delivery_city: 'Galle',
-              train_assignment: null,
-              truck_assignment: { truck_id: 'TRUCK-G12', driver: 'Sunil Fernando' },
-              customer_notes: 'Regular monthly supply'
-            },
-            {
-              id: 'KP-2024-003',
-              customer_id: user?.id || 'CUST001',
-              status: 'Processing',
-              transport_mode: 'Rail',
-              route: 'Kandy → Jaffna',
-              items: [
-                { product_id: 'P002', quantity: 100, product_name: 'Toilet Soap 100g (Pack of 12)' },
-                { product_id: 'P007', quantity: 40, product_name: 'Shampoo 400ml' }
-              ],
-              total_space: 50.0,
-              total_value: 48800,
-              order_date: '2024-01-12',
-              estimated_delivery: '2024-01-20',
-              actual_delivery: null,
-              progress: 25,
-              delivery_city: 'Jaffna',
-              train_assignment: { trip_id: 'TRAIN-B15', departure: '2024-01-18 06:00' },
-              truck_assignment: null,
-              customer_notes: 'Bulk order for distributor'
-            }
-          ];
-          setOrders(seededOrders);
-        }
-      } catch (error) {
-        console.error('Error loading orders:', error);
+        const res = await ordersAPI.getAll({ page: 1, limit: 50 });
+        const list = res.data?.orders || [];
+        const mapped = list.map((o) => {
+          const id = o.order_id || o.id || `ORD_${Math.random().toString(36).slice(2, 8)}`;
+          const statusRaw = o.order_status || o.status || 'pending';
+          const statusMap = {
+            pending: 'Processing',
+            confirmed: 'Processing',
+            scheduled: 'Scheduled',
+            in_transit: 'In Transit',
+            delivered: 'Delivered',
+            cancelled: 'Cancelled'
+          };
+          const norm = (statusRaw || '').toString().toLowerCase();
+          const status = statusMap[norm] || (statusRaw?.charAt(0).toUpperCase() + statusRaw?.slice(1)) || 'Processing';
+
+          return {
+            id,
+            customer_id: o.customer_id,
+            status,
+            transport_mode: o.transport_mode || 'Road',
+            route: o.route || (o.destination_city ? `→ ${o.destination_city}` : '—'),
+            items: Array.isArray(o.items) ? o.items : [],
+            total_space: o.required_space || o.total_space || 0,
+            total_value: o.total_amount || o.total_value || 0,
+            order_date: (() => {
+              const d = o.order_date ? new Date(o.order_date) : null;
+              return d && !isNaN(d) ? d.toISOString().split('T')[0] : '—';
+            })(),
+            estimated_delivery: o.estimated_delivery || '—',
+            actual_delivery: o.delivered_at || o.actual_delivery || null,
+            progress: statusToProgress(norm),
+            delivery_city: o.destination_city || o.city || '—',
+            train_assignment: o.train_assignment || null,
+            truck_assignment: o.truck_assignment || null,
+            customer_notes: o.customer_notes || ''
+          };
+        });
+        setOrders(mapped);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        // Always show empty state for orders on error (new-customer friendly)
+        setOrders([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadOrders();
-  }, [userKey, user]);
-
-  // Save orders to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(userKey, JSON.stringify(orders));
-    } catch (error) {
-      console.error('Error saving orders:', error);
-    }
-  }, [orders, userKey]);
+    fetchOrders();
+  }, [user]);
 
   // Simulate real-time order updates
   useEffect(() => {
@@ -139,8 +109,8 @@ const CustomerPage = () => {
 
   // Calculate business statistics
   const stats = useMemo(() => {
-    const totalOrders = orders.length;
-    const activeShipments = orders.filter(o => ['In Transit', 'Processing', 'Scheduled'].includes(o.status)).length;
+  const totalOrders = orders.length;
+  const activeDeliveries = orders.filter(o => ['In Transit', 'Processing', 'Scheduled'].includes(o.status)).length;
     const totalOrderValue = orders.reduce((sum, order) => sum + order.total_value, 0);
     const railDeliveries = orders.filter(o => o.transport_mode === 'Rail').length;
     const averageDeliveryTime = orders.filter(o => o.actual_delivery)
@@ -150,7 +120,7 @@ const CustomerPage = () => {
         return sum + (deliveryDate - orderDate) / (1000 * 60 * 60 * 24);
       }, 0) / orders.filter(o => o.actual_delivery).length || 0;
 
-    return { totalOrders, activeShipments, totalOrderValue, railDeliveries, averageDeliveryTime };
+  return { totalOrders, activeDeliveries, totalOrderValue, railDeliveries, averageDeliveryTime };
   }, [orders]);
 
   // Filter orders by status
@@ -211,8 +181,8 @@ const CustomerPage = () => {
           <div style={styles.statGlow}></div>
           <div style={styles.statIcon}>🚚</div>
           <div style={styles.statContent}>
-            <h3>{stats.activeShipments}</h3>
-            <p>Active Shipments</p>
+            <h3>{stats.activeDeliveries}</h3>
+            <p>Active Deliveries</p>
             <small>In pipeline</small>
           </div>
         </div>
@@ -274,7 +244,7 @@ const CustomerPage = () => {
           <button style={styles.actionBtn} onClick={() => setShowTrackingModal(true)}>
             <span style={styles.actionIcon}>📍</span>
             <div>
-              <div style={styles.actionTitle}>Track Shipment</div>
+              <div style={styles.actionTitle}>Track Delivery</div>
               <div style={styles.actionDesc}>Real-time order tracking</div>
             </div>
           </button>
@@ -291,11 +261,22 @@ const CustomerPage = () => {
       {/* Recent Orders Preview */}
       <div style={styles.ordersSection}>
         <h3 style={styles.sectionTitle}>Recent Orders</h3>
-        <div style={styles.ordersList}>
-          {orders.slice(0, 3).map(order => (
-            <OrderCard key={order.id} order={order} />
-          ))}
-        </div>
+        {orders.length > 0 ? (
+          <div style={styles.ordersList}>
+            {orders.slice(0, 3).map(order => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+        ) : (
+          <div style={styles.emptyState}>
+            <div style={styles.emptyIcon}>🧾</div>
+            <h4>No Orders Yet</h4>
+            <p>When you place your first order, it will appear here.</p>
+            <button style={styles.primaryBtn} onClick={() => navigate('/products')}>
+              Place Your First Order
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -319,7 +300,7 @@ const CustomerPage = () => {
       <div style={styles.orderHeader}>
         <div>
           <span style={styles.orderId}>{order.id}</span>
-          <span style={styles.orderDate}>{order.order_date}</span>
+          <span style={styles.orderDate}>{order.order_date || '—'}</span>
         </div>
         <span style={{ ...styles.orderStatus, ...getStatusStyle(order.status) }}>
           {order.status}
@@ -332,16 +313,16 @@ const CustomerPage = () => {
             <span style={styles.modeIcon}>
               {order.transport_mode === 'Rail' ? '🚂' : '🚛'}
             </span>
-            <span>{order.transport_mode} • {order.route}</span>
+            <span>{order.transport_mode || '—'} • {order.route || '—'}</span>
           </div>
           
           <div style={styles.orderItems}>
-            {order.items.slice(0, 2).map((item, index) => (
+            {Array.isArray(order.items) && order.items.slice(0, 2).map((item, index) => (
               <span key={index} style={styles.itemTag}>
-                {item.product_name} × {item.quantity}
+                {(item.product_name || item.name || 'Item')} × {item.quantity ?? '?'}
               </span>
             ))}
-            {order.items.length > 2 && (
+            {Array.isArray(order.items) && order.items.length > 2 && (
               <span style={styles.moreItems}>+{order.items.length - 2} more</span>
             )}
           </div>
@@ -367,7 +348,7 @@ const CustomerPage = () => {
             {order.status === 'Delivered' ? 'Delivered' : `${order.progress}%`}
           </span>
           <div style={styles.eta}>
-            {order.status === 'Delivered' ? order.actual_delivery : `ETA: ${order.estimated_delivery}`}
+            {order.status === 'Delivered' ? (order.actual_delivery || '—') : `ETA: ${order.estimated_delivery || '—'}`}
           </div>
         </div>
       </div>
@@ -377,7 +358,7 @@ const CustomerPage = () => {
   // Render Current Orders
   const renderCurrentOrders = () => (
     <div style={styles.ordersSection}>
-      <h3 style={styles.sectionTitle}>Current Orders • {currentOrders.length} Active</h3>
+  <h3 style={styles.sectionTitle}>Active Deliveries • {currentOrders.length} In Progress</h3>
       <div style={styles.ordersList}>
         {currentOrders.map(order => (
           <OrderCard key={order.id} order={order} />
@@ -428,7 +409,7 @@ const CustomerPage = () => {
             onChange={(e) => setTrackingId(e.target.value)}
           />
           <button style={styles.primaryBtn} onClick={() => setTrackingId(trackingId)}>
-            Track Order
+            Track Delivery
           </button>
         </div>
 
@@ -634,11 +615,21 @@ const CustomerPage = () => {
           </header>
 
           <main style={styles.main}>
+            {loading && (
+              <div style={styles.ordersSection}>
+                <h3 style={styles.sectionTitle}>Loading your orders…</h3>
+                <p style={{ color: '#7f8c8d' }}>Please wait while we fetch your latest orders.</p>
+              </div>
+            )}
+            {!loading && (
+              <>
             {activeTab === 'dashboard' && renderDashboard()}
             {activeTab === 'current' && renderCurrentOrders()}
             {activeTab === 'history' && renderOrderHistory()}
             {activeTab === 'tracking' && renderDeliveryTracking()}
             {activeTab === 'support' && renderSupport()}
+              </>
+            )}
           </main>
         </div>
       </div>
@@ -649,7 +640,7 @@ const CustomerPage = () => {
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalGlow}></div>
             <div style={styles.modalHeader}>
-              <h3>Track Your Shipment</h3>
+              <h3>Track Your Delivery</h3>
               <button style={styles.closeBtn} onClick={() => setShowTrackingModal(false)}>×</button>
             </div>
             <div style={styles.modalContent}>

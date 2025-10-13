@@ -108,7 +108,7 @@ export const StoreProvider = ({ children }) => {
     const saved = localStorage.getItem('kandypack_store');
     if (saved) {
       const parsed = JSON.parse(saved);
-      setProducts(parsed.products || seedProducts());
+      // Do NOT restore products from localStorage to avoid stale items
       setCart(parsed.cart || []);
       setOrders(parsed.orders || []);
       setNotifications(parsed.notifications || []);
@@ -117,11 +117,12 @@ export const StoreProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    // Persist only customer state, not products
     localStorage.setItem(
       'kandypack_store',
-      JSON.stringify({ products, cart, orders, notifications, messages })
+      JSON.stringify({ cart, orders, notifications, messages })
     );
-  }, [products, cart, orders, notifications, messages]);
+  }, [cart, orders, notifications, messages]);
 
   // Load products from backend API (with mock fallback via api layer)
   useEffect(() => {

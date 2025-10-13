@@ -43,6 +43,12 @@ import Chat from './pages/Support/Chat.js';
 import PackagingHelp from './pages/Support/PackagingHelp.js';
 import ProtectedRoute from './Components/ProtectedRoute.js';
 import Checkout from './pages/Checkout.js';
+import CheckoutLayout from './pages/Checkout/CheckoutLayout.js';
+import CheckoutCart from './pages/Checkout/CheckoutCart.js';
+import CheckoutDetails from './pages/Checkout/CheckoutDetails.js';
+import CheckoutPayment from './pages/Checkout/CheckoutPayment.js';
+import CheckoutReview from './pages/Checkout/CheckoutReview.js';
+import { CheckoutProvider } from './context/CheckoutContext';
 import { BrowserRouter,Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { StoreProvider } from './context/StoreContext';
@@ -106,7 +112,16 @@ function App() {
               <Route path="/company/contact" element={<Contact/>}/>
               <Route path="/company/news" element={<News/>}/>
               
-              <Route path="/checkout" element={<Checkout/>}/>
+              {/* Old single-page checkout for fallback */}
+              <Route path="/checkout-old" element={<Checkout/>}/>
+              {/* New multi-step checkout */}
+              <Route path="/checkout" element={<CheckoutProvider><CheckoutLayout/></CheckoutProvider>}>
+                <Route index element={<CheckoutCart/>} />
+                <Route path="cart" element={<CheckoutCart/>} />
+                <Route path="details" element={<CheckoutDetails/>} />
+                <Route path="payment" element={<CheckoutPayment/>} />
+                <Route path="review" element={<CheckoutReview/>} />
+              </Route>
 
               {/* New Portal System */}
               <Route path="/employee/login" element={<EmployeeLogin/>}/>
