@@ -10,6 +10,15 @@
   --line: #e5e7eb;
   --line-2: #eef2f7;
   --text: #0f172a;
+  --text-strong: #0f172a;
+  --table-head-bg: #f1f2f4;
+  --table-head-hover: #e9edf2;
+  --table-head-text: #0f172a;
+  --row-hover: #f8fafc;
+  --icon: #64748b;
+  --button-surface: #ffffff;
+  --button-border: color-mix(in srgb, var(--line) 80%, transparent);
+  --button-text: var(--text);
 
   --primary-1: #3498db;
   --primary-2: #2980b9;
@@ -38,7 +47,16 @@
     --muted: #7f90a8;
     --line: #23314a;
     --line-2: #1e293b;
-    --text: #0f172a; /* keep table header text readable; we’ll override where needed */
+    --text: #e2e8f0;
+    --text-strong: #f8fafc;
+    --table-head-bg: #1f2937;
+    --table-head-hover: #243047;
+    --table-head-text: #f1f5f9;
+    --row-hover: rgba(148, 163, 184, 0.22);
+    --icon: #cbd5f5;
+    --button-surface: color-mix(in srgb, var(--card) 55%, white 45%);
+    --button-border: rgba(148, 163, 184, 0.45);
+    --button-text: #f5f7ff;
 
     --shadow: 0 8px 24px rgba(0,0,0,.45);
     --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
@@ -47,7 +65,7 @@
 
 /* Layout wrapper */
 .products {
-  color: #0f172a;
+  color: var(--text);
   background: var(--bg);
   padding: var(--s-7);
   border-radius: var(--radius);
@@ -103,7 +121,7 @@
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--card);
-  color: #0f172a; /* force visible text */
+  color: var(--text); /* force visible text */
   outline: none;
   box-shadow: none;
 }
@@ -130,9 +148,9 @@
 .products .btn {
   padding: var(--s-3) var(--s-5);
   border-radius: var(--r-sm);
-  border: 1px solid var(--line);
-  background: #fff;
-  color: #0f172a;
+  border: 1px solid var(--button-border);
+  background: var(--button-surface);
+  color: var(--button-text);
   cursor: pointer;
   transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
   will-change: transform;
@@ -163,7 +181,7 @@
   border-radius: 10px;
   min-width: 260px;
   background: var(--card);
-  color: #0f172a;
+  color: var(--text);
 }
 .muted { color: var(--muted); }
 
@@ -182,25 +200,22 @@
 }
 .products thead th {
   position: sticky; top: 0; z-index: 1;
-  background: #f1f2f4;
-  color: #0f172a; /* ensure contrast on header */
+  background: var(--table-head-bg);
+  color: var(--table-head-text);
   text-align: left;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: .4px;
 }
 @media (prefers-color-scheme: dark) {
-  .products thead th { background: #c6c6e4; color: #0f172a; }
+  .products thead th { background: var(--table-head-bg); color: var(--table-head-text); }
 }
 .products th, .products td {
   padding: var(--s-3);
   border-bottom: 1px solid var(--line-2);
   vertical-align: middle;
 }
-.products tbody tr:hover { background: #f8fafc; }
-@media (prefers-color-scheme: dark) {
-  .products tbody tr:hover { background: #aeb1b7; }
-}
+.products tbody tr:hover { background: var(--row-hover); }
 .products td.right { text-align: right; }
 .products .row-actions { display: inline-flex; gap: var(--s-2); }
 
@@ -222,7 +237,7 @@
   width: 100%;
   min-width: 0;
   background: var(--card);
-  color: #0f172a;
+  color: var(--text);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 8px 10px;
@@ -243,9 +258,9 @@
 }
 .products thead th.sorted-asc::after  { content: "▲"; opacity: .9; }
 .products thead th.sorted-desc::after { content: "▼"; opacity: .9; }
-.products thead th.sortable:hover { background: #e9edf2; }
+.products thead th.sortable:hover { background: var(--table-head-hover); }
 @media (prefers-color-scheme: dark) {
-  .products thead th.sortable:hover { background: #b9bfda; }
+  .products thead th.sortable:hover { background: var(--table-head-hover); }
 }
 
 /* Modal (future use) */
@@ -271,7 +286,7 @@
   display: flex; justify-content: flex-end; gap: var(--s-2);
 }
 .products .icon-btn {
-  background: transparent; border: none; font-size: 22px; cursor: pointer; color: #64748b;
+  background: transparent; border: none; font-size: 22px; cursor: pointer; color: var(--icon);
 }
 .products .modal .grid { grid-template-columns: repeat(2,1fr); }
 .products .modal .grid .full { grid-column: 1/-1; }

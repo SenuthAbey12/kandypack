@@ -29,6 +29,9 @@
 
   --shadow: 0 8px 24px rgba(0,0,0,.08);
   --shadow-lg: 0 20px 60px rgba(0,0,0,.22);
+  --seg-surface: rgba(255,255,255,0.9);
+  --seg-border-active: rgba(39,174,96,0.6);
+  --button-surface: #ffffff;
 }
 
 /* Dark mode */
@@ -44,6 +47,9 @@
 
     --shadow: 0 8px 24px rgba(0,0,0,.45);
     --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
+    --seg-surface: rgba(30,41,59,0.88);
+    --seg-border-active: rgba(39,174,96,0.7);
+    --button-surface: rgba(30,41,59,0.9);
   }
 }
 
@@ -76,8 +82,8 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  background: var(--seg-surface);
   color: var(--text);
   cursor: pointer;
   font-weight: 600;
@@ -89,7 +95,7 @@
 .seg-btn.active {
   background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
   color: #fff;
-  border-color: transparent;
+  border-color: color-mix(in srgb, var(--seg-border-active) 80%, transparent);
   box-shadow: 0 8px 24px rgba(0,0,0,.12);
 }
 
@@ -151,7 +157,7 @@
   padding: var(--s-3) var(--s-5);
   border-radius: var(--r-sm);
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--button-surface);
   color: var(--text);
   cursor: pointer;
   transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
@@ -231,3 +237,4 @@
 @media (prefers-reduced-motion: reduce) {
   .employees * { transition: none !important; animation: none !important; }
 }
+

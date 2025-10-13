@@ -33,10 +33,10 @@ export default function Trains() {
   const [route, setRoute] = useState({ route_id: "", start_city: "", end_city: "", destinations: "" });
   const [suggesting, setSuggesting] = useState(false);
 
-  // NEW: search (Find Trains)
+  // Search
   const [query, setQuery] = useState("");
 
-  // Inline edit state (add Edit/Delete to the table)
+  // Inline edit state
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ capacity: "", notes: "" });
   const [savingId, setSavingId] = useState(null);
@@ -96,8 +96,7 @@ export default function Trains() {
       alert("Train + Route added");
     } catch (err) {
       console.error(err);
-      // Optimistic fallback so you can continue testing UI even if backend is down
-      setTrains((t) => [trainPayload, ...t]);
+      setTrains((t) => [trainPayload, ...t]); // optimistic fallback
       alert("Saved locally. Check backend endpoints if needed.");
     }
   };
@@ -173,7 +172,9 @@ export default function Trains() {
     } finally {
       setSavingId(null);
     }
-    setTrains((list) => list.map((x) => ((x.train_id || x.id) === id ? { ...x, ...payload, train_id: x.train_id || id } : x)));
+    setTrains((list) =>
+      list.map((x) => ((x.train_id || x.id) === id ? { ...x, ...payload, train_id: x.train_id || id } : x))
+    );
     cancelEdit();
   };
 
@@ -196,11 +197,25 @@ export default function Trains() {
   };
 
   return (
-    // Make page style/structure match Products.js so the same CSS can apply
-    <div className="products">
-      <h2>Train Management</h2>
+    <div className="trains">
+      {/* Header row: title left, search right */}
+      <div className="page-header">
+        <h2>Train Management</h2>
+        <div className="header-tools">
+          <input
+            className="toolbar-input"
+            placeholder="Search by ID, capacity, notes…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search trains"
+          />
+          <div className="muted">
+            Showing <b>{visibleTrains.length}</b> of <b>{trains.length}</b>
+          </div>
+        </div>
+      </div>
 
-      {/* Top: Add panel (left) + Find panel (right) */}
+      {/* Form panel */}
       <div className="panels">
         <div className="panel">
           <h3>Add Train + Route</h3>
@@ -276,7 +291,7 @@ export default function Trains() {
               <button type="button" className="btn" onClick={openMaps}>
                 View route in Google Maps
               </button>
-              
+
               <button type="button" className="btn" onClick={suggestFromOrdered} disabled={suggesting}>
                 {suggesting ? "Suggesting…" : "Suggest from Rail (offline)"}
               </button>
@@ -286,28 +301,9 @@ export default function Trains() {
             </div>
           </form>
         </div>
-
-        {/* NEW: Find Trains (search only) */}
-        <div>
-          <h3>Find Trains</h3>
-          <div className="toolbar">
-            <input
-              className="toolbar-input"
-              placeholder="Search by ID, capacity, notes…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Search trains"
-            />
-            <div className="muted">
-              Showing <b>{visibleTrains.length}</b> of <b>{trains.length}</b>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <br />
-
-      {/* Table with Edit/Delete like Products.js */}
+      {/* Table */}
       <div className="table-wrap">
         <table>
           <thead>
