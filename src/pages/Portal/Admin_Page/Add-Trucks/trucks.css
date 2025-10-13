@@ -1,0 +1,120 @@
+/* Background (top gradient like your screenshot) */
+.trucks-page {
+  background: linear-gradient(180deg, #6d68c6 0%, #6d68c6 40%, #eaf0f7 40%, #eaf0f7 100%);
+  min-height: 100vh;
+  padding: 28px 0;
+}
+
+/* Single main rounded panel */
+.page-card {
+  width: min(1000px, 92vw);
+  margin: 0 auto;
+  background: #f3f7fc;
+  border-radius: 10px;
+  padding: 22px 26px 28px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.15);
+  border: 1px solid rgba(0,0,0,.08);
+  font-size: 14px;
+}
+
+.page-card h2 {
+  margin: 0 0 16px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c2f39;
+}
+
+/* The ONLY inner panel (rounded) that holds the form */
+.panel {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  border: 1px solid #d9e1ef;
+  margin-bottom: 16px;
+}
+.panel h3 { margin: 2px 0 10px; font-size: 15px; font-weight: 700; color:#2c2f39; }
+
+/* Form grid: 3 fields + submit */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.full { grid-column: 1 / -1; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #3a3f4a; }
+input {
+  padding: 10px 12px;
+  border: 1px solid #cfd7e6;
+  border-radius: 10px;
+  background: #fff;
+}
+.actions { display: flex; justify-content: flex-start; }
+
+/* Buttons (chip style) */
+.btn, .chip {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .02s ease, opacity .15s ease;
+  font-size: 14px;
+}
+.btn.primary, .chip.primary { background:#6b2fb3; color:#fff; border:none; }
+.chip { border-radius: 8px; }
+.chip.danger { background:#ea5b4b; color:#fff; border:none; }
+.btn:hover, .chip:hover { box-shadow:0 2px 10px rgba(0,0,0,.08); }
+.btn:active, .chip:active { transform: translateY(1px); }
+.btn:disabled, .chip:disabled { opacity:.6; cursor:not-allowed; }
+
+/* Table container (rounded edges) */
+.table-wrap.elevated {
+  border-radius: 10px;
+  overflow: hidden;
+  background:#fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  border: 1px solid #cfd7e6;
+}
+
+/* Table styles */
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+thead th {
+  background:#cfd6f1;
+  color:#2b2f4c;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: .4px;
+  border-bottom: 1px solid #b6c0e6;
+  padding: 10px 12px;
+}
+tbody td {
+  background:#fff;
+  border-bottom: 1px solid #e6ecf7;
+  padding: 12px;
+}
+.right { text-align:right; }
+.mono { font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace; }
+
+/* Rounded row corners */
+.rounded-rows tbody tr:first-child td:first-child { border-top-left-radius: 10px; }
+.rounded-rows tbody tr:first-child td:last-child  { border-top-right-radius:10px; }
+.rounded-rows tbody tr:last-child td:first-child  { border-bottom-left-radius:10px; }
+.rounded-rows tbody tr:last-child td:last-child   { border-bottom-right-radius:10px; }
+
+/* Inline edit inputs inside table */
+tbody td input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cfd7e6;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
+/* Row actions */
+.row-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+
+/* Empty state */
+.empty { text-align: center; color: #94a3b8; font-style: italic; padding: 12px; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .grid { grid-template-columns: 1fr; }
+}

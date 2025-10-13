@@ -1,0 +1,12 @@
+.trainalloc h2 { margin:0 0 12px; }
+.trainalloc .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.trainalloc .panel { background:#fff; border-radius:16px; padding:16px; box-shadow:0 8px 24px rgba(0,0,0,.08); }
+.trainalloc .table-wrap { overflow:auto; border-radius:10px; }
+.trainalloc table { width:100%; border-collapse:collapse; }
+.trainalloc th { background:#f6f8fa; text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.4px; }
+.trainalloc th, .trainalloc td { padding:10px; border-bottom:1px solid #eef2f7; }
+.trainalloc .mono { font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace; }
+.trainalloc .empty { text-align:center; color:#6b7280; padding:16px; }
+.trainalloc .btn { padding:8px 12px; border-radius:10px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
+.trainalloc .btn.primary { background: linear-gradient(135deg,#3498db,#2980b9); color:#fff; border:none; }
+.trainalloc .actions { display:flex; justify-content:flex-end; margin-top:10px; }
