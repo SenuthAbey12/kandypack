@@ -21,8 +21,8 @@ router.get('/tickets', authenticateToken, requireRole(['assistant', 'admin']), a
         a.name as assistant_name
       FROM support_tickets st
       LEFT JOIN customer c ON st.customer_id = c.customer_id
-      LEFT JOIN drivers d ON st.driver_id = d.driver_id
-      LEFT JOIN assistants a ON st.assistant_id = a.assistant_id
+  LEFT JOIN driver d ON st.driver_id = d.driver_id
+  LEFT JOIN assistant a ON st.assistant_id = a.assistant_id
     `;
     
     const conditions = [];
@@ -214,8 +214,8 @@ router.get('/driver-requests', authenticateToken, requireRole(['assistant', 'adm
         d.phone as driver_phone,
         a.name as assistant_name
       FROM driver_requests dr
-      LEFT JOIN drivers d ON dr.driver_id = d.driver_id
-      LEFT JOIN assistants a ON dr.assistant_id = a.assistant_id
+  LEFT JOIN driver d ON dr.driver_id = d.driver_id
+  LEFT JOIN assistant a ON dr.assistant_id = a.assistant_id
     `;
     
     const conditions = [];
@@ -439,7 +439,7 @@ router.get('/stats', authenticateToken, requireRole(['assistant', 'admin']), asy
     
     // Get active drivers count
     const [driverStats] = await db.execute(
-      "SELECT COUNT(*) as active_drivers FROM drivers WHERE status = 'active'"
+      "SELECT COUNT(*) as active_drivers FROM driver WHERE status = 'active'"
     );
 
     res.json({

@@ -23,6 +23,9 @@ const portalAuthRoutes = require('./routes/portalAuth');
 const driverAPIRoutes = require('./routes/driverAPI');
 const assistantAPIRoutes = require('./routes/assistantAPI');
 
+// Auth middleware
+const { authenticateToken } = require('./middleware/auth');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -53,7 +56,8 @@ database.testConnection();
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
+// Secure orders routes - require valid JWT for all order endpoints
+app.use('/api/orders', authenticateToken, orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/database', databaseRoutes);
 app.use('/api/dashboard', dashboardRoutes);

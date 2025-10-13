@@ -1,10 +1,12 @@
 const express = require('express');
 const database = require('../config/database');
+const { requireAdmin, requireCustomer } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get customer orders
-router.get('/', async (req, res) => {
+// List orders for the authenticated customer
+router.get('/', requireCustomer, async (req, res) => {
   try {
     const customerId = req.user?.id;
     const page = parseInt(req.query.page) || 1;
@@ -54,7 +56,8 @@ router.get('/', async (req, res) => {
 });
 
 // Get order details
-router.get('/:id', async (req, res) => {
+// Get a specific order for the authenticated customer
+router.get('/:id', requireCustomer, async (req, res) => {
   try {
     const { id } = req.params;
     const customerId = req.user?.id;
@@ -90,7 +93,8 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new order
-router.post('/', async (req, res) => {
+// Create a new order for the authenticated customer
+router.post('/', requireCustomer, async (req, res) => {
   try {
     const customerId = req.user?.id;
     const { 
@@ -192,7 +196,7 @@ router.post('/', async (req, res) => {
 });
 
 // Update order status (Admin only)
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { order_status } = req.body;
@@ -235,7 +239,7 @@ router.put('/:id/status', async (req, res) => {
 });
 
 // Get all orders (Admin only)
-router.get('/admin/all', async (req, res) => {
+router.get('/admin/all', requireAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;

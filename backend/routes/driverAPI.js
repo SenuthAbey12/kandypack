@@ -123,7 +123,7 @@ router.get('/stats', authenticateToken, requireRole(['driver']), async (req, res
 
     // Get overall performance rating
     const [driverInfo] = await db.execute(
-      'SELECT performance_rating, status FROM drivers WHERE driver_id = ?',
+      'SELECT performance_rating, status FROM driver WHERE driver_id = ?',
       [driverId]
     );
 
@@ -227,7 +227,7 @@ router.get('/requests', authenticateToken, requireRole(['driver']), async (req, 
         dr.*,
         a.name as assistant_name
       FROM driver_requests dr
-      LEFT JOIN assistants a ON dr.assistant_id = a.assistant_id
+      LEFT JOIN assistant a ON dr.assistant_id = a.assistant_id
       WHERE dr.driver_id = ?
       ORDER BY dr.created_at DESC
     `, [driverId]);
@@ -262,7 +262,7 @@ router.put('/status', authenticateToken, requireRole(['driver']), async (req, re
     const db = await getDB();
     
     await db.execute(
-      'UPDATE drivers SET status = ?, updated_at = NOW() WHERE driver_id = ?',
+      'UPDATE driver SET status = ?, updated_at = NOW() WHERE driver_id = ?',
       [status, driverId]
     );
 
