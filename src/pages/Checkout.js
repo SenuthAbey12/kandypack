@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
+import { ordersAPI } from '../services/api';
 import {
   ShoppingCart,
   Truck,
@@ -16,12 +17,15 @@ import {
 
 const Checkout = () => {
   const { user } = useAuth();
-  const { cart, products, removeFromCart, clearCart, placeOrder } = useStore();
+  const { cart, products, removeFromCart, clearCart } = useStore();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [error, setError] = useState(null);
   const [shippingMethod, setShippingMethod] = useState('standard'); // 'standard' | 'express'
   const [step, setStep] = useState(4); // 1 Cart, 2 Details, 3 Payment, 4 Review
+  const [destinationCity, setDestinationCity] = useState('');
+  const [destinationAddress, setDestinationAddress] = useState('');
 
   useEffect(() => {
     // keep step setter referenced to avoid unused var lint in future edits
@@ -70,25 +74,56 @@ const Checkout = () => {
     }
 
     setProcessing(true);
+    setError(null);
     
-    // Simulate order processing
-    setTimeout(() => {
-      const order = placeOrder();
-      if (order) {
-        setOrderSuccess(true);
-        setTimeout(() => {
-          // Navigate to appropriate dashboard based on user role
-          if (user?.role === 'customer') {
-            navigate('/customer');
-          } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
-            navigate('/employee');
-          } else {
-            navigate('/login'); // Fallback if no user or unknown role
-          }
-        }, 2000);
+    try {
+      // Validate inputs
+      if (!destinationCity.trim() || !destinationAddress.trim()) {
+        throw new Error('Please enter destination city and address');
       }
+
+      if (cart.length === 0) {
+        throw new Error('Your cart is empty');
+      }
+
+      // Build items payload from cart
+      const itemsPayload = cart.map((ci) => {
+        const p = products.find((pp) => pp.id === ci.id || pp.product_id === ci.id);
+        if (!p) {
+          throw new Error('One or more cart items are invalid');
+        }
+        return {
+          product_id: p.product_id ?? p.id, // prefer backend id if present
+          quantity: ci.qty,
+          price: typeof p.price === 'number' ? p.price : Number(p.price) || 0
+        };
+      });
+
+      // POST to backend
+      await ordersAPI.create({
+        destination_city: destinationCity,
+        destination_address: destinationAddress,
+        items: itemsPayload
+      });
+
+      // Success UX
+      setOrderSuccess(true);
+      clearCart();
+      setTimeout(() => {
+        if (user?.role === 'customer') {
+          navigate('/customer');
+        } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
+          navigate('/employee');
+        } else {
+          navigate('/login');
+        }
+      }, 1500);
+    } catch (e) {
+      const msg = e?.response?.data?.error || e?.message || 'Failed to place order';
+      setError(msg);
+    } finally {
       setProcessing(false);
-    }, 2000);
+    }
   };
 
   if (orderSuccess) {
@@ -157,6 +192,42 @@ const Checkout = () => {
               <div style={styles.sectionHeader}>
                 <h3 style={styles.sectionTitle}>Order Summary</h3>
                 <span style={styles.itemCount}>{items.length} item{items.length !== 1 ? 's' : ''}</span>
+              </div>
+
+              {/* Delivery Details */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '16px'
+              }}>
+                <h4 style={{ margin: '0 0 12px 0', color: '#2d3748' }}>Delivery Details</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#4a5568', marginBottom: 6 }}>Destination City</label>
+                    <input
+                      value={destinationCity}
+                      onChange={(e) => setDestinationCity(e.target.value)}
+                      placeholder="e.g., Colombo"
+                      style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      disabled={processing}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#4a5568', marginBottom: 6 }}>Destination Address</label>
+                    <input
+                      value={destinationAddress}
+                      onChange={(e) => setDestinationAddress(e.target.value)}
+                      placeholder="Street, City, Postal Code"
+                      style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #cbd5e1' }}
+                      disabled={processing}
+                    />
+                  </div>
+                </div>
+                {error && (
+                  <div style={{ marginTop: 12, color: '#e53e3e', fontSize: 14 }}>{error}</div>
+                )}
               </div>
 
               <div style={styles.itemsList}>
