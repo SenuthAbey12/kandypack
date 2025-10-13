@@ -1,39 +1,39 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 10/13/2025, 8:57:29 PM*
+Last Updated: 10/13/2025, 8:57:29 PM
 
-## 🗄️ Database Overview
+## 🗄 Database Overview
 
-**Database Name:** kandypack  
-**Total Tables:** 18  
-**Database Engine:** MySQL  
+*Database Name:* kandypack  
+*Total Tables:* 18  
+*Database Engine:* MySQL  
 
 ## 📋 Table Summary
 
-- **admin**: 1 records
-- **assistant**: 2 records
-- **customer**: 3 records
-- **driver**: 2 records
-- **order_item**: 3 records
-- **orders**: 3 records
-- **product**: 3 records
-- **store**: 4 records
-- **train**: 2 records
-- **train_route**: 2 records
-- **train_shipment**: 0 records
-- **train_trip**: 0 records
-- **truck**: 2 records
-- **truck_delivery**: 0 records
-- **truck_route**: 3 records
-- **truck_schedule**: 0 records
-- **v_order_totals**: 3 records
-- **v_quarterly_sales**: 0 records
+- *admin*: 1 records
+- *assistant*: 2 records
+- *customer*: 3 records
+- *driver*: 2 records
+- *order_item*: 3 records
+- *orders*: 3 records
+- *product*: 3 records
+- *store*: 4 records
+- *train*: 2 records
+- *train_route*: 2 records
+- *train_shipment*: 0 records
+- *train_trip*: 0 records
+- *truck*: 2 records
+- *truck_delivery*: 0 records
+- *truck_route*: 3 records
+- *truck_schedule*: 0 records
+- *v_order_totals*: 3 records
+- *v_quarterly_sales*: 0 records
 
 ## 📊 Detailed Table Information
 
-### 🏷️ admin
+### 🏷 admin
 
-**Records:** 1
+*Records:* 1
 
 #### 📐 Table Structure
 
@@ -52,9 +52,9 @@
 
 ---
 
-### 🏷️ assistant
+### 🏷 assistant
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -75,9 +75,9 @@
 
 ---
 
-### 🏷️ customer
+### 🏷 customer
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -102,9 +102,9 @@
 
 ---
 
-### 🏷️ driver
+### 🏷 driver
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -125,9 +125,9 @@
 
 ---
 
-### 🏷️ order_item
+### 🏷 order_item
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -149,9 +149,9 @@
 
 ---
 
-### 🏷️ orders
+### 🏷 orders
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -176,9 +176,9 @@
 
 ---
 
-### 🏷️ product
+### 🏷 product
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -202,9 +202,9 @@
 
 ---
 
-### 🏷️ store
+### 🏷 store
 
-**Records:** 4
+*Records:* 4
 
 #### 📐 Table Structure
 
@@ -224,9 +224,9 @@
 
 ---
 
-### 🏷️ train
+### 🏷 train
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -245,9 +245,9 @@
 
 ---
 
-### 🏷️ train_route
+### 🏷 train_route
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -267,9 +267,9 @@
 
 ---
 
-### 🏷️ train_shipment
+### 🏷 train_shipment
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -290,9 +290,9 @@
 
 ---
 
-### 🏷️ train_trip
+### 🏷 train_trip
 
-**Records:** 0
+*Records:* 0
 
 #### 📐 Table Structure
 
@@ -309,13 +309,13 @@
 
 #### 📄 Sample Data
 
-*No data available*
+No data available
 
 ---
 
-### 🏷️ truck
+### 🏷 truck
 
-**Records:** 2
+*Records:* 2
 
 #### 📐 Table Structure
 
@@ -334,9 +334,9 @@
 
 ---
 
-### 🏷️ truck_delivery
+### 🏷 truck_delivery
 
-**Records:** 0
+*Records:* 0
 
 #### 📐 Table Structure
 
@@ -349,13 +349,13 @@
 
 #### 📄 Sample Data
 
-*No data available*
+No data available
 
 ---
 
-### 🏷️ truck_route
+### 🏷 truck_route
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -376,9 +376,9 @@
 
 ---
 
-### 🏷️ truck_schedule
+### 🏷 truck_schedule
 
-**Records:** 0
+*Records:* 0
 
 #### 📐 Table Structure
 
@@ -394,13 +394,13 @@
 
 #### 📄 Sample Data
 
-*No data available*
+No data available
 
 ---
 
-### 🏷️ v_order_totals
+### 🏷 v_order_totals
 
-**Records:** 3
+*Records:* 3
 
 #### 📐 Table Structure
 
@@ -420,9 +420,9 @@
 
 ---
 
-### 🏷️ v_quarterly_sales
+### 🏷 v_quarterly_sales
 
-**Records:** 0
+*Records:* 0
 
 #### 📐 Table Structure
 
@@ -435,22 +435,22 @@
 
 #### 📄 Sample Data
 
-*No data available*
+No data available
 
 ---
 
 ## 📝 Usage Notes
 
 ### 🔐 Authentication Tables
-- **admin**: Stores administrator accounts with hashed passwords
-- **customer**: Stores customer accounts with profile information
+- *admin*: Stores administrator accounts with hashed passwords
+- *customer*: Stores customer accounts with profile information
 
-### 🛍️ Product Management
-- **product**: Catalog of available products with pricing and inventory
+### 🛍 Product Management
+- *product*: Catalog of available products with pricing and inventory
 
 ### 📦 Order System
-- **orders**: Main order records with customer and delivery information
-- **order_item**: Individual items within each order
+- *orders*: Main order records with customer and delivery information
+- *order_item*: Individual items within each order
 
 ### 🔧 Data Integrity
 - Foreign key constraints ensure referential integrity
@@ -458,4 +458,4 @@
 
 ---
 
-*This documentation is automatically generated and updated when database changes occur.*
+This documentation is automatically generated and updated when database changes occur.
