@@ -15,8 +15,6 @@ const CustomerPage = () => {
   const [trackingId, setTrackingId] = useState('');
   const [isCompact, setIsCompact] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const profileRef = useRef(null);
 
   // Responsive: collapse sidebar to icon rail on narrow screens
@@ -610,6 +608,7 @@ const CustomerPage = () => {
             ].map(item => (
               <button
                 key={item.id}
+                data-tab={item.id}
                 style={{
                   ...(activeTab === item.id 
                     ? { ...styles.sidebarItem, ...styles.sidebarItemActive }
@@ -660,26 +659,38 @@ const CustomerPage = () => {
                         <div style={styles.avatarSmall}>{(user?.name || 'C').substring(0,1).toUpperCase()}</div>
                         <div>
                           <div style={styles.menuName}>{user?.name || 'Customer'}</div>
-                          <div style={styles.menuSub}>{user?.email || user?.company_name || ''}</div>
+                          <div style={styles.menuSub}>{user?.email || user?.company_name || 'customer@kandypack.com'}</div>
                         </div>
                       </div>
                       <div style={styles.menuDivider}></div>
-                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setShowEditModal(true); }}>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setActiveTab('dashboard'); }}>
+                        <span style={styles.menuItemIcon}>🏠</span>
+                        <span>Dashboard</span>
+                      </button>
+                      <button style={styles.menuItem} data-action="open-profile" onClick={() => { setShowProfileMenu(false); navigate('/edit-profile'); }}>
                         <span style={styles.menuItemIcon}>👤</span>
                         <span>Profile</span>
                       </button>
-                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setShowSettingsModal(true); }}>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setActiveTab('current'); }}>
+                        <span style={styles.menuItemIcon}>📋</span>
+                        <span>My Orders</span>
+                      </button>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); navigate('/wishlist'); }}>
+                        <span style={styles.menuItemIcon}>❤️</span>
+                        <span>Wishlist</span>
+                      </button>
+                      <button style={styles.menuItem} data-action="open-settings" onClick={() => { setShowProfileMenu(false); navigate('/settings'); }}>
                         <span style={styles.menuItemIcon}>⚙️</span>
-                        <span>Account settings</span>
+                        <span>Settings</span>
                       </button>
                       <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setActiveTab('support'); }}>
-                        <span style={styles.menuItemIcon}>❓</span>
-                        <span>Help Center</span>
+                        <span style={styles.menuItemIcon}>💬</span>
+                        <span>Support</span>
                       </button>
                       <div style={styles.menuDivider}></div>
                       <button style={{ ...styles.menuItem, ...styles.menuDanger }} onClick={handleLogout}>
                         <span style={styles.menuItemIcon}>🚪</span>
-                        <span>Sign out</span>
+                        <span>Logout</span>
                       </button>
                     </div>
                   )}
@@ -724,52 +735,6 @@ const CustomerPage = () => {
         </div>
       )}
 
-      {/* Edit Customer Details Modal */}
-      {showEditModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalGlow}></div>
-            <div style={styles.modalHeader}>
-              <h3>Edit Customer Details</h3>
-              <button style={styles.closeBtn} onClick={() => setShowEditModal(false)}>×</button>
-            </div>
-            <div style={styles.modalContent}>
-              <div style={{ display: 'grid', gap: 12 }}>
-                <input style={styles.input} placeholder="Name" defaultValue={user?.name || ''} />
-                <input style={styles.input} placeholder="Company" defaultValue={user?.company_name || ''} />
-                <input style={styles.input} placeholder="Email" defaultValue={user?.email || ''} />
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                  <button style={styles.primaryBtn} onClick={() => setShowEditModal(false)}>Save</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettingsModal && (
-        <div style={styles.modalOverlay} onClick={() => setShowSettingsModal(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalGlow}></div>
-            <div style={styles.modalHeader}>
-              <h3>Settings</h3>
-              <button style={styles.closeBtn} onClick={() => setShowSettingsModal(false)}>×</button>
-            </div>
-            <div style={styles.modalContent}>
-              <div style={{ display: 'grid', gap: 12 }}>
-                <label style={{ color: 'var(--text)' }}>
-                  <input type="checkbox" style={{ marginRight: 8 }} defaultChecked={theme === 'dark'} onChange={toggleTheme} />
-                  Enable dark mode
-                </label>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                  <button style={styles.primaryBtn} onClick={() => setShowSettingsModal(false)}>Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

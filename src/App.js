@@ -37,6 +37,8 @@ import Password from './pages/Account/Password.js';
 import Addresses from './pages/Account/Addresses.js';
 import Payments from './pages/Account/Payments.js';
 import Wishlist from './pages/Wishlist.js';
+import EditProfile from './pages/EditProfile.js';
+import SettingsPage from './pages/Settings.js';
 import TrackOrder from './pages/Portal/Customer_Page/Support/TrackOrder.js';
 import Returns from './pages/Portal/Customer_Page/Support/Returns.js';
 import Chat from './pages/Portal/Customer_Page/Support/Chat.js';
@@ -164,6 +166,10 @@ function App() {
               <Route path="/account/password" element={<ProtectedRoute><Password/></ProtectedRoute>} />
               <Route path="/account/addresses" element={<ProtectedRoute><Addresses/></ProtectedRoute>} />
               <Route path="/account/payments" element={<ProtectedRoute><Payments/></ProtectedRoute>} />
+              
+              {/* New standalone pages */}
+              <Route path="/edit-profile" element={<ProtectedRoute><EditProfile/></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><SettingsPage/></ProtectedRoute>} />
               
               {/* Wishlist Route */}
               <Route path="/wishlist" element={<ProtectedRoute><Wishlist/></ProtectedRoute>} />

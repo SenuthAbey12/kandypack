@@ -1148,6 +1148,76 @@ const topNavCSS = `
   box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4) !important;
 }
 
+/* Enhanced Fixed Navigation Styles */
+.home-page header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 9999 !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Scroll effect for navigation */
+.home-page header.scrolled {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+}
+
+/* Ensure dropdown content stays visible above other elements */
+.home-page .dropdown-content {
+  z-index: 10000 !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+/* Add top margin to main content to account for fixed header */
+.home-page main {
+  margin-top: 70px !important;
+  padding-top: clamp(0.5rem, 1.5vh, 1rem) !important;
+}
+
+/* Compact layout for desktop to minimize top spacing */
+@media (min-width: 1024px) {
+  .home-page main {
+    padding-top: 0.5rem !important;
+  }
+  
+  .home-content-wrapper {
+    padding-top: 0 !important;
+  }
+  
+  .home-left-side {
+    gap: 1rem !important;
+  }
+  
+  .home-promo-banners {
+    margin-top: 0.5rem !important;
+  }
+}
+
+/* Extra compact for larger screens */
+@media (min-width: 1440px) {
+  .home-page main {
+    padding-top: 0.25rem !important;
+  }
+  
+  .home-left-side {
+    gap: 0.75rem !important;
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .top-nav-menu {
@@ -1156,6 +1226,17 @@ const topNavCSS = `
   
   .top-nav-container {
     padding: 0 1rem !important;
+  }
+  
+  .home-page main {
+    margin-top: 60px !important;
+    padding-top: clamp(0.5rem, 2vh, 1rem) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-page main {
+    margin-top: 55px !important;
   }
 }
 `;
@@ -1228,8 +1309,25 @@ export default function Home() {
     setIsVisible(true);
   }, []);
 
+  // Scroll effect for navigation bar
+  useEffect(() => {
+    const handleScroll = () => {
+      const header = document.querySelector('.home-page header');
+      if (header) {
+        if (window.scrollY > 50) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="animated-bg" style={styles.container}>
+    <div className="home-page animated-bg" style={styles.container}>
       {/* Background Animation Layers */}
       <div className="gradient-morph"></div>
       
@@ -1355,7 +1453,7 @@ export default function Home() {
       <main style={styles.main}>
         <div className="home-content-wrapper" style={styles.contentWrapper}>
           {/* Left Side - Carousel */}
-          <div className="fade-in-left" style={styles.leftSide}>
+          <div className="fade-in-left home-left-side" style={styles.leftSide}>
             <div className="hover-lift" style={styles.carousel}>
               <div 
                 style={{
@@ -1534,13 +1632,18 @@ const styles = {
   },
   // Top Navigation Styles
   topNavBar: {
-    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-    borderBottom: '1px solid #e2e8f0',
-    position: 'sticky',
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+    position: 'fixed',
     top: 0,
-    zIndex: 1000,
-    backdropFilter: 'blur(10px)',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+    left: 0,
+    right: 0,
+    width: '100%',
+    zIndex: 9999,
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   topNavContainer: {
     maxWidth: '100%',
@@ -1673,12 +1776,14 @@ const styles = {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
-    padding: 'clamp(1rem, 3vh, 2rem) 0',
+    padding: 'clamp(0.5rem, 2vh, 1rem) 0',
     width: '100%',
     boxSizing: 'border-box',
     position: 'relative',
     zIndex: 100,
     minHeight: 'calc(100vh - clamp(5rem, 10vh, 7rem))',
+    marginTop: '70px',
+    paddingTop: 'clamp(0.5rem, 1.5vh, 1rem)',
   },
   contentWrapper: {
     maxWidth: '100%',
@@ -1695,7 +1800,7 @@ const styles = {
   leftSide: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 'clamp(1.5rem, 3vh, 2.5rem)',
+    gap: 'clamp(1rem, 2vh, 1.5rem)',
     width: '100%',
     boxSizing: 'border-box',
   },

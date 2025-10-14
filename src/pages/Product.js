@@ -38,151 +38,139 @@ import {
 // --- Profile Menu Component for Products Page ---
 const ProductsProfileMenu = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [loadingItem, setLoadingItem] = useState(null);
   const navigate = useNavigate();
+  const profileRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (isOpen && !event.target.closest('.products-profile-menu')) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, []);
 
-  const menuItems = [
-    { 
-      icon: <HomeIcon size={18} />, 
-      label: 'Dashboard', 
-      action: () => {
-        // Navigate to appropriate dashboard based on user role
-        if (user?.role === 'customer') {
-          navigate('/customer');
-        } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
-          navigate('/employee');
-        } else {
-          navigate('/'); // Navigate to home page as fallback
-        }
-      }
-    },
-    { 
-      icon: <UserIcon size={18} />, 
-      label: 'Profile', 
-      action: () => navigate('/account/profile')
-    },
-    { 
-      icon: <OrdersIcon size={18} />, 
-      label: 'My Orders', 
-      action: () => navigate('/account/orders')
-    },
-    { 
-      icon: <HeartIcon size={18} />, 
-      label: 'Wishlist', 
-      action: () => {
-        // Create a wishlist page or show wishlist items
-        navigate('/wishlist');
-      }
-    },
-    { 
-      icon: <SettingsIcon size={18} />, 
-      label: 'Settings', 
-      action: () => navigate('/account/settings')
-    },
-    { 
-      icon: <PhoneIcon size={18} />, 
-      label: 'Support', 
-      action: () => navigate('/support/chat')
-    },
-    { 
-      icon: <LogOutIcon size={18} />, 
-      label: 'Logout', 
-      action: onLogout, 
-      isLogout: true 
-    }
-  ];
-
-  const handleItemClick = async (item, index) => {
-    setLoadingItem(index);
-    
-    // Add a small delay to show loading state
-    setTimeout(() => {
-      setIsOpen(false);
-      setLoadingItem(null);
-      item.action();
-    }, 300);
+  const handleMenuItemClick = (action) => {
+    setIsOpen(false);
+    action();
   };
 
   if (!user) return null;
 
   return (
-    <div className="products-profile-menu" style={productsStyles.profileMenu}>
-      <button 
-        className="profile-trigger"
-        style={productsStyles.profileTrigger}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div style={productsStyles.avatarContainer}>
-          <div style={productsStyles.avatar}>
-            {user?.username?.charAt(0).toUpperCase() || 'C'}
-          </div>
-          <div style={productsStyles.userInfo}>
-            <span style={productsStyles.userName}>{user?.username || 'Customer'}</span>
-            <span style={productsStyles.userRole}>Customer</span>
-          </div>
-          <div className="dropdown-arrow" style={productsStyles.dropdownArrow}>
-            {isOpen ? <ChevronUpIcon size={16} /> : <ChevronDownIcon size={16} />}
-          </div>
+    <div ref={profileRef} style={productsStyles.profileWrapper}>
+      <button style={productsStyles.profileBtn} onClick={() => setIsOpen(!isOpen)}>
+        <div style={productsStyles.avatar}>
+          {(user?.name || user?.username || 'C').substring(0,1).toUpperCase()}
         </div>
+        <span style={productsStyles.caret}>▾</span>
       </button>
-
       {isOpen && (
-        <div style={productsStyles.profileDropdown}>
-          <div style={productsStyles.dropdownHeader}>
-            <div style={productsStyles.avatarLarge}>
-              {user?.username?.charAt(0).toUpperCase() || 'C'}
+        <div style={productsStyles.profileMenu}>
+          <div style={productsStyles.menuHeader}>
+            <div style={productsStyles.avatarSmall}>
+              {(user?.name || user?.username || 'C').substring(0,1).toUpperCase()}
             </div>
             <div>
-              <div style={productsStyles.dropdownUserName}>{user?.username || 'Customer'}</div>
-              <div style={productsStyles.dropdownUserEmail}>customer@kandypack.com</div>
+              <div style={productsStyles.menuName}>
+                {user?.name || user?.username || 'Customer'}
+              </div>
+              <div style={productsStyles.menuSub}>
+                {user?.email || user?.company_name || 'customer@kandypack.com'}
+              </div>
             </div>
           </div>
-          
-          <div style={productsStyles.dropdownDivider}></div>
-          
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              className={`dropdown-item ${item.isLogout ? 'logout-item' : ''}`}
-              style={{
-                ...productsStyles.dropdownItem,
-                ...(item.isLogout ? productsStyles.logoutItem : {}),
-                ...(loadingItem === index ? { opacity: 0.7, pointerEvents: 'none' } : {})
-              }}
-              onClick={() => handleItemClick(item, index)}
-              disabled={loadingItem === index}
-            >
-              <span className="item-icon" style={productsStyles.itemIcon}>
-                {loadingItem === index ? (
-                  <div style={productsStyles.loadingSpinner}></div>
-                ) : (
-                  item.icon
-                )}
-              </span>
-              <span style={productsStyles.itemLabel}>{item.label}</span>
-              <ArrowRight 
-                size={14} 
-                className="arrow-right" 
-                style={{ 
-                  opacity: loadingItem === index ? 0.3 : 0.5, 
-                  marginLeft: 'auto', 
-                  transition: 'all 0.3s ease' 
-                }} 
-              />
-            </button>
-          ))}
+          <div style={productsStyles.menuDivider}></div>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => {
+              if (user?.role === 'customer') {
+                navigate('/customer');
+              } else if (user?.role === 'admin' || user?.role === 'driver' || user?.role === 'assistant') {
+                navigate('/employee');
+              } else {
+                navigate('/');
+              }
+            })}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>🏠</span>
+            <span>Dashboard</span>
+          </button>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => {
+              // Navigate to edit profile page
+              navigate('/edit-profile');
+            })}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>👤</span>
+            <span>Profile</span>
+          </button>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => {
+              // Navigate to customer page current orders section
+              navigate('/customer');
+              setTimeout(() => {
+                // Switch to current orders tab
+                const ordersBtn = document.querySelector('[data-tab="current"]');
+                if (ordersBtn) ordersBtn.click();
+              }, 100);
+            })}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>📋</span>
+            <span>My Orders</span>
+          </button>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => navigate('/wishlist'))}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>❤️</span>
+            <span>Wishlist</span>
+          </button>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => {
+              // Navigate to settings page
+              navigate('/settings');
+            })}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>⚙️</span>
+            <span>Settings</span>
+          </button>
+          <button 
+            className="menu-item"
+            style={productsStyles.menuItem} 
+            onClick={() => handleMenuItemClick(() => {
+              // Navigate to customer page support section
+              navigate('/customer');
+              setTimeout(() => {
+                // Switch to support tab
+                const supportBtn = document.querySelector('[data-tab="support"]');
+                if (supportBtn) supportBtn.click();
+              }, 100);
+            })}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>💬</span>
+            <span>Support</span>
+          </button>
+          <div style={productsStyles.menuDivider}></div>
+          <button 
+            className="menu-item menu-danger"
+            style={{...productsStyles.menuItem, ...productsStyles.menuDanger}} 
+            onClick={() => handleMenuItemClick(onLogout)}
+          >
+            <span className="menu-item-icon" style={productsStyles.menuItemIcon}>🚪</span>
+            <span>Logout</span>
+          </button>
         </div>
       )}
     </div>
@@ -377,6 +365,8 @@ export default function Product() {
   const [ratingFilter, setRatingFilter] = useState(0);
   const [wishlist, setWishlist] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [isProductsViewActive, setIsProductsViewActive] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const pageSize = 12;
   
   const navigate = useNavigate();
@@ -445,6 +435,36 @@ export default function Product() {
       document.head.appendChild(style);
     }
   }, []);
+
+  // Handle scroll-based transitions
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+      
+      // Calculate transition progress based on scroll
+      const heroHeight = window.innerHeight * 0.8;
+      const scrollProgress = Math.min(currentScrollY / heroHeight, 1);
+      
+      // Activate products view when user scrolls past 50% of hero section
+      setIsProductsViewActive(scrollProgress > 0.5);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Smooth transition to products section
+  const transitionToProducts = () => {
+    setIsProductsViewActive(true);
+    const productsSection = document.querySelector('#product-results');
+    if (productsSection) {
+      productsSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
 
   // Handle URL parameters for initial category selection
   useEffect(() => {
@@ -649,8 +669,21 @@ export default function Product() {
 
   return (
     <div style={styles.container}>
+      {/* Modern Scroll Progress Indicator */}
+      <div 
+        className="scroll-indicator"
+        style={{
+          transform: `scaleX(${Math.min(scrollY / (window.innerHeight * 0.8), 1)})`,
+        }}
+      />
+      
       {/* Modern Hero Section */}
-      <div style={styles.heroSection}>
+      <div style={{
+        ...styles.heroSection,
+        transform: isProductsViewActive ? 'scale(0.95)' : 'scale(1)',
+        opacity: isProductsViewActive ? 0.7 : 1,
+        marginBottom: isProductsViewActive ? '-5vh' : '0',
+      }}>
         {/* Decorative floating blobs */}
         <div style={styles.blobOne} aria-hidden="true"></div>
         <div style={styles.blobTwo} aria-hidden="true"></div>
@@ -707,10 +740,7 @@ export default function Product() {
               </div>
             </div>
             <div style={styles.heroCtas}>
-              <button style={styles.primaryCta} onClick={() => {
-                const el = document.querySelector('#product-results');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}>
+              <button style={styles.primaryCta} onClick={transitionToProducts}>
                 Browse Products <ArrowRight size={16} style={{marginLeft: 8}}/>
               </button>
               <button style={styles.secondaryCta} onClick={() => navigate('/products/learn-more')}>
@@ -734,7 +764,22 @@ export default function Product() {
         </div>
       </div>
 
-      <Container className="py-4">
+      {/* Modern Products Container with transition */}
+      <div style={{
+        ...styles.productsContainer,
+        transition: 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)',
+        transform: isProductsViewActive ? 'scale(1.02)' : 'scale(1)',
+        padding: isProductsViewActive ? '2rem' : '1rem',
+        borderRadius: isProductsViewActive ? '20px 20px 0 0' : '0',
+        boxShadow: isProductsViewActive ? '0 -10px 30px rgba(0,0,0,0.1)' : 'none',
+        background: isProductsViewActive ? '#ffffff' : 'transparent',
+        zIndex: isProductsViewActive ? 10 : 'auto',
+      }}>
+        <Container className="py-4" style={{ 
+          maxWidth: isProductsViewActive ? '100%' : '1200px',
+          transition: 'all 0.6s ease',
+          animation: isProductsViewActive ? 'slideUpFade 0.8s ease-out' : 'none',
+        }}>
         {/* Enhanced Toolbar */}
         <div style={styles.modernToolbar}>
           {/* Search Bar */}
@@ -1159,6 +1204,7 @@ export default function Product() {
           </div>
         )}
       </Container>
+      </div>
       {/* Quick View Modal */}
       <Modal show={!!quickView} onHide={closeQuickView} centered>
         {quickView && (
@@ -1229,11 +1275,12 @@ const styles = {
     paddingBottom: 'clamp(60px, 10vh, 120px)',
     width: '100vw',
     maxWidth: '100%',
-    overflow: 'hidden',
+    overflow: 'visible',
     boxSizing: 'border-box',
+    position: 'relative',
   },
   
-  // Hero Section
+  // Hero Section with transition support
   heroSection: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     padding: 'clamp(40px, 8vh, 80px) clamp(1rem, 3vw, 2rem)',
@@ -1241,8 +1288,21 @@ const styles = {
     position: 'relative',
     overflow: 'hidden',
     width: '100%',
+    minHeight: '80vh',
     boxSizing: 'border-box',
+    transition: 'all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
   },
+  
+  // Products Container with transition support
+  productsContainer: {
+    transition: 'all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)',
+    backgroundColor: '#f8fafc',
+    borderRadius: '0',
+  },
+  
   blobOne: {
     position: 'absolute',
     top: '-80px',
@@ -2127,171 +2187,110 @@ const styles = {
 
 // Profile Menu Styles for Products Page
 const productsStyles = {
-  profileMenu: {
+  profileWrapper: {
     position: 'relative',
   },
-  profileTrigger: {
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))',
+  profileBtn: {
+    background: 'rgba(255,255,255,0.15)',
     border: '2px solid rgba(255,255,255,0.3)',
-    borderRadius: '16px',
-    cursor: 'pointer',
-    padding: '12px 16px',
-    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
-    backdropFilter: 'blur(15px)',
-    boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  avatarContainer: {
+    borderRadius: '50px',
+    padding: '8px 12px',
     display: 'flex',
     alignItems: 'center',
-    gap: '14px',
-    padding: '4px',
-    position: 'relative',
-    zIndex: 2,
+    gap: '8px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    backdropFilter: 'blur(10px)',
+    color: 'white',
   },
   avatar: {
-    width: '42px',
-    height: '42px',
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1))',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    fontWeight: '600',
+    border: '1px solid rgba(255,255,255,0.2)',
+  },
+  caret: {
+    fontSize: '12px',
+    opacity: 0.8,
+  },
+  profileMenu: {
+    position: 'absolute',
+    top: '100%',
+    right: '0',
+    marginTop: '8px',
+    background: 'white',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+    minWidth: '280px',
+    overflow: 'hidden',
+    zIndex: 1000,
+    animation: 'fadeInDown 0.2s ease-out',
+  },
+  menuHeader: {
+    padding: '16px',
+    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  avatarSmall: {
+    width: '40px',
+    height: '40px',
     borderRadius: '50%',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    border: '3px solid rgba(255,255,255,0.4)',
     color: 'white',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '16px',
-    fontWeight: '700',
-    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
-    position: 'relative',
+    fontWeight: '600',
+    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
   },
-  userInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    flex: 1,
+  menuName: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#1a202c',
+    margin: 0,
   },
-  userName: {
-    color: 'white',
-    fontSize: '15px',
-    fontWeight: '700',
-    lineHeight: '1.2',
-    textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  },
-  userRole: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: '13px',
-    lineHeight: '1.2',
-    fontWeight: '500',
-  },
-  dropdownArrow: {
-    color: 'rgba(255,255,255,0.9)',
-    transition: 'all 0.3s ease',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileDropdown: {
-    position: 'absolute',
-    top: '100%',
-    right: '0',
-    marginTop: '12px',
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95))',
-    borderRadius: '20px',
-    boxShadow: '0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.8)',
-    border: 'none',
-    minWidth: '280px',
-    zIndex: 1000,
-    overflow: 'hidden',
-    backdropFilter: 'blur(20px)',
-    animation: 'fadeInDown 0.3s ease-out',
-  },
-  dropdownHeader: {
-    padding: '24px 20px 20px',
-    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  avatarLarge: {
-    width: '56px',
-    height: '56px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '22px',
-    fontWeight: '700',
-    boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
-    border: '3px solid rgba(255,255,255,0.8)',
-  },
-  dropdownUserName: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1e293b',
-    lineHeight: '1.2',
-    marginBottom: '2px',
-  },
-  dropdownUserEmail: {
+  menuSub: {
     fontSize: '14px',
     color: '#64748b',
-    lineHeight: '1.2',
-    fontWeight: '500',
+    margin: 0,
   },
-  dropdownDivider: {
+  menuDivider: {
     height: '1px',
-    background: 'linear-gradient(90deg, transparent, rgba(226,232,240,0.8), transparent)',
-    margin: '0 20px',
+    background: '#e2e8f0',
+    margin: '8px 0',
   },
-  dropdownItem: {
+  menuItem: {
     width: '100%',
-    padding: '16px 20px',
+    background: 'none',
     border: 'none',
-    backgroundColor: 'transparent',
+    padding: '12px 16px',
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
     cursor: 'pointer',
-    fontSize: '15px',
+    transition: 'all 0.2s ease',
+    fontSize: '14px',
     color: '#374151',
-    transition: 'all 0.3s cubic-bezier(0.23, 1, 0.32, 1)',
     textAlign: 'left',
-    fontWeight: '500',
-    position: 'relative',
-    overflow: 'hidden',
   },
-  logoutItem: {
-    color: '#dc2626',
-    marginTop: '8px',
-    borderTop: '1px solid rgba(226,232,240,0.6)',
-    paddingTop: '20px',
-  },
-  itemIcon: {
+  menuItemIcon: {
+    fontSize: '16px',
     width: '20px',
-    height: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'currentColor',
-    transition: 'all 0.3s ease',
+    textAlign: 'center',
   },
-  itemLabel: {
-    flex: 1,
-    textAlign: 'left',
-    fontWeight: '600',
-  },
-  
-  loadingSpinner: {
-    width: '18px',
-    height: '18px',
-    border: '2px solid #e2e8f0',
-    borderTop: '2px solid #667eea',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite',
+  menuDanger: {
+    color: '#dc2626',
   },
 };
 
@@ -2325,6 +2324,77 @@ const productPageStyles = `
     50% { 
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); 
     }
+  }
+
+  /* Modern Page Transition Animations */
+  @keyframes slideUpFade {
+    0% {
+      transform: translateY(50px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes heroShrink {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.95);
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes productsExpand {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* Smooth page transitions */
+  .hero-section-transitioning {
+    animation: heroShrink 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+
+  .products-section-expanding {
+    animation: productsExpand 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+
+  /* Modern scroll indicator */
+  .scroll-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transform-origin: left;
+    z-index: 9999;
+    transition: transform 0.3s ease;
+  }
+
+  /* Profile Menu Hover Effects */
+  .menu-item:hover {
+    background-color: #f8fafc !important;
+    transform: translateX(4px) !important;
+  }
+
+  .menu-item:hover .menu-item-icon {
+    transform: scale(1.1) !important;
+  }
+
+  .menu-danger:hover {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
   }
 
   /* Comprehensive Responsive Design for Product Page */
