@@ -1005,10 +1005,9 @@ export default function Product() {
                     ...styles.modernProductCard,
                     ...(viewMode === "list" ? styles.listViewCard : {}),
                     ...(addedItems.has(p.id) ? styles.productCardAdded : {}),
-                    boxShadow: `${styles.modernProductCard.boxShadow}, 0 0 0 3px ${getAccentForCategory(p.category).ring}`,
+                    boxShadow: styles.modernProductCard.boxShadow,
                   }}
                 >
-                  <div style={{ height: 4, width: '100%', background: getAccentForCategory(p.category).gradient }} />
                   {/* Product Image */}
                   <div style={{
                     ...styles.productImageContainer,
@@ -1023,40 +1022,7 @@ export default function Product() {
                         e.target.src = `https://via.placeholder.com/300x200/4facfe/ffffff?text=${encodeURIComponent(p.title.split(' ')[0])}`;
                       }}
                     />
-                    <div style={styles.imageOverlay}>
-                      <button 
-                        style={{
-                          ...styles.favoriteBtn,
-                          ...(wishlist.has(p.id) ? styles.favoriteBtnActive : {})
-                        }}
-                        onClick={() => toggleWishlist(p.id)}
-                        title={wishlist.has(p.id) ? "Remove from wishlist" : "Add to wishlist"}
-                      >
-                        {wishlist.has(p.id) ? (
-                          <HeartIcon size={18} color="#ef4444" fill="#ef4444" />
-                        ) : (
-                          <HeartIcon size={18} color="#64748b" />
-                        )}
-                      </button>
-                      <Badge bg="success" style={styles.stockBadge}>
-                        {p.stock > 10 ? "In Stock" : `Only ${p.stock} left`}
-                      </Badge>
-                    </div>
-                    <div style={styles.imageActionsLeft}>
-                      <button style={styles.actionIconBtn} title="Quick View" onClick={() => openQuickView(p)}>
-                        <Eye size={16} />
-                      </button>
-                      <button style={styles.actionIconBtn} title="Share" onClick={() => handleShareProduct(p)}>
-                        <Share2 size={16} />
-                      </button>
-                      <button style={{
-                        ...styles.actionIconBtn,
-                        ...(compareItems.has(p.id) ? styles.actionIconActive : {})
-                      }} title="Compare" onClick={() => handleToggleCompare(p.id)}>
-                        <GitCompare size={16} />
-                      </button>
-                    </div>
-                    <div style={{ ...styles.categoryTag, background: getAccentForCategory(p.category).gradient }}>{p.category}</div>
+                    {/* Overlays hidden for simplified professional style */}
                   </div>
                   
                   {/* Product Info */}
@@ -1065,7 +1031,7 @@ export default function Product() {
                     ...(viewMode === "list" ? styles.listProductInfo : {})
                   }}>
                     <div style={styles.productHeader}>
-                      <h3 style={styles.productTitle}>{p.title}</h3>
+                      <h3 style={styles.productTitle} className="daraz-title">{p.title}</h3>
                       <div style={styles.ratingDisplay}>
                         {renderStars(4.8)}
                         <span style={styles.ratingText}>(4.{Math.floor(Math.random() * 9)})</span>
@@ -1073,9 +1039,19 @@ export default function Product() {
                     </div>
                     
                     <div style={styles.priceSection}>
-                      <span style={styles.currentPrice}>${p.price.toFixed(2)}</span>
-                      <span style={styles.originalPrice}>${(p.price * 1.2).toFixed(2)}</span>
-                      <span style={styles.discountBadge}>17% OFF</span>
+                      {(() => {
+                        const price = Number(p.price || 0);
+                        const original = price * 1.2;
+                        const discount = original > 0 ? Math.round(((original - price) / original) * 100) : 0;
+                        const fmt = (v) => `Rs.${v.toLocaleString('en-LK')}`;
+                        return (
+                          <>
+                            <span style={styles.currentPrice}>{fmt(price)}</span>
+                            <span style={styles.originalPrice}>{fmt(original)}</span>
+                            <span style={styles.discountText}>-{discount}%</span>
+                          </>
+                        );
+                      })()}
                     </div>
                     
                     <div style={styles.productFeatures}>
@@ -1776,13 +1752,13 @@ const styles = {
   
   // Modern Product Cards
   modernProductCard: {
-    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-    borderRadius: '24px',
+    background: 'var(--card)',
+    borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
     height: '100%',
-    border: '1px solid rgba(148, 163, 184, 0.1)',
+    border: '1px solid var(--border)',
     cursor: 'pointer',
     position: 'relative',
     display: 'flex',
@@ -1792,7 +1768,7 @@ const styles = {
     flexDirection: 'row',
     height: 'auto',
     minHeight: '200px',
-    background: 'linear-gradient(135deg, #ffffff 0%, #fefefe 100%)',
+    background: 'var(--card)',
     display: 'flex',
     alignItems: 'stretch',
   },
@@ -1808,7 +1784,7 @@ const styles = {
     position: 'relative',
     height: '280px',
     overflow: 'hidden',
-    background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%)',
+    background: 'var(--bg)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1819,7 +1795,7 @@ const styles = {
     height: '200px',
     borderRadius: '0',
     margin: '0',
-    background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f8fafc 100%)',
+    background: 'var(--bg)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1831,8 +1807,8 @@ const styles = {
     width: '90%',
     height: '90%',
     objectFit: 'contain',
-    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-    filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.1))',
+    transition: 'transform 0.25s ease',
+    filter: 'none',
   },
   imageOverlay: {
     position: 'absolute',
@@ -1851,69 +1827,60 @@ const styles = {
     gap: '8px',
   },
   actionIconBtn: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-    border: '2px solid rgba(148, 163, 184, 0.2)',
-    fontSize: '16px',
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    background: 'transparent',
+    border: '1px solid var(--border)',
+    fontSize: '14px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backdropFilter: 'blur(10px)',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-    color: '#334155',
+    color: 'var(--text)'
   },
   actionIconActive: {
-    borderColor: '#667eea',
-    boxShadow: '0 6px 16px rgba(102,126,234,0.35)',
+    borderColor: '#667eea'
   },
   favoriteBtn: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '50%',
-    background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-    border: '2px solid rgba(148, 163, 184, 0.2)',
-    fontSize: '18px',
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    background: 'transparent',
+    border: '1px solid var(--border)',
+    fontSize: '16px',
     cursor: 'pointer',
-    transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+    transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    backdropFilter: 'blur(10px)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+    justifyContent: 'center'
   },
   favoriteBtnActive: {
-    background: 'linear-gradient(135deg, #fecaca 0%, #fee2e2 100%)',
-    border: '2px solid #f87171',
-    transform: 'scale(1.15)',
-    boxShadow: '0 8px 24px rgba(248, 113, 113, 0.3)',
+    background: 'rgba(248, 113, 113, 0.12)',
+    border: '1px solid rgba(248, 113, 113, 0.5)'
   },
   stockBadge: {
     fontSize: '11px',
     padding: '6px 12px',
     borderRadius: '16px',
-    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-    border: 'none',
+    background: 'rgba(16, 185, 129, 0.10)',
+    border: '1px solid rgba(5, 150, 105, 0.25)',
     fontWeight: '600',
-    letterSpacing: '0.5px',
-    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+    letterSpacing: '0.5px'
   },
   categoryTag: {
     position: 'absolute',
     bottom: '16px',
     left: '16px',
-    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.9) 100%)',
-    color: 'white',
-    padding: '8px 16px',
-    borderRadius: '20px',
+    background: 'rgba(15, 23, 42, 0.85)',
+    color: 'var(--header-text)',
+    padding: '8px 12px',
+    borderRadius: '14px',
     fontSize: '12px',
     fontWeight: '600',
     letterSpacing: '0.5px',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.08)'
   },
 
   // Product Info
@@ -1937,8 +1904,12 @@ const styles = {
     fontSize: '1.1rem',
     fontWeight: '700',
     margin: '0 0 8px 0',
-    color: '#1e293b',
+    color: 'var(--text)',
     lineHeight: '1.3',
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden'
   },
   ratingDisplay: {
     display: 'flex',
@@ -1952,7 +1923,7 @@ const styles = {
   },
   ratingText: {
     fontSize: '14px',
-    color: '#64748b',
+    color: 'var(--muted)',
   },
   priceSection: {
     display: 'flex',
@@ -1964,20 +1935,24 @@ const styles = {
   currentPrice: {
     fontSize: '1.5rem',
     fontWeight: '800',
-    color: '#1e293b',
+    color: 'var(--text)',
   },
   originalPrice: {
     fontSize: '1rem',
-    color: '#94a3b8',
+    color: 'var(--muted)',
     textDecoration: 'line-through',
   },
   discountBadge: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: 'rgba(220, 38, 38, 0.08)',
     color: '#dc2626',
     padding: '4px 8px',
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: '600',
+  },
+  discountText: {
+    color: '#64748b',
+    fontSize: '0.95rem'
   },
   productFeatures: {
     display: 'flex',
@@ -1987,8 +1962,8 @@ const styles = {
   },
   feature: {
     fontSize: '13px',
-    color: '#059669',
-    backgroundColor: '#ecfdf5',
+    color: '#065f46',
+    backgroundColor: 'rgba(16,185,129,0.12)',
     padding: '4px 10px',
     borderRadius: '12px',
     fontWeight: '500',
@@ -2479,12 +2454,12 @@ const productPageStyles = `
   }
   
   .modern-product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
   }
   
   .modern-product-card:hover .product-image {
-    transform: scale(1.05);
+    transform: scale(1.02);
   }
   
   .modern-checkout-button:hover {

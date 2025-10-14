@@ -128,13 +128,35 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     let didCancel = false;
 
+    const buildRelevantImage = (title, category, id) => {
+      // Prefer themed logistics placeholders for our known categories
+      const cat = (category || '').toLowerCase();
+      if (cat.includes('rail')) return '/images/rail-transport.svg';
+      if (cat.includes('road')) return '/images/road-transport.svg';
+      if (cat.includes('supply') || cat.includes('secure')) return '/images/stretch-wrap.svg';
+      if (cat.includes('distribution')) return '/images/products-background.svg';
+
+      // Build safe keywords from title/category for a relevant stock photo
+      const words = `${category || ''} ${title || ''}`
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 3);
+      const keywords = encodeURIComponent(words.join(',')) || 'product,packaging';
+      const seed = encodeURIComponent(String(id || title || keywords));
+
+      // Deterministic image per product using LoremFlickr with seed locking
+      return `https://loremflickr.com/400/300/${keywords}?lock=${seed}`;
+    };
+
     const mapProduct = (p, idx) => ({
       id: p.product_id ?? p.id ?? p.productId ?? p.productID ?? `TMP_${idx}`,
       title: p.product_name ?? p.title ?? p.name ?? 'Untitled Product',
       price: typeof p.price === 'number' ? p.price : Number(p.price) || 0,
       category: p.category || 'General',
       stock: p.available_quantity ?? p.stock ?? 0,
-      image: p.image_url || p.image || null,
+      image: p.image_url || p.image || buildRelevantImage(p.product_name ?? p.title, p.category, p.product_id ?? p.id ?? idx),
       description: p.description || ''
     });
 
@@ -168,7 +190,20 @@ export const StoreProvider = ({ children }) => {
         price: typeof p.price === 'number' ? p.price : Number(p.price) || 0,
         category: p.category || 'General',
         stock: p.available_quantity ?? p.stock ?? 0,
-        image: p.image_url || p.image || null,
+        image: p.image_url || p.image || (() => {
+          const title = p.product_name ?? p.title;
+          const category = p.category;
+          const id = p.product_id ?? p.id ?? i;
+          const words = `${category || ''} ${title || ''}`
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 3);
+          const keywords = encodeURIComponent(words.join(',')) || 'product,packaging';
+          const seed = encodeURIComponent(String(id || title || keywords));
+          return `https://loremflickr.com/400/300/${keywords}?lock=${seed}`;
+        })(),
         description: p.description || ''
       }));
       setProducts(mapped);
