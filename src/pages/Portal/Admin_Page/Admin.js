@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
-import "../AdminDashboard.css";
+import "./AdminDashboard.css";
 
 import Overview from "./Overview/Overview.js";
 import Products from "./Add-Products/Products.js";
