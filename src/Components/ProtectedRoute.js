@@ -16,8 +16,8 @@ const ProtectedRoute = ({ children, requiredRole = null, requiredPortal = null }
 
   if (!isAuthenticated) {
     // Redirect to appropriate login based on path
-    const loginPath = location.pathname.startsWith('/employee') 
-      ? '/employee/login' 
+    const loginPath = location.pathname.startsWith('/employee') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/driver') || location.pathname.startsWith('/assistant')
+      ? '/login/employee' 
       : '/customer/login';
     return <Navigate to={loginPath} state={{ from: location }} replace />;
   }

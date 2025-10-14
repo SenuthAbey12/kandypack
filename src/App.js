@@ -61,6 +61,11 @@ import ForgotPassword from './pages/Auth/ForgotPassword.js';
 import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
 import CustomerPage from './pages/Portal/CustomerPage.js';
+import AdminDashboard from './pages/Portal/Admin_Page/Admin.js';
+import DriverDashboard from './pages/Portal/DriverDashboard.js';
+import AssistantDashboard from './pages/Portal/AssistantDashboard.js';
+
+
 
 // --- Main App Component ---
 function App() {
@@ -125,7 +130,32 @@ function App() {
               {/* New Portal System */}
               <Route path="/customer/login" element={<CustomerLogin/>}/>
               <Route path="/employee/*" element={<EmployeePortalRouter/>}/>
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute requiredPortal="employee" requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/driver"
+                element={
+                  <ProtectedRoute requiredPortal="employee" requiredRole="driver">
+                    <DriverDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/assistant"
+                element={
+                  <ProtectedRoute requiredPortal="employee" requiredRole="assistant">
+                    <AssistantDashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/customer" element={<CustomerPage/>}/>
+
 
               {/* Account Routes */}
               <Route path="/account/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
