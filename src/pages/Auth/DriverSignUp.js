@@ -1,0 +1,156 @@
+import React, { useState } from 'react';
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Alert,
+  Link
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import api from '../../utils/axios';
+
+const DriverSignUp = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone_no: '',
+    address: ''
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    try {
+      const response = await api.post('/api/drivers/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone_no: formData.phone_no,
+        address: formData.address
+      });
+
+      setSuccess('Account created successfully! Redirecting to login...');
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      setTimeout(() => {
+        navigate('/employee/driver');
+      }, 2000);
+    } catch (error) {
+      setError(error.response?.data?.error || 'Error creating account');
+    }
+  };
+
+  return (
+    <Container component="main" maxWidth="sm">
+      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+        <Typography component="h1" variant="h5" align="center" gutterBottom>
+          Driver Sign Up
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Full Name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Confirm Password"
+            name="confirmPassword"
+            type="password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Phone Number"
+            name="phone_no"
+            value={formData.phone_no}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Address"
+            name="address"
+            multiline
+            rows={3}
+            value={formData.address}
+            onChange={handleChange}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Sign Up
+          </Button>
+
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            Already have an account?{' '}
+            <Link href="/login/employee" variant="body2">
+              Sign In
+            </Link>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+
+export default DriverSignUp;
