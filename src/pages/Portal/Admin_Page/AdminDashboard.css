@@ -1,7 +1,17 @@
-/* Rail & Road Distribution Admin Dashboard Styles */
+/* Rail & Road Distribution Admin Dashboard Styles (with fixed sidebar and no top gap) */
+
+/* Layout constants */
+:root {
+  --header-h: 108px;          /* header height; adjust if your header is taller/shorter */
+  --sidebar-w: 280px;        /* desktop sidebar width */
+}
+
+html, body { margin: 0; }
+
+/* ---------- App shell ---------- */
 .admin-dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f7f7fa 0%, #aa97bd 100%);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -9,12 +19,17 @@
   background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
 }
 
-/* ---------- Header ---------- */
+/* ---------- Header (sticky, top-aligned) ---------- */
 .dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: var(--header-h);
   padding: 1rem 2rem;
+  box-sizing: border-box;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -59,12 +74,25 @@
 }
 
 /* ---------- Layout ---------- */
-.dashboard-content { display: flex; min-height: calc(100vh - 80px); }
+.dashboard-content {
+  display: flex;
+  min-height: calc(100vh - var(--header-h)); /* below sticky header */
+}
 
+/* ---------- Sidebar (FIXED, flush under header) ---------- */
 .sidebar {
-  width: 280px; background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px); padding: 2rem 0;
+  position: fixed;
+  top: var(--header-h);        /* sits right under the header */
+  left: 0;
+  width: var(--sidebar-w);
+  height: calc(100vh - var(--header-h));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 1rem 0 2rem;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 900;                /* beneath header but above content */
 }
 .admin-dashboard.dark .sidebar { background: rgba(44, 62, 80, 0.95); }
 
@@ -81,7 +109,14 @@
   box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
 
-.main-content { flex: 1; padding: 2rem; overflow-y: auto; }
+/* ---------- Main content (offset for fixed sidebar) ---------- */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  margin-left: var(--sidebar-w);  /* create room for fixed nav */
+  box-sizing: border-box;
+}
 
 /* ---------- Overview ---------- */
 .admin-overview { display: flex; flex-direction: column; gap: 2rem; }
@@ -335,11 +370,24 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1000px) {
-  .sidebar { width: 240px; }
-  .form-grid { grid-template-columns: 1fr; }
+  :root { --sidebar-w: 240px; }        /* narrower sidebar on medium screens */
+  .main-content { margin-left: var(--sidebar-w); }
 }
 
 @media (max-width: 720px) {
-  .dashboard-header { padding: 1rem; }
-  .sidebar { position: sticky; top: 0; height: auto; }
+  /* Stack layout: sidebar flows above content, no fixed positioning */
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    top: auto;
+    left: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .main-content {
+    margin-left: 0;
+  }
 }
