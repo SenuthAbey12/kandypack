@@ -115,6 +115,164 @@
 | address | text | YES |  | NULL |  |
 | phone_no | varchar(20) | YES |  | NULL |  |
 | email | varchar(120) | YES | UNI | NULL |  |
+| password | varchar(255) | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| driver_id | name | address | phone_no | email | password |
+|---|---|---|---|---|---|
+| DRV001 | John Driver | NULL | +94770000001 | NULL | 12341234 |
+| DRV002 | Jane Transport | NULL | +94770000002 | NULL | NULL |
+
+---
+
+### 🏷️ order_item
+
+**Records:** 2
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| order_item_id | varchar(40) | NO | PRI | NULL |  |
+| order_id | varchar(40) | NO | MUL | NULL |  |
+| product_id | varchar(40) | NO | MUL | NULL |  |
+| quantity | int | NO |  | NULL |  |
+
+#### 📄 Sample Data
+
+| order_item_id | order_id | product_id | quantity |
+|---|---|---|---|
+| OI1 | ORD001 | P001 | 20 |
+| OI2 | ORD001 | P002 | 10 |
+
+---
+
+### 🏷️ orders
+
+**Records:** 1
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| order_id | varchar(40) | NO | PRI | NULL |  |
+| customer_id | varchar(40) | NO | MUL | NULL |  |
+| order_date | datetime | NO |  | NULL |  |
+| status | enum('pending','confirmed','scheduled','in_transit','delivered','cancelled') | YES | MUL | pending |  |
+| created_at | datetime | NO |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| updated_at | datetime | NO |  | CURRENT_TIMESTAMP | DEFAULT_GENERATED on update CURRENT_TIMESTAMP |
+
+#### 📄 Sample Data
+
+| order_id | customer_id | order_date | status | created_at | updated_at |
+|---|---|---|---|---|---|
+| ORD001 | CUS001 | Fri Oct 17 2025 00:00:00 GMT+0530 (India Standard Time) | confirmed | Thu Oct 09 2025 00:02:10 GMT+0530 (India Standard Time) | Thu Oct 09 2025 00:02:10 GMT+0530 (India Standard Time) |
+
+---
+
+### 🏷️ product
+
+**Records:** 3
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| product_id | varchar(40) | NO | PRI | NULL |  |
+| name | varchar(120) | NO |  | NULL |  |
+| description | text | YES |  | NULL |  |
+| price | decimal(10,2) | NO |  | NULL |  |
+| space_consumption | decimal(10,4) | NO |  | NULL |  |
+| category | varchar(60) | YES |  | NULL |  |
+| available_quantity | int | NO |  | 0 |  |
+
+#### 📄 Sample Data
+
+| product_id | name | description | price | space_consumption | category | available_quantity |
+|---|---|---|---|---|---|---|
+| P001 | Detergent Box | 1kg box | 600.00 | 0.5000 | FMCG | 180 |
+| P002 | Shampoo Pack | 500ml | 450.00 | 0.2000 | FMCG | 290 |
+| P003 | Soap Carton | 20 bars | 1200.00 | 1.0000 | FMCG | 150 |
+
+---
+
+### 🏷️ store
+
+**Records:** 4
+=======
+*Records:* 2
+>>>>>>> origin/Senuth
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+<<<<<<< HEAD
+| store_id | varchar(40) | NO | PRI | NULL |  |
+| name | varchar(120) | NO |  | NULL |  |
+| city | varchar(80) | NO | MUL | NULL |  |
+
+#### 📄 Sample Data
+
+| store_id | name | city |
+|---|---|---|
+| ST_COL | Colombo Central Store | Colombo |
+| ST_GAL | Galle Station Store | Galle |
+| ST_KAN | Kandy HQ Store | Kandy |
+
+---
+
+### 🏷️ train
+
+**Records:** 2
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| train_id | varchar(40) | NO | PRI | NULL |  |
+| capacity | decimal(12,4) | NO |  | NULL |  |
+| notes | varchar(255) | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| train_id | capacity | notes |
+|---|---|---|
+| TR100 | 200.0000 | Bulk cargo |
+| TR200 | 150.0000 | Mixed cargo |
+
+---
+
+### 🏷️ train_route
+
+**Records:** 2
+
+#### 📐 Table Structure
+
+| Column | Type | Null | Key | Default | Extra |
+|--------|------|------|-----|---------|-------|
+| route_id | varchar(40) | NO | PRI | NULL |  |
+| start_city | varchar(80) | NO |  | NULL |  |
+| end_city | varchar(80) | NO |  | NULL |  |
+| destinations | text | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| route_id | start_city | end_city | destinations |
+|---|---|---|---|
+| R_KAN_COL | Kandy | Colombo | Kegalle,Ragama |
+| R_KAN_GAL | Kandy | Galle | Aluthgama |
+
+---
+
+### 🏷️ train_shipment
+=======
+| driver_id | varchar(40) | NO | PRI | NULL |  |
+| name | varchar(120) | NO |  | NULL |  |
+| address | text | YES |  | NULL |  |
+| phone_no | varchar(20) | YES |  | NULL |  |
+| email | varchar(120) | YES | UNI | NULL |  |
 
 #### 📄 Sample Data
 
@@ -339,10 +497,17 @@
 
 | Column | Type | Null | Key | Default | Extra |
 |--------|------|------|-----|---------|-------|
+<<<<<<< HEAD
+| quarter | varchar(9) | YES |  | NULL |  |
+| total_value | decimal(64,2) | YES |  | NULL |  |
+| total_space_units | decimal(64,4) | YES |  | NULL |  |
+| orders | bigint | NO |  | 0 |  |
+=======
 | delivery_id | varchar(40) | NO | PRI | NULL |  |
 | truck_schedule_id | varchar(40) | NO | MUL | NULL |  |
 | order_id | varchar(40) | NO | MUL | NULL |  |
 | delivered_at | datetime | YES |  | NULL |  |
+>>>>>>> origin/Senuth
 
 #### 📄 Sample Data
 
@@ -358,6 +523,24 @@
 
 | Column | Type | Null | Key | Default | Extra |
 |--------|------|------|-----|---------|-------|
+<<<<<<< HEAD
+| truck_id | varchar(40) | NO |  | NULL |  |
+| month | varchar(7) | YES |  | NULL |  |
+| runs | bigint | NO |  | 0 |  |
+| hours | decimal(46,4) | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| truck_id | month | runs | hours |
+|---|---|---|---|
+| TK01 | 2025-10 | 1 | 4.0000 |
+
+---
+
+### 🏷️ v_worker_hours
+
+**Records:** 2
+=======
 | route_id | varchar(40) | NO | PRI | NULL |  |
 | store_id | varchar(40) | NO | MUL | NULL |  |
 | route_name | varchar(120) | NO |  | NULL |  |
@@ -381,6 +564,19 @@
 
 | Column | Type | Null | Key | Default | Extra |
 |--------|------|------|-----|---------|-------|
+<<<<<<< HEAD
+| role | varchar(9) | NO |  | NULL |  |
+| worker_id | varchar(40) | NO |  | NULL |  |
+| week | varchar(7) | YES |  | NULL |  |
+| hours | decimal(46,4) | YES |  | NULL |  |
+
+#### 📄 Sample Data
+
+| role | worker_id | week | hours |
+|---|---|---|---|
+| driver | DRV001 | 2025-42 | 4.0000 |
+| assistant | AST001 | 2025-42 | 4.0000 |
+=======
 | truck_schedule_id | varchar(40) | NO | PRI | NULL |  |
 | route_id | varchar(40) | NO | MUL | NULL |  |
 | truck_id | varchar(40) | NO | MUL | NULL |  |
