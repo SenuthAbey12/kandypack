@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
-import Admin from './Admin_Page/Admin.js';
 import DriverDashboard from './DriverDashboard';
 import AssistantDashboard from './AssistantDashboard';
 import EmployeeProfile from './EmployeeProfile';
@@ -18,27 +17,19 @@ const EmployeePortalRouter = () => {
     return <Navigate to="/login/employee" replace />;
   }
 
-  const getDashboardComponent = () => {
-    if (isAdmin) return <Admin />;
-    if (isDriver) return <DriverDashboard />;
-    if (isAssistant) return <AssistantDashboard />;
-    return <Navigate to="/login" replace />;
-  };
+  const defaultRoute = (() => {
+    if (isAdmin) return '/admin/overview';
+    if (isDriver) return '/driver';
+    if (isAssistant) return '/assistant';
+    return '/login/employee';
+  })();
 
   return (
     <div className="employee-portal">
       <Routes>
-        <Route path="/" element={getDashboardComponent()} />
+        <Route path="/" element={<Navigate to={defaultRoute} replace />} />
         <Route path="/profile" element={<EmployeeProfile />} />
         <Route path="/settings" element={<EmployeeSettings />} />
-        
-        {/* Admin-specific routes */}
-        {isAdmin && (
-          <>
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/*" element={<Admin />} />
-          </>
-        )}
         
         {/* Driver-specific routes */}
         {isDriver && (

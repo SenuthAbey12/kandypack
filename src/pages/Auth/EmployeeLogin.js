@@ -39,8 +39,15 @@ const EmployeeLogin = () => {
     setError('');
 
     try {
-      await login(formData.username, formData.password, formData.role, 'employee');
-      navigate('/employee');
+      const user = await login(formData.username, formData.password, formData.role, 'employee');
+
+      const roleRedirect = {
+        admin: '/admin/overview',
+        driver: '/driver',
+        assistant: '/assistant',
+      }[user.role] || '/employee';
+
+      navigate(roleRedirect, { replace: true });
     } catch (error) {
       setError(error.message);
     } finally {

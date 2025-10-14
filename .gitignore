@@ -28,8 +28,5 @@ node_modules/
 
 # env and logs
 .env
-backend/.env
-**/.env
-!**/.env.example
 *.log
 

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
 
 import AdminHeader from "../../../Components/AdminHeader";
@@ -16,22 +17,25 @@ import TruckAssignment from "./Truck-Schedule/TruckAssignment";
 import Reports from "./Report&Analytics/Reports";
 
 const NAV_ITEMS = [
-  { key: "overview", label: "Overview" },
-  { key: "products", label: "Add Products" },
-  { key: "employees", label: "Add Employees" },
-  { key: "trucks", label: "Add Trucks" },
-  { key: "trains", label: "Add Trains" },
-  { key: "train-allocation", label: "Train Allocation" },
-  { key: "truck-assignment", label: "Truck Assignment" },
-  { key: "reports", label: "Reports & Analytics" },
+  { key: "overview", path: "overview", label: "Overview" },
+  { key: "products", path: "products", label: "Add Products" },
+  { key: "employees", path: "employees", label: "Add Employees" },
+  { key: "trucks", path: "trucks", label: "Add Trucks" },
+  { key: "trains", path: "trains", label: "Add Trains" },
+  { key: "train-allocation", path: "train-allocation", label: "Train Allocation" },
+  { key: "truck-assignment", path: "truck-assignment", label: "Truck Assignment" },
+  { key: "reports", path: "reports", label: "Reports & Analytics" },
 ];
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [view, setView] = useState("overview");
+  const navigate = useNavigate();
 
   const subtitle = `Welcome, ${user?.name || "Administrator"}`;
+
+  const handleGoAllocate = () => navigate("/admin/train-allocation");
+  const handleGoTruckAssignment = () => navigate("/admin/truck-assignment");
 
   return (
     <div className={`admin-dashboard ${theme}`}>
@@ -44,21 +48,32 @@ export default function AdminDashboard() {
       />
 
       <main className="dashboard-content">
-        <AdminSidebar items={NAV_ITEMS} activeKey={view} onSelect={setView} />
+        <AdminSidebar items={NAV_ITEMS} basePath="/admin" />
 
         <section className="main-content">
-          {view === "overview" && (
-            <Overview onGoAllocate={() => setView("train-allocation")} />
-          )}
-          {view === "products" && <Products />}
-          {view === "employees" && <Employees />}
-          {view === "trucks" && <Trucks />}
-          {view === "trains" && <Trains />}
-          {view === "train-allocation" && (
-            <TrainAllocation onGoTruckAssignment={() => setView("truck-assignment")} />
-          )}
-          {view === "truck-assignment" && <TruckAssignment />}
-          {view === "reports" && <Reports />}
+          <Routes>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route
+              path="overview"
+              element={<Overview onGoAllocate={handleGoAllocate} />}
+            />
+            <Route path="products" element={<Products />} />
+            <Route path="employees" element={<Employees />} />
+            <Route path="trucks" element={<Trucks />} />
+            <Route path="trains" element={<Trains />} />
+            <Route
+              path="train-allocation"
+              element={
+                <TrainAllocation
+                  onGoTruckAssignment={handleGoTruckAssignment}
+                />
+              }
+            />
+            <Route path="truck-assignment" element={<TruckAssignment />} />
+            <Route path="truck-assignments" element={<Navigate to="truck-assignment" replace />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="*" element={<Navigate to="overview" replace />} />
+          </Routes>
         </section>
       </main>
     </div>
