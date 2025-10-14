@@ -65,11 +65,10 @@ function App() {
           <BrowserRouter>
             <Routes>
               <Route exact path="/" element={<Home/>}/>
-              
+
               {/* Updated Login Routes - Customer login as main entry point */}
               <Route path="/login" element={<CustomerLogin/>}/>
               <Route path="/login/customer" element={<CustomerLogin/>}/>
-              <Route path="/login/admin" element={<EmployeeLogin/>}/>
               <Route path="/login/employee" element={<EmployeeLogin/>}/>
               
               {/* Auth Support Routes */}
@@ -109,7 +108,6 @@ function App() {
               <Route path="/checkout" element={<Checkout/>}/>
 
               {/* New Portal System */}
-              <Route path="/employee/login" element={<EmployeeLogin/>}/>
               <Route path="/customer/login" element={<CustomerLogin/>}/>
               <Route path="/employee/*" element={<EmployeePortalRouter/>}/>
               <Route path="/customer/*" element={<CustomerPortalRouter/>}/>
@@ -131,9 +129,7 @@ function App() {
               <Route path="/support/chat" element={<ProtectedRoute><Chat/></ProtectedRoute>} />
               <Route path="/support/packaging-help" element={<ProtectedRoute><PackagingHelp/></ProtectedRoute>} />
 
-            {/* Legacy admin routes - keep for backward compatibility */}
-            <Route path="/admin/signin" element={<EmployeeLogin/>}/>
-            <Route path="/customer/signin" element={<CustomerLogin/>}/>
+
           </Routes>
         </BrowserRouter>
         </ThemeProvider>
