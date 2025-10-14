@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../../context/AuthContext';
+import { useTheme } from '../../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
-import { ordersAPI } from '../../services/api';
+import { ordersAPI } from '../../../services/api';
 
 const CustomerPage = () => {
   const { user, logout } = useAuth();
@@ -1057,9 +1057,6 @@ const styles = {
   userInfo: {
     textAlign: 'right',
     marginLeft: '8px'
-  },
-  userInfo: {
-    textAlign: 'right'
   },
   userName: {
     display: 'block',

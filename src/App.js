@@ -37,10 +37,10 @@ import Password from './pages/Account/Password.js';
 import Addresses from './pages/Account/Addresses.js';
 import Payments from './pages/Account/Payments.js';
 import Wishlist from './pages/Wishlist.js';
-import TrackOrder from './pages/Support/TrackOrder.js';
-import Returns from './pages/Support/Returns.js';
-import Chat from './pages/Support/Chat.js';
-import PackagingHelp from './pages/Support/PackagingHelp.js';
+import TrackOrder from './pages/Portal/Customer_Page/Support/TrackOrder.js';
+import Returns from './pages/Portal/Customer_Page/Support/Returns.js';
+import Chat from './pages/Portal/Customer_Page/Support/Chat.js';
+import PackagingHelp from './pages/Portal/Customer_Page/Support/PackagingHelp.js';
 import ProtectedRoute from './Components/ProtectedRoute.js';
 import Checkout from './pages/Checkout.js';
 import CheckoutLayout from './pages/Checkout/CheckoutLayout.js';
@@ -60,7 +60,7 @@ import CustomerLogin from './pages/Auth/CustomerLogin.js';
 import ForgotPassword from './pages/Auth/ForgotPassword.js';
 import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
-import CustomerPage from './pages/Portal/CustomerPage.js';
+import CustomerPage from './pages/Portal/Customer_Page/CustomerPage.js';
 
 // --- Main App Component ---
 function App() {
