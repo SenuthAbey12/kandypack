@@ -60,7 +60,7 @@ import CustomerLogin from './pages/Auth/CustomerLogin.js';
 import ForgotPassword from './pages/Auth/ForgotPassword.js';
 import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
-import CustomerPage from './pages/Portal/CustomerPage.js';
+import CustomerPage from './pages/Portal/Customer_Page/CustomerPage.js';
 import AdminDashboard from './pages/Portal/Admin_Page/Admin.js';
 import DriverDashboard from './pages/Portal/DriverDashboard.js';
 import AssistantDashboard from './pages/Portal/AssistantDashboard.js';
