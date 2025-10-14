@@ -1,16 +1,53 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { ordersAPI } from '../../services/api';
 
 const CustomerPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const [trackingId, setTrackingId] = useState('');
+  const [isCompact, setIsCompact] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const profileRef = useRef(null);
+
+  // Responsive: collapse sidebar to icon rail on narrow screens
+  useEffect(() => {
+    const onResize = () => setIsCompact(window.innerWidth <= 1024);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    const onClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
+
+  const sidebarWidth = isCompact ? 72 : 280;
+
+  // Actions
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      navigate('/login');
+    }
+  };
   
   // Load orders from API (with mock fallback via axios interceptor)
   useEffect(() => {
@@ -111,7 +148,7 @@ const CustomerPage = () => {
   const stats = useMemo(() => {
   const totalOrders = orders.length;
   const activeDeliveries = orders.filter(o => ['In Transit', 'Processing', 'Scheduled'].includes(o.status)).length;
-    const totalOrderValue = orders.reduce((sum, order) => sum + order.total_value, 0);
+    const totalOrderValue = orders.reduce((sum, order) => sum + Number(order.total_value || 0), 0);
     const railDeliveries = orders.filter(o => o.transport_mode === 'Rail').length;
     const averageDeliveryTime = orders.filter(o => o.actual_delivery)
       .reduce((sum, order) => {
@@ -160,9 +197,9 @@ const CustomerPage = () => {
           <div style={styles.statGlow}></div>
           <div style={styles.statIcon}>📦</div>
           <div style={styles.statContent}>
-            <h3>{stats.totalOrders}</h3>
-            <p>Total Orders</p>
-            <small>LKR {stats.totalOrderValue?.toLocaleString()}</small>
+            <h3 style={styles.statNumber}>{stats.totalOrders}</h3>
+            <p style={styles.statLabel}>Total Orders</p>
+            <small style={styles.statHint}>LKR {Number(stats.totalOrderValue || 0).toLocaleString()}</small>
           </div>
         </div>
         <div 
@@ -181,9 +218,9 @@ const CustomerPage = () => {
           <div style={styles.statGlow}></div>
           <div style={styles.statIcon}>🚚</div>
           <div style={styles.statContent}>
-            <h3>{stats.activeDeliveries}</h3>
-            <p>Active Deliveries</p>
-            <small>In pipeline</small>
+            <h3 style={styles.statNumber}>{stats.activeDeliveries}</h3>
+            <p style={styles.statLabel}>Active Deliveries</p>
+            <small style={styles.statHint}>In pipeline</small>
           </div>
         </div>
         <div 
@@ -202,9 +239,9 @@ const CustomerPage = () => {
           <div style={styles.statGlow}></div>
           <div style={styles.statIcon}>🚂</div>
           <div style={styles.statContent}>
-            <h3>{stats.railDeliveries}</h3>
-            <p>Rail Deliveries</p>
-            <small>Cost-efficient</small>
+            <h3 style={styles.statNumber}>{stats.railDeliveries}</h3>
+            <p style={styles.statLabel}>Rail Deliveries</p>
+            <small style={styles.statHint}>Cost-efficient</small>
           </div>
         </div>
         <div 
@@ -223,9 +260,9 @@ const CustomerPage = () => {
           <div style={styles.statGlow}></div>
           <div style={styles.statIcon}>⏱️</div>
           <div style={styles.statContent}>
-            <h3>{stats.averageDeliveryTime?.toFixed(1)}</h3>
-            <p>Avg. Days</p>
-            <small>Delivery time</small>
+            <h3 style={styles.statNumber}>{stats.averageDeliveryTime?.toFixed(1)}</h3>
+            <p style={styles.statLabel}>Avg. Days</p>
+            <small style={styles.statHint}>Delivery time</small>
           </div>
         </div>
       </div>
@@ -329,7 +366,7 @@ const CustomerPage = () => {
           
           <div style={styles.orderMeta}>
             <span>Space: {order.total_space} units</span>
-            <span>Value: LKR {order.total_value?.toLocaleString()}</span>
+            <span>Value: LKR {Number(order.total_value || 0).toLocaleString()}</span>
             <span>City: {order.delivery_city}</span>
           </div>
 
@@ -551,18 +588,20 @@ const CustomerPage = () => {
       <div style={styles.backgroundPattern}></div>
       <div style={styles.appShell}>
         {/* Sidebar */}
-        <aside style={styles.sidebar}>
+        <aside style={{ ...styles.sidebar, width: `${sidebarWidth}px` }}>
           <div style={styles.sidebarGlow}></div>
           <div style={styles.sidebarBrand}>
             <div style={styles.brandLogo}>KP</div>
-            <div>
-              <div style={styles.brandTitle}>Kandypack</div>
-              <div style={styles.brandSubtitle}>FMCG Distribution</div>
-            </div>
+            {!isCompact && (
+              <div>
+                <div style={styles.brandTitle}>Kandypack</div>
+                <div style={styles.brandSubtitle}>FMCG Distribution</div>
+              </div>
+            )}
           </div>
 
           <nav style={styles.sidebarNav}>
-            {[
+            {[ 
               { id: 'dashboard', icon: '📊', label: 'Dashboard' },
               { id: 'current', icon: '🚚', label: 'Current Orders' },
               { id: 'history', icon: '📋', label: 'Order History' },
@@ -571,33 +610,34 @@ const CustomerPage = () => {
             ].map(item => (
               <button
                 key={item.id}
-                style={
-                  activeTab === item.id 
+                style={{
+                  ...(activeTab === item.id 
                     ? { ...styles.sidebarItem, ...styles.sidebarItemActive }
-                    : styles.sidebarItem
-                }
+                    : styles.sidebarItem),
+                  ...(isCompact ? styles.sidebarItemCompact : {})
+                }}
                 onClick={() => setActiveTab(item.id)}
               >
                 <span style={styles.sidebarIcon}>{item.icon}</span>
-                <span>{item.label}</span>
+                {!isCompact && <span>{item.label}</span>}
               </button>
             ))}
             
             <div style={styles.sidebarSpacer}></div>
             
             <button
-              style={styles.sidebarItem}
+              style={{ ...styles.sidebarItem, ...(isCompact ? styles.sidebarItemCompact : {}) }}
               onClick={() => navigate('/products')}
             >
               <span style={styles.sidebarIcon}>🛒</span>
-              <span>Place New Order</span>
+              {!isCompact && <span>Place New Order</span>}
             </button>
           </nav>
         </aside>
 
         {/* Main Content */}
-        <div style={styles.contentArea}>
-          <header style={styles.header}>
+        <div style={{ ...styles.contentArea, marginLeft: `${sidebarWidth}px` }}>
+          <header style={{ ...styles.header, left: `${sidebarWidth}px` }}>
             <div style={styles.headerContent}>
               <div style={styles.headerLeft}>
                 <h1 style={styles.title}>Kandypack Customer Portal</h1>
@@ -606,9 +646,43 @@ const CustomerPage = () => {
                 </p>
               </div>
               <div style={styles.headerRight}>
-                <div style={styles.userInfo}>
-                  <span style={styles.userName}>{user?.name || 'Customer'}</span>
-                  <span style={styles.userRole}>{user?.company_name || 'Wholesale Partner'}</span>
+                <button style={styles.themeBtn} onClick={toggleTheme} title={theme === 'light' ? 'Switch to dark' : 'Switch to light'}>
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+                <div ref={profileRef} style={styles.profileWrapper}>
+                  <button style={styles.profileBtn} onClick={() => setShowProfileMenu(v => !v)}>
+                    <div style={styles.avatar}>{(user?.name || 'C').substring(0,1).toUpperCase()}</div>
+                    <span style={styles.caret}>▾</span>
+                  </button>
+                  {showProfileMenu && (
+                    <div style={styles.profileMenu}>
+                      <div style={styles.menuHeader}>
+                        <div style={styles.avatarSmall}>{(user?.name || 'C').substring(0,1).toUpperCase()}</div>
+                        <div>
+                          <div style={styles.menuName}>{user?.name || 'Customer'}</div>
+                          <div style={styles.menuSub}>{user?.email || user?.company_name || ''}</div>
+                        </div>
+                      </div>
+                      <div style={styles.menuDivider}></div>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setShowEditModal(true); }}>
+                        <span style={styles.menuItemIcon}>👤</span>
+                        <span>Profile</span>
+                      </button>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setShowSettingsModal(true); }}>
+                        <span style={styles.menuItemIcon}>⚙️</span>
+                        <span>Account settings</span>
+                      </button>
+                      <button style={styles.menuItem} onClick={() => { setShowProfileMenu(false); setActiveTab('support'); }}>
+                        <span style={styles.menuItemIcon}>❓</span>
+                        <span>Help Center</span>
+                      </button>
+                      <div style={styles.menuDivider}></div>
+                      <button style={{ ...styles.menuItem, ...styles.menuDanger }} onClick={handleLogout}>
+                        <span style={styles.menuItemIcon}>🚪</span>
+                        <span>Sign out</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -618,7 +692,7 @@ const CustomerPage = () => {
             {loading && (
               <div style={styles.ordersSection}>
                 <h3 style={styles.sectionTitle}>Loading your orders…</h3>
-                <p style={{ color: '#7f8c8d' }}>Please wait while we fetch your latest orders.</p>
+                <p style={{ color: 'var(--muted)' }}>Please wait while we fetch your latest orders.</p>
               </div>
             )}
             {!loading && (
@@ -649,6 +723,53 @@ const CustomerPage = () => {
           </div>
         </div>
       )}
+
+      {/* Edit Customer Details Modal */}
+      {showEditModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowEditModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalGlow}></div>
+            <div style={styles.modalHeader}>
+              <h3>Edit Customer Details</h3>
+              <button style={styles.closeBtn} onClick={() => setShowEditModal(false)}>×</button>
+            </div>
+            <div style={styles.modalContent}>
+              <div style={{ display: 'grid', gap: 12 }}>
+                <input style={styles.input} placeholder="Name" defaultValue={user?.name || ''} />
+                <input style={styles.input} placeholder="Company" defaultValue={user?.company_name || ''} />
+                <input style={styles.input} placeholder="Email" defaultValue={user?.email || ''} />
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                  <button style={styles.primaryBtn} onClick={() => setShowEditModal(false)}>Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowSettingsModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalGlow}></div>
+            <div style={styles.modalHeader}>
+              <h3>Settings</h3>
+              <button style={styles.closeBtn} onClick={() => setShowSettingsModal(false)}>×</button>
+            </div>
+            <div style={styles.modalContent}>
+              <div style={{ display: 'grid', gap: 12 }}>
+                <label style={{ color: 'var(--text)' }}>
+                  <input type="checkbox" style={{ marginRight: 8 }} defaultChecked={theme === 'dark'} onChange={toggleTheme} />
+                  Enable dark mode
+                </label>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                  <button style={styles.primaryBtn} onClick={() => setShowSettingsModal(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -657,7 +778,7 @@ const CustomerPage = () => {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    background: 'var(--bg)',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     position: 'relative',
     overflowX: 'hidden'
@@ -683,15 +804,25 @@ const styles = {
   },
   sidebar: {
     width: '280px',
-    background: 'rgba(255,255,255,0.95)',
+    background: 'var(--card)',
     backdropFilter: 'blur(20px)',
-    borderRight: '1px solid rgba(255,255,255,0.3)',
+    borderRight: '1px solid var(--border)',
     padding: '24px 16px',
     display: 'flex',
     flexDirection: 'column',
     gap: '24px',
     boxShadow: '2px 0 20px rgba(0,0,0,0.08)',
-    position: 'relative'
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    height: '100vh',
+    overflowY: 'auto',
+    zIndex: 5
+  },
+  sidebarItemCompact: {
+    justifyContent: 'center',
+    padding: '12px',
+    gap: '0'
   },
   sidebarGlow: {
     position: 'absolute',
@@ -707,7 +838,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     padding: '8px 12px',
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   brandLogo: {
     width: '40px',
@@ -718,7 +849,7 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: '800',
-    color: 'white'
+    color: 'var(--header-text)'
   },
   brandTitle: {
     fontSize: '18px',
@@ -727,7 +858,7 @@ const styles = {
   },
   brandSubtitle: {
     fontSize: '12px',
-    color: '#7f8c8d',
+    color: 'var(--muted)',
     marginTop: '2px'
   },
   sidebarNav: {
@@ -741,7 +872,7 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     padding: '12px 16px',
-    color: '#2c3e50',
+    color: 'var(--text)',
     background: 'transparent',
     border: 'none',
     borderRadius: '12px',
@@ -760,7 +891,7 @@ const styles = {
   },
   sidebarItemActive: {
     background: 'linear-gradient(135deg, #667eea, #764ba2)',
-    color: 'white',
+    color: 'var(--header-text)',
     boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
     transform: 'translateX(6px)'
   },
@@ -776,39 +907,156 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    background: '#f8f9fa'
+    background: 'var(--bg)',
+    marginLeft: '280px'
   },
   header: {
-    background: 'white',
-    padding: '20px 40px',
-    borderBottom: '1px solid #e9ecef',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    background: 'var(--card)',
+    backdropFilter: 'blur(10px)',
+    padding: '16px 0',
+    borderBottom: '1px solid var(--border)',
+    boxShadow: '0 2px 20px rgba(0,0,0,0.1)',
+    position: 'fixed',
+    top: 0,
+    left: '280px',
+    right: 0,
+    zIndex: 10
   },
   headerContent: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     maxWidth: '1400px',
-    margin: '0 auto'
+    margin: '0 auto',
+    padding: '0 40px'
   },
   headerLeft: {
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   title: {
     fontSize: '1.8rem',
     fontWeight: 'bold',
     margin: '0 0 4px 0',
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   subtitle: {
     fontSize: '1rem',
-    color: '#7f8c8d',
+    color: 'var(--muted)',
     margin: '0'
   },
   headerRight: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px'
+    gap: '12px'
+  },
+  profileWrapper: {
+    position: 'relative'
+  },
+  profileBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    background: 'transparent',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '6px 10px',
+    cursor: 'pointer'
+  },
+  avatar: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '8px',
+    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+    color: 'var(--header-text)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 700
+  },
+  caret: {
+    color: 'var(--muted)'
+  },
+  profileMenu: {
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    right: 0,
+    background: 'var(--card)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+    minWidth: '220px',
+    padding: '8px',
+    zIndex: 20
+  },
+  menuHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '8px 8px 4px 8px'
+  },
+  avatarSmall: {
+    width: '28px',
+    height: '28px',
+    borderRadius: '8px',
+    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+    color: 'var(--header-text)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 700,
+    fontSize: '14px'
+  },
+  menuName: {
+    fontWeight: 600,
+    color: 'var(--text)'
+  },
+  menuSub: {
+    fontSize: '12px',
+    color: 'var(--muted)'
+  },
+  menuItem: {
+    width: '100%',
+    textAlign: 'left',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    border: 'none',
+    background: 'transparent',
+    color: 'var(--text)',
+    cursor: 'pointer'
+  },
+  menuItemIcon: {
+    display: 'inline-block',
+    width: '20px'
+  },
+  menuDanger: {
+    color: '#e74c3c'
+  },
+  menuDivider: {
+    height: '1px',
+    background: 'var(--border)',
+    margin: '6px 8px'
+  },
+  themeBtn: {
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 500,
+    background: '#f39c12',
+    color: '#fff'
+  },
+  logoutBtn: {
+    padding: '8px 12px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 500,
+    background: '#e74c3c',
+    color: '#fff'
+  },
+  userInfo: {
+    textAlign: 'right',
+    marginLeft: '8px'
   },
   userInfo: {
     textAlign: 'right'
@@ -816,16 +1064,17 @@ const styles = {
   userName: {
     display: 'block',
     fontWeight: '600',
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   userRole: {
     display: 'block',
     fontSize: '12px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   main: {
     flex: 1,
     padding: '40px',
+    paddingTop: '120px',
     maxWidth: '1400px',
     margin: '0 auto',
     width: '100%'
@@ -841,14 +1090,14 @@ const styles = {
     gap: '24px'
   },
   statCard: {
-    background: 'white',
+    background: 'var(--card)',
     borderRadius: '16px',
     padding: '24px',
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-    border: '1px solid rgba(233, 236, 239, 0.8)',
+    border: '1px solid var(--border)',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     position: 'relative',
     overflow: 'hidden',
@@ -879,22 +1128,38 @@ const styles = {
     justifyContent: 'center',
     background: 'linear-gradient(135deg, #667eea, #764ba2)',
     borderRadius: '12px',
-    color: 'white'
+    color: 'var(--header-text)'
   },
   statContent: {
-    flex: 1
+    flex: 1,
+    color: 'var(--text)'
+  },
+  statNumber: {
+    margin: 0,
+    fontSize: '1.75rem',
+    lineHeight: 1,
+    color: 'var(--text)'
+  },
+  statLabel: {
+    margin: '4px 0 0 0',
+    color: 'var(--text)',
+    fontWeight: 600
+  },
+  statHint: {
+    marginTop: '2px',
+    color: 'var(--muted)'
   },
   actionsSection: {
-    background: 'white',
+    background: 'var(--card)',
     borderRadius: '12px',
     padding: '30px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    border: '1px solid var(--border)'
   },
   sectionTitle: {
     fontSize: '1.5rem',
     fontWeight: '700',
-    color: '#2c3e50',
+    color: 'var(--text)',
     marginBottom: '20px',
     letterSpacing: '-0.5px',
     position: 'relative'
@@ -918,8 +1183,8 @@ const styles = {
     alignItems: 'center',
     gap: '16px',
     padding: '20px',
-    background: 'white',
-    border: '2px solid #e9ecef',
+    background: 'var(--card)',
+    border: '2px solid var(--border)',
     borderRadius: '16px',
     cursor: 'pointer',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -955,24 +1220,25 @@ const styles = {
     justifyContent: 'center',
     background: 'linear-gradient(135deg, #667eea, #764ba2)',
     borderRadius: '10px',
-    color: 'white'
+    color: 'var(--header-text)'
   },
   actionTitle: {
     fontSize: '16px',
     fontWeight: 'bold',
-    color: '#2c3e50',
+    color: 'var(--text)',
     marginBottom: '4px'
   },
   actionDesc: {
     fontSize: '14px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   ordersSection: {
-    background: 'white',
+    background: 'var(--card)',
     borderRadius: '12px',
     padding: '30px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    border: '1px solid var(--border)',
+    color: 'var(--text)'
   },
   ordersList: {
     display: 'flex',
@@ -980,11 +1246,11 @@ const styles = {
     gap: '16px'
   },
   orderCard: {
-    border: '1px solid #e9ecef',
+    border: '1px solid var(--border)',
     borderRadius: '16px',
     padding: '20px',
     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    background: 'white',
+    background: 'var(--card)',
     position: 'relative',
     overflow: 'hidden',
     boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
@@ -1015,12 +1281,12 @@ const styles = {
   orderId: {
     fontWeight: 'bold',
     fontSize: '16px',
-    color: '#2c3e50',
+    color: 'var(--text)',
     display: 'block'
   },
   orderDate: {
     fontSize: '12px',
-    color: '#7f8c8d',
+    color: 'var(--muted)',
     marginTop: '2px'
   },
   orderStatus: {
@@ -1047,7 +1313,7 @@ const styles = {
     gap: '8px',
     fontSize: '14px',
     fontWeight: '600',
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   modeIcon: {
     fontSize: '16px'
@@ -1059,23 +1325,23 @@ const styles = {
     margin: '8px 0'
   },
   itemTag: {
-    background: '#f8f9fa',
+    background: 'var(--bg)',
     padding: '4px 8px',
     borderRadius: '6px',
     fontSize: '12px',
-    color: '#495057',
-    border: '1px solid #e9ecef'
+    color: 'var(--text)',
+    border: '1px solid var(--border)'
   },
   moreItems: {
     fontSize: '12px',
-    color: '#7f8c8d',
+    color: 'var(--muted)',
     fontStyle: 'italic'
   },
   orderMeta: {
     display: 'flex',
     gap: '12px',
     fontSize: '12px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   assignmentInfo: {
     marginTop: '8px'
@@ -1090,7 +1356,7 @@ const styles = {
   progressBar: {
     width: '100%',
     height: '6px',
-    background: '#e9ecef',
+    background: 'var(--border)',
     borderRadius: '3px',
     overflow: 'hidden'
   },
@@ -1103,16 +1369,16 @@ const styles = {
   progressText: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#2c3e50'
+    color: 'var(--text)'
   },
   eta: {
     fontSize: '11px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   emptyState: {
     textAlign: 'center',
     padding: '60px 20px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   emptyIcon: {
     fontSize: '4rem',
@@ -1121,7 +1387,7 @@ const styles = {
   },
   primaryBtn: {
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: 'white',
+    color: 'var(--header-text)',
     border: 'none',
     padding: '12px 24px',
     borderRadius: '12px',
@@ -1165,9 +1431,11 @@ const styles = {
   input: {
     flex: 1,
     padding: '12px',
-    border: '1px solid #ddd',
+    border: '1px solid var(--border)',
     borderRadius: '8px',
-    fontSize: '14px'
+    fontSize: '14px',
+    background: 'var(--bg)',
+    color: 'var(--text)'
   },
   trackingResult: {
     marginTop: '20px'
@@ -1175,10 +1443,10 @@ const styles = {
   trackingNotFound: {
     textAlign: 'center',
     padding: '40px 20px',
-    color: '#7f8c8d'
+    color: 'var(--muted)'
   },
   trackingDetails: {
-    background: '#f8f9fa',
+    background: 'var(--bg)',
     borderRadius: '12px',
     padding: '24px'
   },
@@ -1203,7 +1471,7 @@ const styles = {
     width: '12px',
     height: '12px',
     borderRadius: '50%',
-    background: '#e9ecef',
+    background: 'var(--border)',
     marginTop: '4px',
     flexShrink: 0
   },
@@ -1219,10 +1487,11 @@ const styles = {
     gap: '20px'
   },
   supportCard: {
-    background: '#f8f9fa',
+    background: 'var(--bg)',
     borderRadius: '12px',
     padding: '24px',
-    border: '1px solid #e9ecef'
+    border: '1px solid var(--border)',
+    color: 'var(--text)'
   },
   contactInfo: {
     lineHeight: '1.6'
@@ -1234,7 +1503,7 @@ const styles = {
   },
   faqItem: {
     paddingBottom: '16px',
-    borderBottom: '1px solid #e9ecef'
+    borderBottom: '1px solid var(--border)'
   },
   modalOverlay: {
     position: 'fixed',
@@ -1250,14 +1519,14 @@ const styles = {
     padding: '20px'
   },
   modal: {
-    backgroundColor: 'white',
+    backgroundColor: 'var(--card)',
     borderRadius: '20px',
     width: '100%',
     maxWidth: '800px',
     maxHeight: '90vh',
     overflow: 'hidden',
     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-    border: '1px solid rgba(255,255,255,0.2)',
+    border: '1px solid var(--border)',
     backdropFilter: 'blur(20px)',
     position: 'relative'
   },
@@ -1273,7 +1542,7 @@ const styles = {
   },
   modalHeader: {
     padding: '24px 24px 16px 24px',
-    borderBottom: '1px solid #e9ecef',
+    borderBottom: '1px solid var(--border)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center'
@@ -1283,7 +1552,7 @@ const styles = {
     border: 'none',
     fontSize: '24px',
     cursor: 'pointer',
-    color: '#7f8c8d',
+    color: 'var(--muted)',
     width: '30px',
     height: '30px',
     display: 'flex',
