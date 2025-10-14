@@ -1,0 +1,240 @@
+/* ===========================
+   employees.css (for Employees.js)
+   =========================== */
+
+/* Theme tokens */
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #6b7280;
+
+  --line: #e5e7eb;   /* borders */
+  --line-2: #eef2f7; /* table dividers */
+
+  --primary-1: #27ae60; /* button/active gradient start */
+  --primary-2: #229954; /* button/active gradient end */
+  --danger: #e74c3c;
+
+  --radius: 16px;
+  --r-sm: 10px;
+
+  --s-1: 6px;
+  --s-2: 8px;
+  --s-3: 10px;
+  --s-4: 12px;
+  --s-5: 14px;
+  --s-6: 16px;
+  --s-7: 24px;
+
+  --shadow: 0 8px 24px rgba(0,0,0,.08);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.22);
+  --seg-surface: rgba(255,255,255,0.9);
+  --seg-border-active: rgba(39,174,96,0.6);
+  --button-surface: #ffffff;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1220;
+    --card: #0f172a;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+
+    --line: #23314a;
+    --line-2: #1e293b;
+
+    --shadow: 0 8px 24px rgba(0,0,0,.45);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
+    --seg-surface: rgba(30,41,59,0.88);
+    --seg-border-active: rgba(39,174,96,0.7);
+    --button-surface: rgba(30,41,59,0.9);
+  }
+}
+
+/* Page wrapper */
+.employees {
+  color: var(--text);
+  background: var(--bg);
+  padding: var(--s-7);
+  border-radius: var(--radius);
+  max-width: 1100px;
+  margin: 24px auto;
+}
+
+.employees h2 { margin: 0 0 var(--s-6); }
+.employees h3 { margin: 0 0 var(--s-4); font-size: 16px; font-weight: 600; }
+
+/* Segmented toggle bar (Driver / Assistant) */
+.segmented {
+  display: inline-flex;
+  gap: 8px;
+  background: var(--card);
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+.seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  background: var(--seg-surface);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .06s ease, box-shadow .12s ease, background .12s ease, border-color .12s ease;
+}
+.seg-btn span { opacity: .95; }
+.seg-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.seg-btn:active { transform: translateY(0); }
+.seg-btn.active {
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  color: #fff;
+  border-color: color-mix(in srgb, var(--seg-border-active) 80%, transparent);
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+
+/* Panels (cards) */
+.employees .panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: var(--s-7);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--s-6);
+}
+
+/* (If .grid2 exists anywhere, keep it single-column) */
+.employees .grid2 { display: grid; grid-template-columns: 1fr; gap: var(--s-6); }
+
+/* Form grid */
+.employees .grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+}
+.employees .grid .full { grid-column: 1/-1; }
+@media (max-width: 640px) {
+  .employees .grid { grid-template-columns: 1fr; }
+}
+
+/* Labels & inputs */
+.employees label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  font-size: 14px;
+}
+.employees input,
+.employees textarea,
+.employees select {
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--card); /* readable in dark */
+  color: var(--text);
+  outline: none; box-shadow: none;
+}
+.employees input::placeholder,
+.employees textarea::placeholder { color: var(--muted); }
+
+/* Focus */
+.employees input:focus,
+.employees textarea:focus,
+.employees select:focus {
+  border-color: color-mix(in srgb, var(--primary-1) 70%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-1) 25%, transparent);
+}
+
+/* Actions & buttons */
+.employees .actions { display: flex; justify-content: flex-end; gap: var(--s-2); }
+.employees .btn {
+  padding: var(--s-3) var(--s-5);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--button-surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform .06s ease, box-shadow .12s ease, opacity .12s ease, background .12s ease;
+  will-change: transform;
+}
+.employees .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.employees .btn:active { transform: translateY(0); }
+.employees .btn:disabled { opacity: .6; cursor: not-allowed; }
+.employees .btn.primary {
+  background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
+  color: #fff; border: none;
+}
+.employees .btn.danger { background: var(--danger); color: #fff; border: none; }
+
+/* Table */
+.employees .table-wrap {
+  overflow: auto;
+  border-radius: var(--r-sm);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  max-height: 520px; /* sticky header useful */
+}
+.employees table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+.employees thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: #f1f2f4;
+  color: #0f172a;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+@media (prefers-color-scheme: dark) {
+  .employees thead th { background: #c6c6e4; color: #0f172a; }
+}
+.employees th, .employees td {
+  padding: var(--s-3);
+  border-bottom: 1px solid var(--line-2);
+  vertical-align: middle;
+}
+.employees tbody tr:hover { background: #f8fafc; }
+@media (prefers-color-scheme: dark) {
+  .employees tbody tr:hover { background: #989ca8; }
+}
+
+.employees .mono {
+  font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Credential preview (optional admin helper) */
+.employees .cred-preview {
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 92%, var(--primary-1));
+  display: grid; gap: 6px;
+}
+.employees .cred-preview code {
+  background: rgba(0,0,0,.06);
+  padding: 2px 6px; border-radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  .employees .cred-preview code { background: rgba(255,255,255,.08); }
+}
+
+/* Accessibility & motion */
+.employees :focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary-1) 70%, white);
+  outline-offset: 2px; border-radius: 8px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .employees * { transition: none !important; animation: none !important; }
+}
+

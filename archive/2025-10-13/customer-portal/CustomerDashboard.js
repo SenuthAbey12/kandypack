@@ -1,0 +1,1 @@
+// Archived original file; moved from src/pages/Portal/CustomerDashboard.js on 2025-10-13

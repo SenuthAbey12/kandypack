@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { mockAuth, mockProducts, mockOrders, mockCustomers, mockAdmin } from './mockData';
+import { mockAuth, mockProducts, mockCustomers, mockAdmin } from './mockData';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 const DEVELOPMENT_MODE = process.env.NODE_ENV === 'development';
@@ -78,10 +78,8 @@ export const authAPI = {
 
 // Products API
 export const productsAPI = {
-  getAll: (params = {}) => apiWithFallback(
-    () => api.get('/products', { params }),
-    () => mockProducts.getAll(params)
-  ),
+  // Do NOT fallback to mock for products to avoid showing stale mock items
+  getAll: (params = {}) => api.get('/products', { params }),
   getById: (id) => apiWithFallback(
     () => api.get(`/products/${id}`),
     () => Promise.resolve({ data: mockProducts.getAll().then(res => res.data.products.find(p => p.product_id === id)) })
@@ -97,11 +95,11 @@ export const productsAPI = {
 
 // Orders API
 export const ordersAPI = {
-  getAll: (params = {}) => apiWithFallback(
-    () => api.get('/orders', { params }),
-    () => mockOrders.getAll(params)
-  ),
+  // Important: Do NOT fallback to mock for auth-protected customer data.
+  // Returning mock orders can show fake data for new customers.
+  getAll: (params = {}) => api.get('/orders', { params }),
   getById: (id) => api.get(`/orders/${id}`),
+  getTracking: (id) => api.get(`/orders/${id}/tracking`),
   create: (orderData) => api.post('/orders', orderData),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { order_status: status }),
   getAllForAdmin: (params = {}) => api.get('/orders/admin/all', { params })
@@ -111,10 +109,8 @@ export const ordersAPI = {
 export const customersAPI = {
   getProfile: () => api.get('/customers/profile'),
   updateProfile: (profileData) => api.put('/customers/profile', profileData),
-  getOrders: (params = {}) => apiWithFallback(
-    () => api.get('/customers/orders', { params }),
-    () => mockOrders.getAll(params)
-  ),
+  // Do NOT fallback to mock for customer orders
+  getOrders: (params = {}) => api.get('/customers/orders', { params }),
   getDashboardStats: () => apiWithFallback(
     () => api.get('/customers/dashboard/stats'),
     () => mockCustomers.getDashboardStats()

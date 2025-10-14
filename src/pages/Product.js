@@ -381,7 +381,7 @@ export default function Product() {
   
   const navigate = useNavigate();
   const location = useLocation();
-  const { products, addToCart, cart } = useStore();
+  const { products, addToCart, removeFromCart, cart } = useStore();
   const { user, logout } = useAuth();
 
   // Add responsive styles for Products page
@@ -557,6 +557,7 @@ export default function Product() {
   }, [filtered, currentPage, pageSize]);
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const isInCart = (id) => cart.some((i) => i.id === id);
 
   function handleAdd(product, qty) {
     addToCart(product.id, qty);
@@ -1091,6 +1092,16 @@ export default function Product() {
                         onAdd={(qty) => handleAdd(p, qty)}
                         buttonText={addedItems.has(p.id) ? "✓ Added to Cart!" : "🛒 Add to Cart"}
                       />
+                      {isInCart(p.id) && (
+                        <button
+                          className="cc-btn cc-btn-ghost"
+                          style={styles.removeFromCartBtn}
+                          onClick={() => removeFromCart(p.id)}
+                          aria-label={`Remove ${p.title} from cart`}
+                        >
+                          Remove from Cart
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1985,6 +1996,18 @@ const styles = {
   modernAddButton: {
     width: '100%',
     marginTop: 'auto',
+  },
+  removeFromCartBtn: {
+    marginTop: 10,
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: 12,
+    background: '#fff',
+    border: '2px solid #fecaca',
+    color: '#b91c1c',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   },
 
   // Pagination
