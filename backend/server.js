@@ -49,6 +49,31 @@ const defaultOrigins = [
 const userOrigin = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
 const allowedOrigins = new Set([...defaultOrigins, ...userOrigin]);
 
+//********************************************************************* */
+
+const insertAdminIfNotExists = require('./adminSetup');
+
+app.use(express.json());
+
+// Run admin insertion then start server
+(async () => {
+  await insertAdminIfNotExists();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 KandyPack API Server running on http://localhost:${PORT}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+      console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
+      console.log('✅ Database connection successful');
+    }
+  });
+})();
+
+
+
+
+//********************************************************************* */
+
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow non-browser requests (no origin)
@@ -113,14 +138,4 @@ app.use((err, req, res, next) => {
 // 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
-});
-
-app.listen(PORT, () => {
-  const baseMsg = `KandyPack API Server running on http://localhost:${PORT}`;
-  console.log('🚀 ' + baseMsg);
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-    console.log(`🌐 CORS enabled for: ${process.env.FRONTEND_URL}`);
-    console.log('✅ Database connection successful');
-  }
 });
