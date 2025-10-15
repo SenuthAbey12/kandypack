@@ -225,29 +225,64 @@ BEGIN
 END;
 //
 
+
 CREATE TRIGGER trg_order_item_before_update
 BEFORE UPDATE ON order_item
 FOR EACH ROW
 BEGIN
-  DECLARE delta INT;
-  IF OLD.product_id <> NEW.product_id THEN
-    UPDATE product SET available_quantity = available_quantity + OLD.quantity WHERE product_id = OLD.product_id;
+    DECLARE delta INT;
     DECLARE ns INT;
-    SELECT available_quantity INTO ns FROM product WHERE product_id = NEW.product_id FOR UPDATE;
-    IF ns < NEW.quantity THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Insufficient stock for new product'; END IF;
-    UPDATE product SET available_quantity = available_quantity - NEW.quantity WHERE product_id = NEW.product_id;
-  ELSE
+    DECLARE cs INT;
+
     SET delta = NEW.quantity - OLD.quantity;
-    IF delta > 0 THEN
-      DECLARE cs INT;
-      SELECT available_quantity INTO cs FROM product WHERE product_id = NEW.product_id FOR UPDATE;
-      IF cs < delta THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Insufficient stock for increased quantity'; END IF;
-      UPDATE product SET available_quantity = available_quantity - delta WHERE product_id = NEW.product_id;
-    ELSEIF delta < 0 THEN
-      UPDATE product SET available_quantity = available_quantity - delta WHERE product_id = NEW.product_id; 
+
+    IF OLD.product_id <> NEW.product_id THEN
+        -- Restore stock for old product
+        UPDATE product 
+        SET available_quantity = available_quantity + OLD.quantity 
+        WHERE product_id = OLD.product_id;
+
+        -- Check stock for new product
+        SELECT available_quantity INTO ns 
+        FROM product 
+        WHERE product_id = NEW.product_id 
+        FOR UPDATE;
+
+        IF ns < NEW.quantity THEN
+            SIGNAL SQLSTATE '45000' 
+            SET MESSAGE_TEXT='Insufficient stock for new product';
+        END IF;
+
+        -- Deduct stock for new product
+        UPDATE product 
+        SET available_quantity = available_quantity - NEW.quantity 
+        WHERE product_id = NEW.product_id;
+
+    ELSE
+        IF delta > 0 THEN
+            -- Check stock for increased quantity
+            SELECT available_quantity INTO cs 
+            FROM product 
+            WHERE product_id = NEW.product_id 
+            FOR UPDATE;
+
+            IF cs < delta THEN
+                SIGNAL SQLSTATE '45000' 
+                SET MESSAGE_TEXT='Insufficient stock for increased quantity';
+            END IF;
+
+            UPDATE product 
+            SET available_quantity = available_quantity - delta 
+            WHERE product_id = NEW.product_id;
+
+        ELSEIF delta < 0 THEN
+            -- Return stock for decreased quantity
+            UPDATE product 
+            SET available_quantity = available_quantity - delta  -- -delta is positive
+            WHERE product_id = NEW.product_id;
+        END IF;
     END IF;
-  END IF;
-END;
+END
 //
 
 CREATE TRIGGER trg_order_item_before_delete
@@ -372,59 +407,94 @@ DELIMITER ;
 -- Capacity-aware train allocation
 DROP PROCEDURE IF EXISTS sp_schedule_order_to_trains;
 DELIMITER //
-CREATE PROCEDURE sp_schedule_order_to_trains(IN p_order_id VARCHAR(40), IN p_route_id VARCHAR(40), IN p_store_id VARCHAR(40))
+
+
+CREATE PROCEDURE sp_schedule_order_to_trains(
+    IN p_order_id VARCHAR(40), 
+    IN p_route_id VARCHAR(40), 
+    IN p_store_id VARCHAR(40)
+)
 BEGIN
-  DECLARE req DECIMAL(12,4);
-  DECLARE left_req DECIMAL(12,4);
-  DECLARE done INT DEFAULT 0;
+    -- 1️⃣ Declare variables first
+    DECLARE req DECIMAL(12,4);
+    DECLARE left_req DECIMAL(12,4);
+    DECLARE cur_trip VARCHAR(40);
+    DECLARE cap DECIMAL(12,4);
+    DECLARE used DECIMAL(12,4);
+    DECLARE done INT DEFAULT 0;
 
-  SELECT required_space INTO req FROM v_order_totals WHERE order_id = p_order_id;
-  IF req IS NULL OR req <= 0 THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Order has no items / required space';
-  END IF;
-  SET left_req = req;
+    -- 2️⃣ Declare the cursor next
+    DECLARE trip_cur CURSOR FOR
+        SELECT t.trip_id
+        FROM train_trip t
+        WHERE t.route_id = p_route_id 
+          AND t.store_id = p_store_id
+          AND t.depart_time >= CURRENT_TIMESTAMP
+        ORDER BY t.depart_time ASC;
 
-  DECLARE cur_trip VARCHAR(40);
-  DECLARE cap DECIMAL(12,4);
-  DECLARE used DECIMAL(12,4);
+    -- 3️⃣ Declare handlers last
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-  DECLARE trip_cur CURSOR FOR
-    SELECT t.trip_id
-    FROM train_trip t
-    WHERE t.route_id = p_route_id AND t.store_id = p_store_id
-      AND t.depart_time >= CURRENT_TIMESTAMP
-    ORDER BY t.depart_time ASC;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    -- 4️⃣ Now you can use statements
+    SELECT required_space INTO req 
+    FROM v_order_totals 
+    WHERE order_id = p_order_id;
 
-  OPEN trip_cur;
-  read_loop: LOOP
-    FETCH trip_cur INTO cur_trip;
-    IF done = 1 THEN LEAVE read_loop; END IF;
-
-    SELECT capacity, capacity_used INTO cap, used FROM train_trip WHERE trip_id = cur_trip FOR UPDATE;
-    IF (cap - used) > 0 THEN
-      IF left_req <= (cap - used) THEN
-        INSERT INTO train_shipment (shipment_id, order_id, trip_id, allocated_space)
-        VALUES (UUID(), p_order_id, cur_trip, left_req);
-        UPDATE train_trip SET capacity_used = capacity_used + left_req WHERE trip_id = cur_trip;
-        SET left_req = 0;
-        LEAVE read_loop;
-      ELSE
-        INSERT INTO train_shipment (shipment_id, order_id, trip_id, allocated_space)
-        VALUES (UUID(), p_order_id, cur_trip, cap - used);
-        UPDATE train_trip SET capacity_used = capacity_used + (cap - used) WHERE trip_id = cur_trip;
-        SET left_req = left_req - (cap - used);
-      END IF;
+    IF req IS NULL OR req <= 0 THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT='Order has no items / required space';
     END IF;
-  END LOOP;
-  CLOSE trip_cur;
 
-  IF left_req > 0 THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Insufficient upcoming train capacity to fully schedule order';
-  ELSE
-    UPDATE orders SET status = 'scheduled', updated_at = CURRENT_TIMESTAMP WHERE order_id = p_order_id;
-  END IF;
-END;
+    SET left_req = req;
+
+    OPEN trip_cur;
+
+    read_loop: LOOP
+        FETCH trip_cur INTO cur_trip;
+        IF done = 1 THEN LEAVE read_loop; END IF;
+
+        SELECT capacity, capacity_used INTO cap, used 
+        FROM train_trip 
+        WHERE trip_id = cur_trip 
+        FOR UPDATE;
+
+        IF (cap - used) > 0 THEN
+            IF left_req <= (cap - used) THEN
+                INSERT INTO train_shipment (shipment_id, order_id, trip_id, allocated_space)
+                VALUES (UUID(), p_order_id, cur_trip, left_req);
+
+                UPDATE train_trip 
+                SET capacity_used = capacity_used + left_req 
+                WHERE trip_id = cur_trip;
+
+                SET left_req = 0;
+                LEAVE read_loop;
+            ELSE
+                INSERT INTO train_shipment (shipment_id, order_id, trip_id, allocated_space)
+                VALUES (UUID(), p_order_id, cur_trip, cap - used);
+
+                UPDATE train_trip 
+                SET capacity_used = capacity_used + (cap - used) 
+                WHERE trip_id = cur_trip;
+
+                SET left_req = left_req - (cap - used);
+            END IF;
+        END IF;
+
+    END LOOP;
+
+    CLOSE trip_cur;
+
+    IF left_req > 0 THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT='Insufficient upcoming train capacity to fully schedule order';
+    ELSE
+        UPDATE orders 
+        SET status = 'scheduled', updated_at = CURRENT_TIMESTAMP 
+        WHERE order_id = p_order_id;
+    END IF;
+
+END
 //
 DELIMITER ;
 
@@ -584,13 +654,13 @@ INSERT INTO truck (truck_id, license_plate, capacity) VALUES
 ('TK01', 'WP-1234', 60.0),
 ('TK02', 'WP-5678', 60.0);
 
-INSERT INTO driver (driver_id, name, phone_no) VALUES
-('DRV001','John Driver','+94770000001'),
-('DRV002','Jane Transport','+94770000002');
+INSERT INTO driver (driver_id, name, phone_no, user_name, password) VALUES
+('DRV001','John Driver','+94770000001','John Driver','12341234' ),
+('DRV002','Jane Transport','+94770000002','Jane Transport','12341234');
 
-INSERT INTO assistant (assistant_id, name, phone_no) VALUES
-('AST001','Sarah Support','+94770000003'),
-('AST002','David Logistics','+94770000004');
+INSERT INTO assistant (assistant_id, name, phone_no, user_name, password) VALUES
+('AST001','Sarah Support','+94770000003','Sarah Support','12341234'),
+('AST002','David Logistics','+94770000004','David Logistics','12341234');
 
 INSERT INTO truck_route (route_id, store_id, route_name, max_minutes) VALUES
 ('TR_COL_01','ST_COL','Colombo City North', 240),
