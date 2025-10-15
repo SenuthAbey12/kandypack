@@ -156,7 +156,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/customer" element={<CustomerPage/>}/>
+              <Route
+                path="/customer"
+                element={
+                  <ProtectedRoute requiredPortal="customer">
+                    <CustomerPage />
+                  </ProtectedRoute>
+                }
+              />
 
 
               {/* Account Routes */}

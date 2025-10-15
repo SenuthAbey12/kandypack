@@ -23,12 +23,9 @@ const ProtectedRoute = ({ children, requiredRole = null, requiredPortal = null }
   }
 
   // Check portal access
-  if (requiredPortal) {
-    if (user.portalType !== requiredPortal) {
-      // Redirect to correct portal
-      const redirectPath = requiredPortal === 'customer' ? '/customer' : '/employee';
-      return <Navigate to={redirectPath} replace />;
-    }
+  if (requiredPortal && user.portalType !== requiredPortal) {
+    const redirectPath = requiredPortal === 'customer' ? '/customer/login' : '/login/employee';
+    return <Navigate to={redirectPath} state={{ from: location }} replace />;
   }
 
   // Check role access

@@ -4,7 +4,15 @@ import { authAPI, handleAPIError } from '../services/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // { id, name, role: 'customer'|'admin'|'driver'|'assistant', portalType: 'customer'|'employee' }
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (err) {
+      console.warn('Failed to parse stored user', err);
+      return null;
+    }
+  }); // { id, name, role: 'customer'|'admin'|'driver'|'assistant', portalType: 'customer'|'employee' }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,7 +21,9 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const response = await authAPI.verify();
-          setUser(response.data.user);
+          const verifiedUser = response.data.user;
+          setUser(verifiedUser);
+          localStorage.setItem('user', JSON.stringify(verifiedUser));
         } catch (error) {
           console.error('Token verification failed:', error);
           localStorage.removeItem('authToken');
