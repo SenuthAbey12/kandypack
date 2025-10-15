@@ -3,8 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Employee Portal Components
-import DriverDashboard from './DriverDashboard';
-import AssistantDashboard from './AssistantDashboard';
+import DriverDashboard from './Driver_Page/DriverDashboard';
+import AssistantDashboard from './Assistant_Page/AssistantDashboard';
 import EmployeeProfile from './EmployeeProfile';
 import EmployeeSettings from './EmployeeSettings';
 

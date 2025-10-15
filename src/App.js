@@ -64,8 +64,8 @@ import NeedHelp from './pages/Auth/NeedHelp.js';
 import EmployeePortalRouter from './pages/Portal/EmployeePortalRouter.js';
 import CustomerPage from './pages/Portal/Customer_Page/CustomerPage.js';
 import AdminDashboard from './pages/Portal/Admin_Page/Admin.js';
-import DriverDashboard from './pages/Portal/DriverDashboard.js';
-import AssistantDashboard from './pages/Portal/AssistantDashboard.js';
+import DriverDashboard from './pages/Portal/Driver_Page/DriverDashboard.js';
+import AssistantDashboard from './pages/Portal/Assistant_Page/AssistantDashboard.js';
 
 
 
