@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import ProfileDropdown from '../../Components/ProfileDropdown';
+import { useAuth } from '../../../context/AuthContext';
+import ProfileDropdown from '../../../Components/ProfileDropdown';
 import './DriverDashboard.css';
 
 const DriverDashboard = () => {

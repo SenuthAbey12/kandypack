@@ -53,7 +53,7 @@ router.post('/login', async (req, res) => {
     // For admin, look up by admin_id; for others, use email or username
     let query, params;
     if (role === 'admin') {
-      query = `SELECT * FROM ${tableName} WHERE ${idField} = ?`;
+      query = `SELECT * FROM admin WHERE admin_id = ?`;
       params = [username];
     } else {
       query = `SELECT * FROM ${tableName} WHERE email = ? OR ${idField} = ?`;

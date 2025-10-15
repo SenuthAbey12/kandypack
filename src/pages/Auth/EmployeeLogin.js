@@ -39,7 +39,15 @@ const EmployeeLogin = () => {
     setError('');
 
     try {
-      const user = await login(formData.username, formData.password, formData.role, 'employee');
+      // Frontend sends username and password for any role
+      const payload = {
+        username: formData.username,
+        password: formData.password,
+        role: formData.role,
+        portalType: 'employee'
+      };
+
+      const user = await login(payload.username, payload.password, payload.role, payload.portalType);
 
       const roleRedirect = {
         admin: '/admin/overview',
@@ -49,7 +57,7 @@ const EmployeeLogin = () => {
 
       navigate(roleRedirect, { replace: true });
     } catch (error) {
-      setError(error.message);
+      setError(error.message || 'Login failed. Please check credentials.');
     } finally {
       setLoading(false);
     }
@@ -121,7 +129,7 @@ const EmployeeLogin = () => {
             <div className="form-group">
               <label htmlFor="username">
                 {activeTab === 'admin' ? 'Admin ID' : 
-                 activeTab === 'driver' ? 'Driver ID' : 'Assistant ID'}
+                 activeTab === 'driver' ? 'Driver ID or Email' : 'Assistant ID or Email'}
               </label>
               <input
                 type="text"
@@ -131,8 +139,8 @@ const EmployeeLogin = () => {
                 onChange={handleChange}
                 placeholder={
                   activeTab === 'admin' ? 'Enter Admin ID (e.g., ADM001)' :
-                  activeTab === 'driver' ? 'Enter Driver ID (e.g., DRV001)' :
-                  'Enter Assistant ID (e.g., AST001)'
+                  activeTab === 'driver' ? 'Enter Driver ID or Email' :
+                  'Enter Assistant ID or Email'
                 }
                 required
               />
