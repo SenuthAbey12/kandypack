@@ -91,23 +91,27 @@ const Checkout = () => {
     }, 2000);
   };
 
-  if (orderSuccess) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.successCard}>
-          <div style={styles.successIcon}><CheckCircle2 size={48} color="#22c55e" /></div>
-          <h1 style={styles.successTitle}>Order Placed Successfully!</h1>
-          <p style={styles.successText}>
-            Thank you for choosing KandyPack! Your packaging order has been confirmed and will be processed shortly.
-          </p>
-          <div style={styles.successAnimation}>
-            <div style={styles.checkmark}><CheckCircle2 size={28} /></div>
-          </div>
-          <p style={styles.redirectText}>Redirecting to your dashboard...</p>
+if (orderSuccess) {
+  return (
+    <div style={{ ...styles.container, display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ ...styles.successCard, textAlign: 'center' }}>
+        <div style={styles.successIcon}>
+          <CheckCircle2 size={48} color="#22c55e" />
         </div>
+        <h1 style={styles.successTitle}>Order Placed Successfully!</h1>
+        <p style={styles.successText}>
+          Thank you for choosing KandyPack! Your packaging order has been confirmed and will be processed shortly.
+        </p>
+        <div style={styles.successAnimation}>
+          <div style={styles.checkmark}><CheckCircle2 size={28} /></div>
+        </div>
+        <p style={styles.redirectText}>Redirecting to your dashboard...</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
+
 
   return (
     <div style={styles.container}>
