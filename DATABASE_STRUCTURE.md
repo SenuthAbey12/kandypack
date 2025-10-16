@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 10/15/2025, 9:33:28 PM*
+*Last Updated: 10/16/2025, 6:19:19 PM*
 
 ## 🗄️ Database Overview
 
@@ -10,7 +10,7 @@
 
 ## 📋 Table Summary
 
-- **admin**: 1 records
+- **admin**: 3 records
 - **assistant**: 2 records
 - **customer**: 3 records
 - **driver**: 3 records
@@ -39,7 +39,7 @@
 
 ### 🏷️ admin
 
-**Records:** 1
+**Records:** 3
 
 #### 📐 Table Structure
 
@@ -54,6 +54,8 @@
 
 | admin_id | name | password | created_at |
 |---|---|---|---|
+| 2b0a9085-c9b6-4ed3-9 | admin | $2a$10$Z9tlYQkIZOtfq6LgPtY6... | Wed Oct 15 2025 21:51:49 GMT+0530 (India Standard Time) |
+| 68717f0a-ae15-492c-8 | Super Admin | $2a$10$3to6LYSfM0jjdu2cvylC... | Wed Oct 15 2025 23:07:14 GMT+0530 (India Standard Time) |
 | ADM001 | System Administrator | admin123 | Wed Oct 15 2025 14:56:36 GMT+0530 (India Standard Time) |
 
 ---
@@ -78,7 +80,7 @@
 
 | assistant_id | name | address | phone_no | email | user_name | password |
 |---|---|---|---|---|---|---|
-| AST001 | Sarah Support | NULL | +94770000003 | NULL | Sarah Support | 12341234 |
+| AST001 | Sarah Support | NULL | +94770000003 | NULL | Sarah Support | $2a$10$ZGrOUKxgNQlBZmTPjZkF... |
 | AST002 | David Logistics | NULL | +94770000004 | NULL | David Logistics | 12341234 |
 
 ---

@@ -67,8 +67,6 @@ import AdminDashboard from './pages/Portal/Admin_Page/Admin.js';
 import DriverDashboard from './pages/Portal/Driver_Page/DriverDashboard.js';
 import AssistantDashboard from './pages/Portal/Assistant_Page/AssistantDashboard.js';
 
-
-
 // --- Main App Component ---
 function App() {
   return (
@@ -141,7 +139,7 @@ function App() {
                 }
               />
               <Route
-                path="/driver"
+                path="/driver/*"
                 element={
                   <ProtectedRoute requiredPortal="employee" requiredRole="driver">
                     <DriverDashboard />
@@ -149,7 +147,7 @@ function App() {
                 }
               />
               <Route
-                path="/assistant"
+                path="/assistant/*"
                 element={
                   <ProtectedRoute requiredPortal="employee" requiredRole="assistant">
                     <AssistantDashboard />

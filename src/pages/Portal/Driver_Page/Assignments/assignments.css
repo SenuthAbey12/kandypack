@@ -1,0 +1,9 @@
+.driver-assignments h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.list { display: grid; gap: 10px; }
+.list-item { display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:10px; border:1px solid #e5e7eb; background:#fff; }
+.muted { color:#6b7280; font-size:.9rem; }
+.badge { padding:4px 8px; border-radius:999px; background:#e5e7eb; font-size:.8rem; }
+@media (prefers-color-scheme: dark){
+  .list-item{ background:#0b1220; border-color:#1f2937; color:#e5e7eb; }
+  .badge{ background:#374151; color:#e5e7eb; }
+}

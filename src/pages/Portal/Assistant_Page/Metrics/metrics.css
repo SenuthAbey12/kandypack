@@ -1,0 +1,10 @@
+.assistant-metrics h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.metrics-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+.metric-item { text-align:center; padding:16px; background:#ecf0f1; border-radius:10px; }
+.metric-number { display:block; font-size:1.6rem; font-weight:800; color:#2563eb; }
+.metric-label { font-size:.9rem; color:#6b7280; }
+@media (prefers-color-scheme: dark){
+  .metric-item{ background:#393d4e; color:#e5e7eb; }
+  .metric-number{ color:#e4ebf3; }
+  .metric-label{ color:#d8d9da; }
+}

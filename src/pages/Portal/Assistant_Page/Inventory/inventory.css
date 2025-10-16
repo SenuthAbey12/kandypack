@@ -1,0 +1,12 @@
+.assistant-inventory h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.inv-list { display:grid; gap:10px; }
+.inv-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+.muted { color:#6b7280; font-size:.9rem; }
+.status { text-transform:capitalize; display:flex; align-items:center; gap:8px; }
+.status.adequate { color:#16a34a; }
+.status.low { color:#dc2626; }
+.btn.small { padding:4px 8px; border:1px solid #d1d5db; background:#fff; border-radius:8px; cursor:pointer; font-size:.8rem; }
+@media (prefers-color-scheme: dark){
+  .inv-item{ background:#393d4e; border-color:#1f2937; color:#e5e7eb; }
+  .btn.small{ background:#111827; color:#e5e7eb; border-color:#374151; }
+}
