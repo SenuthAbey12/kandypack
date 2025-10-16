@@ -12,12 +12,14 @@ import Overview from "./Overview/Overview";
 import Assignments from "./Assignments/Assignments";
 import Trips from "./Trips/Trips";
 import Reports from "./Reports/Reports";
+import Settings from "./Settings/Settings";
 
 const NAV_ITEMS = [
   { key: "overview", path: "overview", label: "Overview" },
   { key: "assignments", path: "assignments", label: "My Assignments" },
   { key: "trips", path: "trips", label: "Trips" },
   { key: "reports", path: "reports", label: "Reports" },
+  { key: "settings", path: "settings", label: "Settings" },
 ];
 
 export default function DriverDashboard() {
@@ -47,6 +49,7 @@ export default function DriverDashboard() {
             <Route path="assignments" element={<Assignments />} />
             <Route path="trips" element={<Trips />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="overview" replace />} />
           </Routes>
         </section>

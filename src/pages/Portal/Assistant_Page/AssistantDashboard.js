@@ -3,7 +3,6 @@ import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
 
-
 import AdminHeader from "../../../Components/AdminHeader";
 import AdminSidebar from "../../../Components/AdminSidebar";
 
@@ -11,14 +10,14 @@ import Overview from "./Overview/Overview";
 import Requests from "./Requests/Requests";
 import Inventory from "./Inventory/Inventory";
 import Tools from "./Tools/Tools";
-import Metrics from "./Metrics/Metrics";
+import Settings from "./Settings/Settings";
 
 const NAV_ITEMS = [
   { key: "overview", path: "overview", label: "Overview" },
   { key: "requests", path: "requests", label: "Driver Requests" },
   { key: "inventory", path: "inventory", label: "Inventory" },
   { key: "tools", path: "tools", label: "Assistant Tools" },
-  { key: "metrics", path: "metrics", label: "Metrics" },
+  { key: "settings", path: "settings", label: "Settings" },
 ];
 
 export default function AssistantDashboard() {
@@ -43,11 +42,11 @@ export default function AssistantDashboard() {
         <section className="main-content">
           <Routes>
             <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<Overview  onGoRequests={goRequests} />} />
+            <Route path="overview" element={<Overview onGoRequests={goRequests} />} />
             <Route path="requests" element={<Requests />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="tools" element={<Tools />} />
-            <Route path="metrics" element={<Metrics />} />
+            <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="overview" replace />} />
           </Routes>
         </section>
