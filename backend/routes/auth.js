@@ -109,10 +109,10 @@ router.post('/login', async (req, res) => {
       query = `SELECT ${userIdField} as id, name, ${userIdField} as username, password FROM ${table} WHERE name = ?`;
       params = [username];
     } else if (role === 'driver' || role === 'assistant') {
-      query = `SELECT ${userIdField} as id, name, user_name, email, password FROM ${table} WHERE ${userIdField} = ? OR user_name = ? OR email = ?`;
+      query = `SELECT ${userIdField} as id, name, user_name, email, password FROM ${table} WHERE name = ? OR user_name = ? OR email = ?`;
       params = [username, username, username];
     } else {
-      query = `SELECT ${userIdField} as id, name, user_name as username, password FROM ${table} WHERE user_name = ?`;
+      query = `SELECT ${userIdField} as id, name, user_name as username, password FROM ${table} WHERE name = ? OR user_name = ?`;
       params = [username];
     }
 

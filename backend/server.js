@@ -51,13 +51,13 @@ const allowedOrigins = new Set([...defaultOrigins, ...userOrigin]);
 
 //********************************************************************* */
 
-const insertAdminIfNotExists = require('./adminSetup');
+const setupUsers = require('./setupUsers');
 
 app.use(express.json());
 
 // Run admin insertion then start server
 (async () => {
-  await insertAdminIfNotExists();
+  await setupUsers();
 
   app.listen(PORT, () => {
     console.log(`🚀 KandyPack API Server running on http://localhost:${PORT}`);
