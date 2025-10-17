@@ -14,7 +14,7 @@ import Settings from "./Settings/Settings";
 
 const NAV_ITEMS = [
   { key: "overview", path: "overview", label: "Overview" },
-  { key: "requests", path: "requests", label: "Driver Requests" },
+  { key: "requests", path: "requests", label: "Admin Requests" }, // changed
   { key: "inventory", path: "inventory", label: "Inventory" },
   { key: "tools", path: "tools", label: "Assistant Tools" },
   { key: "settings", path: "settings", label: "Settings" },

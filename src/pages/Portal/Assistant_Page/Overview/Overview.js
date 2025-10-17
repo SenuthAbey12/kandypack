@@ -6,7 +6,7 @@ export default function Overview({ onGoRequests }) {
     <div className="assistant-overview">
       <h2>Today</h2>
       <div className="quick-actions">
-        <button className="btn" onClick={onGoRequests}>Driver Requests</button>
+        <button className="btn" onClick={onGoRequests}>Admin Requests</button>
       </div>
       <div className="stat-cards">
         <div className="stat-card"><strong>Pending Requests</strong><div>4</div></div>
