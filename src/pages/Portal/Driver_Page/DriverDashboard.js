@@ -13,9 +13,11 @@ import Assignments from "./Assignments/Assignments";
 import Trips from "./Trips/Trips";
 import Reports from "./Reports/Reports";
 import Settings from "./Settings/Settings";
+import Requests from "./Requests/Requests"; // NEW
 
 const NAV_ITEMS = [
   { key: "overview", path: "overview", label: "Overview" },
+  { key: "requests", path: "requests", label: "Admin Requests" }, // NEW
   { key: "assignments", path: "assignments", label: "My Assignments" },
   { key: "trips", path: "trips", label: "Trips" },
   { key: "reports", path: "reports", label: "Reports" },
@@ -50,6 +52,7 @@ export default function DriverDashboard() {
             <Route path="trips" element={<Trips />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="requests" element={<Requests />} /> {/* NEW */}
             <Route path="*" element={<Navigate to="overview" replace />} />
           </Routes>
         </section>
