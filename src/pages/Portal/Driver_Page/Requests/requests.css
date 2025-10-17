@@ -1,4 +1,4 @@
-.assistant-requests h2 { margin: 0 0 12px; font-size: 1.2rem; }
+.driver-requests h2 { margin: 0 0 12px; font-size: 1.2rem; }
 .list { display:grid; gap:10px; }
 .list-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
 .muted { color:#a9aeb9; font-size:.9rem; }
