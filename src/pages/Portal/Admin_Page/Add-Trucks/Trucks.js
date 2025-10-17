@@ -122,8 +122,8 @@ export default function Trucks() {
   }, [trucks, query]);
 
   return (
-    // Keep same outer wrapper & classes as Products.js so CSS matches
-    <div className="products">
+    // Shared admin-page wrapper keeps visuals aligned across modules
+    <div className="admin-page trucks">
       <h2>Truck Management</h2>
 
       {/* Top: Add panel (left) + Find panel (right) */}

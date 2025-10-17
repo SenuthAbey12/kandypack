@@ -114,8 +114,24 @@
   border-radius:18px;
   background: linear-gradient(135deg, var(--primary-1), var(--primary-2));
   color:#fff;
-  font-size:32px;
+  font-size:0;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.overview .stat-card .icon svg{
+  width:28px;
+  height:28px;
+}
+.overview .stat-card.stat-pending .icon{
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+.overview .stat-card.stat-trucks .icon{
+  background: linear-gradient(135deg, #8e44ad, #7d3c98);
+}
+.overview .stat-card.stat-trains .icon{
+  background: linear-gradient(135deg, #27ae60, #229954);
+}
+.overview .stat-card.stat-capacity .icon{
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 .overview .stat-card p{
   margin:4px 0 0;

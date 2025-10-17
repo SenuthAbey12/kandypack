@@ -4,55 +4,29 @@
    =========================== */
 
 .trucks {
-  --truck-bg: #ffffff;
-  --truck-card: #ffffff;
-  --truck-soft: #f8fafc;
-  --truck-text: #0f172a;
-  --truck-muted: #64748b;
-  --truck-line: #e2e8f0;
-  --truck-line-strong: #d0d7e2;
-  --truck-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --truck-shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.14);
-  --truck-primary-1: #2563eb;
-  --truck-primary-2: #1d4ed8;
-  --truck-danger-1: #ef4444;
-  --truck-danger-2: #dc2626;
-  --truck-table-head-bg: #f1f5f9;
-  --truck-table-head-text: #0f172a;
-  --truck-row-hover: rgba(37, 99, 235, 0.08);
-  --truck-btn-surface: #ffffff;
-  --truck-btn-border: rgba(148, 163, 184, 0.4);
-  --truck-btn-text: var(--truck-text);
-  --truck-radius: 16px;
-  --truck-radius-sm: 10px;
-  --truck-gap: 16px;
+  --truck-bg: var(--card);
+  --truck-card: var(--card);
+  --truck-soft: color-mix(in srgb, var(--card) 90%, white 10%);
+  --truck-text: var(--text);
+  --truck-muted: var(--muted);
+  --truck-line: var(--line);
+  --truck-line-strong: var(--line-2);
+  --truck-shadow: var(--shadow);
+  --truck-shadow-lg: var(--shadow-lg);
+  --truck-primary-1: var(--primary-1);
+  --truck-primary-2: var(--primary-2);
+  --truck-danger-1: var(--danger);
+  --truck-danger-2: color-mix(in srgb, var(--danger) 88%, black 12%);
+  --truck-table-head-bg: var(--table-head-bg);
+  --truck-table-head-text: var(--table-head-text);
+  --truck-row-hover: var(--row-hover);
+  --truck-btn-surface: var(--button-surface);
+  --truck-btn-border: var(--button-border);
+  --truck-btn-text: var(--button-text);
+  --truck-radius: var(--r-md);
+  --truck-radius-sm: var(--r-sm);
+  --truck-gap: var(--s-4);
   color: var(--truck-text);
-  background: var(--truck-bg);
-  padding: clamp(24px, 5vw, 40px);
-  border-radius: var(--truck-radius);
-  max-width: 1100px;
-  margin: clamp(20px, 6vh, 48px) auto;
-  box-shadow: var(--truck-shadow);
-}
-
-@media (prefers-color-scheme: dark) {
-  .trucks {
-    --truck-bg: #0b1220;
-    --truck-card: rgba(15, 23, 42, 0.94);
-    --truck-soft: rgba(30, 41, 59, 0.72);
-    --truck-text: #e2e8f0;
-    --truck-muted: #94a3b8;
-    --truck-line: #273449;
-    --truck-line-strong: #32415a;
-    --truck-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-    --truck-shadow-lg: 0 30px 60px rgba(2, 6, 23, 0.65);
-    --truck-table-head-bg: #1f2937;
-    --truck-table-head-text: #f8fafc;
-    --truck-row-hover: rgba(148, 163, 184, 0.22);
-    --truck-btn-surface: color-mix(in srgb, var(--truck-card) 55%, white 45%);
-    --truck-btn-border: rgba(148, 163, 184, 0.55);
-    --truck-btn-text: #f8fafc;
-  }
 }
 
 .trucks h2 {
@@ -193,11 +167,11 @@
 }
 
 .trucks .btn.primary {
-  background: linear-gradient(135deg, var(--truck-primary-1), var(--truck-primary-2));
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 18px 36px -18px rgba(37, 99, 235, 0.65);
-}
+    background: linear-gradient(135deg, var(--truck-primary-1), var(--truck-primary-2));
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 18px 36px -18px color-mix(in srgb, var(--truck-primary-1) 60%, transparent);
+  }
 
 .trucks .btn.danger {
   background: linear-gradient(135deg, var(--truck-danger-1), var(--truck-danger-2));

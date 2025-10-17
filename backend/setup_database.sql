@@ -4,11 +4,11 @@ SET time_zone = '+00:00';
 SET sql_safe_updates = 0;
 
 
-DROP DATABASE IF EXISTS kandypack;
-CREATE DATABASE IF NOT EXISTS kandypack
+DROP DATABASE IF EXISTS final_project;
+CREATE DATABASE IF NOT EXISTS final_project
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
-USE kandypack;
+USE final_project;
 
 
 CREATE TABLE admin (
@@ -22,6 +22,7 @@ CREATE TABLE customer (
   customer_id VARCHAR(40) PRIMARY KEY,
   name        VARCHAR(100) NOT NULL,
   phone_no    VARCHAR(20),
+  email       VARCHAR(120),
   city        VARCHAR(80),
   address     VARCHAR(255),
   user_name   VARCHAR(50) UNIQUE NOT NULL,
@@ -36,7 +37,11 @@ CREATE TABLE driver (
   phone_no  VARCHAR(20),
   email     VARCHAR(120) UNIQUE,
   user_name   VARCHAR(50) UNIQUE NOT NULL,
-  password    VARCHAR(255) NOT NULL
+  password    VARCHAR(255) NOT NULL,
+  status      ENUM('active','inactive','on_break') DEFAULT 'active',
+  performance_rating DECIMAL(3,2) DEFAULT 4.50,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE assistant (
@@ -46,7 +51,10 @@ CREATE TABLE assistant (
   phone_no     VARCHAR(20),
   email        VARCHAR(120) UNIQUE,
   user_name   VARCHAR(50) UNIQUE NOT NULL,
-  password    VARCHAR(255) NOT NULL
+  password    VARCHAR(255) NOT NULL,
+  status      ENUM('active','inactive','on_leave') DEFAULT 'active',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 
@@ -55,9 +63,14 @@ CREATE TABLE product (
   name               VARCHAR(120) NOT NULL,
   description        TEXT,
   price              DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+  weight_per_item    DECIMAL(10,3) DEFAULT NULL,
+  volume_per_item    DECIMAL(10,4) DEFAULT NULL,
   space_consumption  DECIMAL(10,4) NOT NULL CHECK (space_consumption > 0),
   category           VARCHAR(60),
-  available_quantity INT NOT NULL DEFAULT 0 CHECK (available_quantity >= 0)
+  available_quantity INT NOT NULL DEFAULT 0 CHECK (available_quantity >= 0),
+  image_url          VARCHAR(255),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 
@@ -74,6 +87,9 @@ CREATE TABLE orders (
   order_id     VARCHAR(40) PRIMARY KEY,
   customer_id  VARCHAR(40) NOT NULL,
   order_date   DATETIME NOT NULL,
+  destination_city    VARCHAR(80),
+  destination_address VARCHAR(255),
+  total_amount DECIMAL(12,2) DEFAULT 0,
   status ENUM('pending','confirmed','scheduled','in_transit','delivered','cancelled') DEFAULT 'pending',
   created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -90,6 +106,7 @@ CREATE TABLE order_item (
   order_id      VARCHAR(40) NOT NULL,
   product_id    VARCHAR(40) NOT NULL,
   quantity      INT NOT NULL CHECK (quantity > 0),
+  unit_price    DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
   CONSTRAINT fk_order_item_order
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
     ON UPDATE CASCADE ON DELETE CASCADE,
@@ -197,11 +214,103 @@ CREATE INDEX idx_truck_delivery_order ON truck_delivery(order_id);
 
 
 
+CREATE TABLE driver_assignments (
+  assignment_id        VARCHAR(40) PRIMARY KEY,
+  driver_id            VARCHAR(40) NOT NULL,
+  order_id             VARCHAR(40) NOT NULL,
+  assignment_date      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('pending','in_progress','completed','cancelled') DEFAULT 'pending',
+  special_instructions TEXT,
+  actual_delivery_time DATETIME NULL,
+  created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_da_driver FOREIGN KEY (driver_id) REFERENCES driver(driver_id) ON DELETE CASCADE,
+  CONSTRAINT fk_da_order  FOREIGN KEY (order_id)  REFERENCES orders(order_id)  ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_driver_assignments_driver ON driver_assignments(driver_id, status);
+CREATE INDEX idx_driver_assignments_order  ON driver_assignments(order_id);
+
+
+CREATE TABLE support_tickets (
+  ticket_id        VARCHAR(40) PRIMARY KEY,
+  customer_id      VARCHAR(40),
+  assistant_id     VARCHAR(40),
+  driver_id        VARCHAR(40),
+  title            VARCHAR(150) NOT NULL,
+  description      TEXT NOT NULL,
+  priority ENUM('low','medium','high','urgent') DEFAULT 'medium',
+  category         VARCHAR(80),
+  status ENUM('open','in_progress','resolved','closed') DEFAULT 'open',
+  resolution_notes TEXT,
+  created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  resolved_at      DATETIME NULL,
+  CONSTRAINT fk_st_customer  FOREIGN KEY (customer_id)  REFERENCES customer(customer_id)     ON DELETE SET NULL,
+  CONSTRAINT fk_st_assistant FOREIGN KEY (assistant_id) REFERENCES assistant(assistant_id)  ON DELETE SET NULL,
+  CONSTRAINT fk_st_driver    FOREIGN KEY (driver_id)    REFERENCES driver(driver_id)        ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_support_tickets_status   ON support_tickets(status, priority);
+CREATE INDEX idx_support_tickets_assistant ON support_tickets(assistant_id);
+
+
+CREATE TABLE driver_requests (
+  request_id       VARCHAR(40) PRIMARY KEY,
+  driver_id        VARCHAR(40) NOT NULL,
+  assistant_id     VARCHAR(40) NULL,
+  request_type ENUM('route_change','vehicle_issue','schedule_change','emergency','break_request') NOT NULL,
+  description      TEXT NOT NULL,
+  priority ENUM('low','medium','high') DEFAULT 'medium',
+  status ENUM('pending','in_progress','approved','denied','resolved') DEFAULT 'pending',
+  resolution_notes TEXT,
+  created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  resolved_at      DATETIME NULL,
+  CONSTRAINT fk_dr_driver    FOREIGN KEY (driver_id)    REFERENCES driver(driver_id)       ON DELETE CASCADE,
+  CONSTRAINT fk_dr_assistant FOREIGN KEY (assistant_id) REFERENCES assistant(assistant_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_driver_requests_status ON driver_requests(status, priority);
+CREATE INDEX idx_driver_requests_driver ON driver_requests(driver_id);
+
+
+CREATE TABLE inventory_items (
+  item_id            VARCHAR(40) PRIMARY KEY,
+  item_name          VARCHAR(120) NOT NULL,
+  category           VARCHAR(80),
+  current_stock      INT NOT NULL DEFAULT 0,
+  minimum_stock      INT NOT NULL DEFAULT 0,
+  unit_price         DECIMAL(10,2) DEFAULT 0,
+  warehouse_location VARCHAR(80),
+  last_restocked     DATE,
+  created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_inventory_items_category ON inventory_items(category);
+
+
+CREATE TABLE inventory_activity (
+  activity_id  VARCHAR(40) PRIMARY KEY,
+  item_id      VARCHAR(40) NOT NULL,
+  action ENUM('received','issued','adjusted') NOT NULL,
+  quantity     INT NOT NULL,
+  notes        TEXT,
+  created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_by   VARCHAR(40),
+  CONSTRAINT fk_ia_item    FOREIGN KEY (item_id)    REFERENCES inventory_items(item_id) ON DELETE CASCADE,
+  CONSTRAINT fk_ia_creator FOREIGN KEY (created_by) REFERENCES assistant(assistant_id)  ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_inventory_activity_item ON inventory_activity(item_id, created_at);
+
+
 
 CREATE OR REPLACE VIEW v_order_totals AS
 SELECT
   oi.order_id,
-  SUM(oi.quantity * p.price)            AS order_amount,
+  SUM(oi.quantity * COALESCE(oi.unit_price, p.price)) AS order_amount,
   SUM(oi.quantity * p.space_consumption) AS required_space
 FROM order_item oi
 JOIN product p ON p.product_id = oi.product_id
@@ -625,15 +734,15 @@ INSERT INTO store (store_id, name, city) VALUES
 ('ST_GAL', 'Galle Station Store', 'Galle'),
 ('ST_KAN', 'Kandy HQ Store', 'Kandy');
 
-INSERT INTO customer (customer_id, name, phone_no, city, address, user_name, password) VALUES
-('CUS001','John Doe',   '+94771234567','Colombo','123 Galle Rd, Colombo 03','john',  'hash1'),
-('CUS002','Jane Smith', '+94772345678','Kandy',  '456 Peradeniya Rd, Kandy','jane',  'hash2')
+INSERT INTO customer (customer_id, name, phone_no, email, city, address, user_name, password) VALUES
+('CUS001','John Doe',   '+94771234567','john@example.com','Colombo','123 Galle Rd, Colombo 03','john',  'hash1'),
+('CUS002','Jane Smith', '+94772345678','jane@example.com','Kandy',  '456 Peradeniya Rd, Kandy','jane',  'hash2')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
-INSERT INTO product (product_id, name, description, price, space_consumption, category, available_quantity) VALUES
-('P001','Detergent Box','1kg box', 600.00, 0.50, 'FMCG', 200),
-('P002','Shampoo Pack','500ml',   450.00, 0.20, 'FMCG', 300),
-('P003','Soap Carton','20 bars', 1200.00, 1.00, 'FMCG', 150)
+INSERT INTO product (product_id, name, description, price, weight_per_item, volume_per_item, space_consumption, category, available_quantity, image_url) VALUES
+('P001','Detergent Box','1kg box', 600.00, 1.00, 0.0100, 0.50, 'FMCG', 200, 'https://picsum.photos/seed/P001/400/300'),
+('P002','Shampoo Pack','500ml',   450.00, 0.50, 0.0050, 0.20, 'FMCG', 300, 'https://picsum.photos/seed/P002/400/300'),
+('P003','Soap Carton','20 bars', 1200.00, 2.00, 0.0150, 1.00, 'FMCG', 150, 'https://picsum.photos/seed/P003/400/300')
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 INSERT INTO train_route (route_id, start_city, end_city, destinations) VALUES
@@ -654,13 +763,13 @@ INSERT INTO truck (truck_id, license_plate, capacity) VALUES
 ('TK01', 'WP-1234', 60.0),
 ('TK02', 'WP-5678', 60.0);
 
-INSERT INTO driver (driver_id, name, phone_no, user_name, password) VALUES
-('DRV001','John Driver','+94770000001','John Driver','12341234' ),
-('DRV002','Jane Transport','+94770000002','Jane Transport','12341234');
+INSERT INTO driver (driver_id, name, address, phone_no, email, user_name, password, status, performance_rating) VALUES
+('DRV001','John Driver','45 Rail Yard Rd, Colombo','+94770000001','john.driver@example.com','driver','\$2a\$10\$EacbTTJ3C0cIqmO2k5nEOuZ0SqnX5nGooy2cuglRez2oJ6TP2Pzvu','active',4.60),
+('DRV002','Jane Transport','12 Logistics Ave, Gampaha','+94770000002','jane.transport@example.com','janet','\$2a\$10\$EacbTTJ3C0cIqmO2k5nEOuZ0SqnX5nGooy2cuglRez2oJ6TP2Pzvu','active',4.75);
 
-INSERT INTO assistant (assistant_id, name, phone_no, user_name, password) VALUES
-('AST001','Sarah Support','+94770000003','Sarah Support','12341234'),
-('AST002','David Logistics','+94770000004','David Logistics','12341234');
+INSERT INTO assistant (assistant_id, name, address, phone_no, email, user_name, password, status) VALUES
+('AST001','Sarah Support','21 Dispatch Ln, Colombo','+94770000003','sarah.support@example.com','assistant','\$2a\$10\$EacbTTJ3C0cIqmO2k5nEOuZ0SqnX5nGooy2cuglRez2oJ6TP2Pzvu','active'),
+('AST002','David Logistics','9 Freight Rd, Negombo','+94770000004','david.logistics@example.com','david','\$2a\$10\$EacbTTJ3C0cIqmO2k5nEOuZ0SqnX5nGooy2cuglRez2oJ6TP2Pzvu','active');
 
 INSERT INTO truck_route (route_id, store_id, route_name, max_minutes) VALUES
 ('TR_COL_01','ST_COL','Colombo City North', 240),
@@ -670,12 +779,12 @@ INSERT INTO truck_route (route_id, store_id, route_name, max_minutes) VALUES
 
 
 -- Example order: 8+ days out (passes 7-day rule)
-INSERT INTO orders (order_id, customer_id, order_date, status)
-VALUES ('ORD001','CUS001', DATE_ADD(CURRENT_DATE, INTERVAL 8 DAY), 'confirmed');
+INSERT INTO orders (order_id, customer_id, order_date, destination_city, destination_address, total_amount, status)
+VALUES ('ORD001','CUS001', DATE_ADD(CURRENT_DATE, INTERVAL 8 DAY), 'Colombo', '123 Galle Rd, Colombo 03', 15000.00, 'confirmed');
 
-INSERT INTO order_item (order_item_id, order_id, product_id, quantity) VALUES
-('OI1','ORD001','P001', 20),
-('OI2','ORD001','P002', 10);
+INSERT INTO order_item (order_item_id, order_id, product_id, quantity, unit_price) VALUES
+('OI1','ORD001','P001', 20, 600.00),
+('OI2','ORD001','P002', 10, 450.00);
 
 -- Schedule the order on trains
 CALL sp_schedule_order_to_trains('ORD001','R_KAN_COL','ST_COL');

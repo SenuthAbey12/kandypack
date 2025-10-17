@@ -3,6 +3,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useTheme } from "../../../context/ThemeContext";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./AdminDashboard.css";
+import "./admin-page-theme.css";
 
 import AdminHeader from "../../../Components/AdminHeader";
 import AdminSidebar from "../../../Components/AdminSidebar";
@@ -34,7 +35,8 @@ export default function AdminDashboard() {
 
   const subtitle = `Welcome, ${user?.name || "Administrator"}`;
 
-  const handleGoAllocate = () => navigate("/admin/train-allocation");
+  const handleGoAllocate = (order) =>
+    navigate("/admin/train-allocation", order ? { state: { focusOrder: order } } : undefined);
   const handleGoTruckAssignment = () => navigate("/admin/truck-assignment");
 
   return (

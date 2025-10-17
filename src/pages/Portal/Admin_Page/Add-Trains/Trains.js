@@ -197,7 +197,7 @@ export default function Trains() {
   };
 
   return (
-    <div className="trains">
+    <div className="admin-page trains">
       {/* Header row: title left, search right */}
       <div className="page-header">
         <h2>Train Management</h2>

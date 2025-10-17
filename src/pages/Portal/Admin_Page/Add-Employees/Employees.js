@@ -96,7 +96,7 @@ export default function Employees() {
   };
 
   return (
-    <div className="employees">
+    <div className="admin-page employees">
       <h2>Employees</h2>
 
       {/* Segmented toggle */}

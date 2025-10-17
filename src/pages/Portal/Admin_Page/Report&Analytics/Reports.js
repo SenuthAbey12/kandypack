@@ -37,7 +37,7 @@ export default function Reports() {
   };
 
   return (
-    <div className="reports">
+    <div className="admin-page reports">
       <h2>Reports & Analytics</h2>
       <div className="cards">
         {["Quarterly Sales","Train Utilization","Truck Performance","Worker Hours","City-wise Sales","Top Products"].map(n=>(

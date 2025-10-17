@@ -58,7 +58,7 @@ export default function TruckAssignment() {
   };
 
   return (
-    <div className="truckassign">
+    <div className="admin-page truckassign">
       <h2>Truck Assignment to Route</h2>
 
       <div className="panel">
