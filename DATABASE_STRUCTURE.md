@@ -1,6 +1,6 @@
 # 📊 KandyPack Database Documentation
 
-*Last Updated: 10/16/2025, 6:19:19 PM*
+*Last Updated: 10/18/2025, 12:50:50 AM*
 
 ## 🗄️ Database Overview
 
@@ -10,7 +10,7 @@
 
 ## 📋 Table Summary
 
-- **admin**: 3 records
+- **admin**: 2 records
 - **assistant**: 2 records
 - **customer**: 3 records
 - **driver**: 3 records
@@ -39,7 +39,7 @@
 
 ### 🏷️ admin
 
-**Records:** 3
+**Records:** 2
 
 #### 📐 Table Structure
 
@@ -54,8 +54,7 @@
 
 | admin_id | name | password | created_at |
 |---|---|---|---|
-| 2b0a9085-c9b6-4ed3-9 | admin | $2a$10$Z9tlYQkIZOtfq6LgPtY6... | Wed Oct 15 2025 21:51:49 GMT+0530 (India Standard Time) |
-| 68717f0a-ae15-492c-8 | Super Admin | $2a$10$3to6LYSfM0jjdu2cvylC... | Wed Oct 15 2025 23:07:14 GMT+0530 (India Standard Time) |
+| 9251f7ba-3279-483d-b | admin | $2a$10$OaHlRfgDcXIv0MaUSme7... | Thu Oct 16 2025 20:56:19 GMT+0530 (India Standard Time) |
 | ADM001 | System Administrator | admin123 | Wed Oct 15 2025 14:56:36 GMT+0530 (India Standard Time) |
 
 ---
@@ -80,8 +79,8 @@
 
 | assistant_id | name | address | phone_no | email | user_name | password |
 |---|---|---|---|---|---|---|
+| abb6148b-c2a6-4de7-8 | assistant | N/A | 0710000000 | assistant1@example.com | assistant | $2a$10$q9VSmVMBdAx4QykyOTpX... |
 | AST001 | Sarah Support | NULL | +94770000003 | NULL | Sarah Support | $2a$10$ZGrOUKxgNQlBZmTPjZkF... |
-| AST002 | David Logistics | NULL | +94770000004 | NULL | David Logistics | 12341234 |
 
 ---
 
@@ -132,8 +131,8 @@
 
 | driver_id | name | address | phone_no | email | user_name | password |
 |---|---|---|---|---|---|---|
-| 9a1b1b81-479a-47be-8394-06a... | John Doe | 123 Street, City | 0771234567 | john@example.com | johnd | $2a$10$ZGrOUKxgNQlBZmTPjZkF... |
-| DRV001 | John Driver | NULL | +94770000001 | NULL | John Driver | 12341234 |
+| c03012f6-fbdd-4176-8 | driver | N/A | 0770000000 | driver1@example.com | driver | $2a$10$r/oTXerbUMG8u3lPFRT3... |
+| DRV001 | John Driver | NULL | +94770000001 | NULL | John Driver | $2a$10$ZGrOUKxgNQlBZmTPjZkF... |
 | DRV002 | Jane Transport | NULL | +94770000002 | NULL | Jane Transport | 12341234 |
 
 ---
